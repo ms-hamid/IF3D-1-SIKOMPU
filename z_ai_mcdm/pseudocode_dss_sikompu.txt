@@ -1,0 +1,102 @@
+ALGORITMA DSS_SIKOMPU
+
+DEKLARASI:
+    Data_Dosen[n][4]               // Matriks nilai dosen berdasarkan kriteria C1–C4
+    Matriks_Perbandingan[4][4]     // Matriks perbandingan berpasangan AHP
+    Normalisasi_AHP[4][4]          // Matriks normalisasi AHP
+    Bobot_AHP[4]                   // Bobot kriteria hasil AHP
+    CI, CR                         // Consistency Index dan Consistency Ratio
+    R[n][4]                        // Matriks hasil normalisasi SAW
+    V[n]                           // Nilai akhir ranking tiap dosen
+    MAX[4]                         // Nilai maksimum tiap kriteria
+    Batasan_Beban                  // Batas maksimum SKS
+    Ranking_Awal                   // Ranking awal berdasarkan skor SAW
+    hasil_dss                      // Output alokasi
+
+INPUT:
+    Data_Dosen[n][4]
+    Matriks_Perbandingan[4][4]
+    Batasan_Beban
+
+PROSES:
+
+1. PROSES_AHP (Perhitungan Bobot Kriteria)
+    a. Hitung total kolom untuk setiap kriteria:
+       Untuk j = 1 sampai 4:
+           totalKolom[j] = Σ Matriks_Perbandingan[i][j] untuk i = 1..4
+
+    b. Normalisasi matriks perbandingan:
+       Untuk i = 1 sampai 4:
+           Untuk j = 1 sampai 4:
+               Normalisasi_AHP[i][j] = Matriks_Perbandingan[i][j] / totalKolom[j]
+
+    c. Hitung bobot setiap kriteria (rata-rata baris):
+       Untuk i = 1 sampai 4:
+           Bobot_AHP[i] = (Σ Normalisasi_AHP[i][j] untuk j = 1..4) / 4
+
+    d. Uji Konsistensi:
+       Hitung λ_max:
+           λ_max = Σ (totalKolom[j] * Bobot_AHP[j])
+       CI = (λ_max - 4) / (4 - 1)
+       CR = CI / RI   // RI = 0.90 untuk n = 4
+
+       Jika CR > 0.1 maka
+           Tampilkan "Matriks AHP tidak konsisten, lakukan revisi"
+           Kembali ke input matriks
+       Else
+           Lanjutkan
+
+2. INPUT_DATA_DOSEN
+    Untuk i = 1 sampai n:
+        Baca Data_Dosen[i][1]  // C1
+        Baca Data_Dosen[i][2]  // C2
+        Baca Data_Dosen[i][3]  // C3
+        Baca Data_Dosen[i][4]  // C4
+
+3. VALIDASI_DATA
+    Untuk i = 1 sampai n:
+        Jika ada Data_Dosen[i] yang kosong maka
+            Isi dengan rata-rata atau lewatkan dosen
+
+4. NORMALISASI_SAW
+    Untuk j = 1 sampai 4:
+        MAX[j] = nilai maksimum dari Data_Dosen[i][j] untuk semua i
+    Untuk i = 1 sampai n:
+        Untuk j = 1 sampai 4:
+            R[i][j] = Data_Dosen[i][j] / MAX[j]
+
+5. HITUNG_NILAI_AKHIR
+    Untuk i = 1 sampai n:
+        V[i] = 0
+        Untuk j = 1 sampai 4:
+            V[i] = V[i] + (R[i][j] * Bobot_AHP[j])
+
+6. URUTKAN_HASIL
+    Urutkan dosen berdasarkan V[i] dari terbesar ke terkecil
+    Simpan sebagai Ranking_Awal
+
+7. CEK_CONSTRAINT
+    Untuk setiap dosen i dalam Ranking_Awal:
+        Jika beban_mengajar[i] < Batasan_Beban
+           DAN kompetensi[i] sesuai mata kuliah maka
+                Jika jenis_matkul == "Teori" DAN pendidikan[i] == "S1" maka
+                    Lewati dosen
+                Else
+                    Alokasikan dosen
+        Else
+            Lewati dosen
+
+8. OUTPUT_HASIL_PER_PRODI
+    Untuk setiap prodi p dalam daftar prodi:
+        Cetak "Hasil DSS Program Studi: ", p.nama
+        Untuk setiap mata kuliah m dalam prodi p:
+            Tampilkan tabel rekomendasi:
+            | Mata Kuliah | Jenis | Ranking | Nama Dosen | Pendidikan | Nilai Akhir | Status |
+        Sediakan:
+            - Export Excel
+            - Export PDF
+
+OUTPUT:
+    Bobot kriteria (AHP)
+    Ranking dosen (SAW)
+    Alokasi dosen per mata kuliah
