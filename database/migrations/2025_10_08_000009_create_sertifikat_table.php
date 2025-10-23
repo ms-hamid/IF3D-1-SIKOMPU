@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->year('tahun_diperoleh');
             $table->string('file_path', 512);
             $table->enum('status_verifikasi', ['Menunggu', 'Disetujui', 'Ditolak']);
+            $table->softDeletes();
         });
     }
 

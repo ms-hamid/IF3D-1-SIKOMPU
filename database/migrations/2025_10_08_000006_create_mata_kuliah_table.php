@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->integer('sks');
             $table->integer('sesi');
             $table->enum('semester', ['Ganjil', 'Genap']);
+            $table->softDeletes();
         });
     }
 

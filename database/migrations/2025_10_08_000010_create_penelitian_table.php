@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->year('tahun_publikasi');
             $table->enum('peran', ['Ketua', 'Anggota']);
             $table->string('link_publikasi', 255);
+            $table->softDeletes();
         });
     }
 
