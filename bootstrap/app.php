@@ -11,7 +11,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'check.role' => \App\Http\Middleware\CheckRoleMiddleware::class,
+        ]);
+        
+        // Middleware group API (default)
+        $middleware->api(prepend: [
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
