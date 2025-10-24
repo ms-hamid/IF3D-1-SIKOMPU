@@ -3,21 +3,31 @@
 @section('title', 'Dashboard Dosen')
 
 @section('content')
-<div class="flex min-h-screen bg-white">
 
     {{-- Main content --}}
     <main class="flex-1 p-6">
 
         {{-- Banner --}}
-        <div class="bg-blue-600 text-white rounded-2xl p-5 flex justify-between items-center mb-6">
-            <div>
-                <h3 class="font-semibold text-lg">Sistem Penentuan Koordinator & Pengampu Dosen</h3>
-                <p class="text-sm text-blue-100">Kelola dan optimalkan distribusi beban mengajar dosen dengan algoritma cerdas</p>
-            </div>
+        <div class="bg-gradient-to-br from-[#1E3A8A] to-[#1E40AF] text-white rounded-2xl p-5 flex justify-between items-center mb-6">
+        <!-- Bagian kiri -->
+        <div>
+            <h3 class="font-semibold text-lg">
+            Sistem Penentuan Koordinator & Pengampu Dosen
+            </h3>
+            <p class="text-sm text-blue-100 mb-3">
+            Kelola dan optimalkan distribusi beban mengajar dosen dengan algoritma cerdas
+            </p>
             <button class="bg-white text-blue-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50">
-                Generate Rekomendasi Semester Ini
+            Generate Rekomendasi Semester Ini
             </button>
         </div>
+
+        <!-- Gambar robot di kanan -->
+        <img src="{{ asset('images/div.png') }}" 
+            alt="Robot Icon" 
+            class="w-16 h-16 object-contain">
+        </div>
+
 
         {{-- Greeting --}}
         <div class="w-full border-b border-gray-300 pb-3 mb-6">
@@ -38,14 +48,14 @@
         </div>
 
         {{-- Data Dosen --}}
-        <div class="bg-white shadow-md rounded-xl p-6 flex items-start space-x-8 w-full mb-6">
+        <div class="bg-white border rounded-x p-6 flex items-start space-x-8 w-full mb-6">
             <!-- Foto / Ilustrasi -->
-            <div class="w-60 h-60 flex-shrink-0">
+            <div class="w-72 h-72 flex-shrink-0">
                 <img src="{{ asset('images/foto-dosen.png') }}" alt="Foto Dosen" class="rounded-xl w-full h-full object-cover border">
             </div>
 
             <!-- Data Diri -->
-            <div class="flex-1">
+            <div class="flex-1 ">
                 <h2 class="text-lg font-semibold text-gray-700 uppercase tracking-wide mb-2">Data Diri Dosen</h2>
                 <hr class="border-gray-300 mb-3">
 
@@ -79,19 +89,18 @@
             </div>
         </div>
 
-
-
         {{-- Aktivitas Terbaru --}}
-        <div class="bg-white rounded-xl shadow p-5 mb-6">
-            <h4 class="font-semibold text-gray-700 mb-3">Aktivitas Terbaru</h4>
+        <div class="bg-white border rounded-2xl p-6 w-full mb-6">
+            <h4 class="font-semibold text-gray-700 mb-3">Aktivitas Terbaru Anda</h4>
+
             <ul class="space-y-3 text-sm">
                 <li class="border-b border-gray-100 pb-2">
-                    <span class="text-green-600 font-medium">Dr. Mega Sari</span> telah mengupdate self-assessment
+                    <span class="text-blue-600 font-medium">Anda</span> telah mengupdate self-assessment
                     <span class="text-gray-500">untuk mata kuliah Algoritma dan Pemrograman</span>
                     <span class="float-right text-gray-400">2 jam yang lalu</span>
                 </li>
                 <li class="border-b border-gray-100 pb-2">
-                    <span class="text-blue-600 font-medium">Prof. Andi Wijaya</span> mengupload sertifikat baru:
+                    <span class="text-blue-600 font-medium">Anda</span> mengupload sertifikat baru:
                     <span class="text-gray-500">“Certified Scrum Master”</span>
                     <span class="float-right text-gray-400">5 jam yang lalu</span>
                 </li>
@@ -103,8 +112,9 @@
             </ul>
         </div>
 
+
         {{-- Rata-rata Self Assessment --}}
-        <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center">
+        <div class="bg-white border rounded-x p-6 flex  space-x-8 w-full mb-6 flex-col items-center ">
             <h4 class="font-semibold text-gray-700 mb-4">Rata-Rata Dosen Self-Assessment</h4>
             <div class="relative w-40 h-40">
                 <svg class="w-full h-full">

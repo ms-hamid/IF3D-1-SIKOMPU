@@ -20,7 +20,7 @@ use App\Http\Controllers\LaporanController;
 // HALAMAN UTAMA (Welcome)
 // ============================
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 })->name('home');
 
 // ============================

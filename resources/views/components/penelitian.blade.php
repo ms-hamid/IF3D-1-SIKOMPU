@@ -1,8 +1,6 @@
 <!-- resources/views/components/form-tambah-penelitian.blade.php -->
-<div class="bg-white shadow rounded-2xl p-8 w-full max-w-lg mx-auto">
+<div class="bg-white shadow-l rounded-2xl p-8 w-full max-w-lg mx-auto">
     <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center">Tambah Data Penelitian</h2>
-     <script src="https://cdn.tailwindcss.com"></script>
-     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
     <form action="{{ url('/penelitian') }}" method="POST" class="space-y-4">
         @csrf
@@ -17,10 +15,19 @@
 
         <!-- Tahun Publikasi -->
         <div>
-            <label for="tahun_publikasi" class="block text-sm font-medium text-gray-700 mb-1">Tahun Publikasi</label>
-            <input type="number" name="tahun_publikasi" id="tahun_publikasi"
-                class="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="Contoh: 2025" required>
+            <label for="tahun" class="block text-sm font-medium text-gray-700 mb-1">Tahun Diperoleh</label>
+            <select name="tahun" id="tahun"
+                    class="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    required>
+                <option value="">Pilih Tahun</option>
+                @php
+                    $currentYear = date('Y');
+                    $startYear = 2000;
+                @endphp
+                @for ($year = $currentYear; $year >= $startYear; $year--)
+                    <option value="{{ $year }}">{{ $year }}</option>
+                @endfor
+            </select>
         </div>
 
         <!-- Peran -->
@@ -44,12 +51,13 @@
         </div>
 
         <!-- Tombol -->
-        <div class="flex justify-between pt-4">
-            <a href="{{ url()->previous() }}" class="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-100">
+        <div class="flex justify-end gap-3 pt-4">
+            <button type="button" @click="openModal = false"
+                class="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300">
                 Batal
-            </a>
+            </button>
             <button type="submit"
-                class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 focus:ring-2 focus:ring-blue-500">
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 Simpan Penelitian
             </button>
         </div>
