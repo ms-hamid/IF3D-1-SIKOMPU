@@ -1,99 +1,127 @@
 @extends('layouts.app')
-@section('title','Dashboard')
+
+@section('title', 'Dashboard Dosen')
 
 @section('content')
-<div class="container-fluid">
+<div class="flex min-h-screen bg-white">
 
-  {{-- Header dengan Logo --}}
-  <div class="d-flex align-items-center mb-4">
-    <img src="{{ asset('images/logo.sikompu.png') }}" alt="Logo SiKomPu" style="width:60px; height:auto; margin-right:10px;">
-    <div>
-      <h4 class="mb-0">Sistem Penentuan Koordinator Pengampu (SiKomPu)</h4>
-      <small class="text-muted">Dashboard Utama Dosen & Laboran</small>
-    </div>
-  </div>
+    {{-- Main content --}}
+    <main class="flex-1 p-6">
 
-  <div class="row mb-3">
-    <div class="col-md-8">
-      <div class="card p-3">
-        <div class="d-flex justify-content-between">
-          <h5>Dashboard Utama</h5>
-          <small class="text-muted">Selamat datang, {{ auth()->user()->name ?? 'User' }}</small>
+        {{-- Banner --}}
+        <div class="bg-blue-600 text-white rounded-2xl p-5 flex justify-between items-center mb-6">
+            <div>
+                <h3 class="font-semibold text-lg">Sistem Penentuan Koordinator & Pengampu Dosen</h3>
+                <p class="text-sm text-blue-100">Kelola dan optimalkan distribusi beban mengajar dosen dengan algoritma cerdas</p>
+            </div>
+            <button class="bg-white text-blue-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50">
+                Generate Rekomendasi Semester Ini
+            </button>
         </div>
-        <hr>
 
-        {{-- Statistik Ringkas --}}
-        <div class="row g-3">
-          <div class="col-md-3">
-            <div class="card card-stat p-3 text-center">
-              <small>Total Pengguna Aktif</small>
-              <h4 class="text-primary mt-1">42</h4>
+        {{-- Greeting --}}
+        <div class="w-full border-b border-gray-300 pb-3 mb-6">
+            <div class="flex items-center space-x-3">
+                <div class="bg-green-100 p-2 rounded-lg">
+                    <i class="fa-solid fa-chart-line text-green-600"></i>
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        Selamat Datang, {{ auth()->user()->name ?? 'Nama Dosen' }}
+                    </h3>
+                    <p class="text-gray-500 text-sm mt-1 flex items-center">
+                        <i class="fa-regular fa-calendar text-gray-400 mr-1"></i>
+                        Minggu, 28 September 2025
+                    </p>
+                </div>
             </div>
-          </div>
-          <div class="col-md-3">
-            <div class="card card-stat p-3 text-center">
-              <small>Total Mata Kuliah</small>
-              <h4 class="text-success mt-1">128</h4>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="card card-stat p-3 text-center">
-              <small>Sertifikat Terdaftar</small>
-              <h4 class="text-info mt-1">90</h4>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="card card-stat p-3 text-center">
-              <small>Rata-Rata Self-Assessment</small>
-              <h4 class="text-warning mt-1">80%</h4>
-            </div>
-          </div>
         </div>
+
+        {{-- Data Dosen --}}
+        <div class="bg-white shadow-md rounded-xl p-6 flex items-start space-x-8 w-full mb-6">
+            <!-- Foto / Ilustrasi -->
+            <div class="w-60 h-60 flex-shrink-0">
+                <img src="{{ asset('images/foto-dosen.png') }}" alt="Foto Dosen" class="rounded-xl w-full h-full object-cover border">
+            </div>
+
+            <!-- Data Diri -->
+            <div class="flex-1">
+                <h2 class="text-lg font-semibold text-gray-700 uppercase tracking-wide mb-2">Data Diri Dosen</h2>
+                <hr class="border-gray-300 mb-3">
+
+                <table class="text-sm text-gray-700">
+                    <tr>
+                        <td class="pr-3 py-1 font-medium">Nama</td>
+                        <td class="pr-2">:</td>
+                        <td>Dr. Mega Sari</td>
+                    </tr>
+                    <tr>
+                        <td class="pr-3 py-1 font-medium">NIDN</td>
+                        <td class="pr-2">:</td>
+                        <td>1122334455</td>
+                    </tr>
+                    <tr>
+                        <td class="pr-3 py-1 font-medium">Program Studi</td>
+                        <td class="pr-2">:</td>
+                        <td>Teknik Informatika</td>
+                    </tr>
+                    <tr>
+                        <td class="pr-3 py-1 font-medium">Email</td>
+                        <td class="pr-2">:</td>
+                        <td>mega.sari@polibatam.ac.id</td>
+                    </tr>
+                    <tr>
+                        <td class="pr-3 py-1 font-medium">Status</td>
+                        <td class="pr-2">:</td>
+                        <td><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Sudah Isi Self-Assessment</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+
 
         {{-- Aktivitas Terbaru --}}
-        <div class="mt-4">
-          <h6>Aktivitas Terbaru</h6>
-          <ul class="list-group">
-            <li class="list-group-item">
-              <strong>Dr. Sarah Putri</strong> telah mengupdate self-assessment 
-              <small class="text-muted float-end">2 jam yang lalu</small>
-            </li>
-            <li class="list-group-item">
-              <strong>Prof. Budi Santoso</strong> mengupload 3 sertifikat baru
-              <small class="text-muted float-end">5 jam yang lalu</small>
-            </li>
-            <li class="list-group-item">
-              <strong>Sistem</strong> berhasil menghasilkan rekomendasi koordinator pengampu
-              <small class="text-muted float-end">1 hari yang lalu</small>
-            </li>
-          </ul>
+        <div class="bg-white rounded-xl shadow p-5 mb-6">
+            <h4 class="font-semibold text-gray-700 mb-3">Aktivitas Terbaru</h4>
+            <ul class="space-y-3 text-sm">
+                <li class="border-b border-gray-100 pb-2">
+                    <span class="text-green-600 font-medium">Dr. Mega Sari</span> telah mengupdate self-assessment
+                    <span class="text-gray-500">untuk mata kuliah Algoritma dan Pemrograman</span>
+                    <span class="float-right text-gray-400">2 jam yang lalu</span>
+                </li>
+                <li class="border-b border-gray-100 pb-2">
+                    <span class="text-blue-600 font-medium">Prof. Andi Wijaya</span> mengupload sertifikat baru:
+                    <span class="text-gray-500">“Certified Scrum Master”</span>
+                    <span class="float-right text-gray-400">5 jam yang lalu</span>
+                </li>
+                <li>
+                    <span class="text-gray-700 font-medium">Generate rekomendasi semester genap 2024/2025</span>
+                    <span class="text-gray-400">telah selesai</span>
+                    <span class="float-right text-gray-400">1 hari yang lalu</span>
+                </li>
+            </ul>
         </div>
 
-      </div>
-    </div>
-
-    {{-- Kolom kanan --}}
-    <div class="col-md-4">
-      <div class="card p-3">
-        <h6>Peringatan Beban Mengajar</h6>
-        <p>Terdapat <strong>7</strong> dosen dengan beban melebihi maksimal (16 SKS)</p>
-        <a href="{{ route('dosen.index') }}" class="btn btn-sm btn-outline-primary">Lihat detail</a>
-      </div>
-
-      <div class="card p-3 mt-3">
-        <h6>Aksi Cepat</h6>
-        <a href="{{ route('generate.index') }}" class="btn btn-sm btn-primary w-100 mb-2">
-          <i class="bi bi-lightning-charge-fill"></i> Generate Rekomendasi
-        </a>
-        <a href="{{ route('dosen.create') }}" class="btn btn-sm btn-outline-secondary w-100 mb-2">
-          <i class="bi bi-person-plus"></i> Tambah Dosen
-        </a>
-        <a href="{{ route('matakuliah.create') }}" class="btn btn-sm btn-outline-secondary w-100">
-          <i class="bi bi-journal-plus"></i> Tambah Mata Kuliah
-        </a>
-      </div>
-    </div>
-  </div>
+        {{-- Rata-rata Self Assessment --}}
+        <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center">
+            <h4 class="font-semibold text-gray-700 mb-4">Rata-Rata Dosen Self-Assessment</h4>
+            <div class="relative w-40 h-40">
+                <svg class="w-full h-full">
+                    <circle cx="50%" cy="50%" r="70" stroke="#e5e7eb" stroke-width="10" fill="none" />
+                    <circle cx="50%" cy="50%" r="70" stroke="#2563eb" stroke-width="10" fill="none"
+                            stroke-dasharray="440" stroke-dashoffset="88"
+                            stroke-linecap="round" transform="rotate(-90 80 80)" />
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-2xl font-bold text-gray-800">80%</span>
+                </div>
+            </div>
+            <div class="flex justify-center mt-3 text-sm text-gray-500">
+                <span class="flex items-center mr-4"><span class="w-3 h-3 bg-blue-600 rounded-full mr-1"></span> Sudah Mengisi</span>
+                <span class="flex items-center"><span class="w-3 h-3 bg-gray-200 rounded-full mr-1"></span> Belum Mengisi</span>
+            </div>
+        </div>
+    </main>
 </div>
 @endsection
-
