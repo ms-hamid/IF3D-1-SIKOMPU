@@ -30,26 +30,50 @@
       </div>
 
       <nav class="flex-1 space-y-2">
-        <a href="{{ route('dashboard.dosen') }}" class="flex items-center px-4 py-2 rounded-lg hover:bg-indigo-600 transition {{ request()->routeIs('dashboard.dosen') ? 'bg-indigo-800' : '' }}">
+        {{-- Dashboard --}}
+        <a href="{{ route('dashboard.dosen') }}"
+           class="flex items-center px-4 py-2 rounded-lg transition
+           {{ request()->routeIs('dashboard.*') ? 'bg-indigo-800 font-semibold' : 'hover:bg-indigo-600' }}">
           <i class="fa-solid fa-chart-line mr-2"></i> Dashboard
         </a>
-        <a href="{{ route('self-assessment.index') }}" class="flex items-center px-4 py-2 rounded-lg hover:bg-indigo-600 transition {{ request()->routeIs('generate.index') ? 'bg-indigo-800' : '' }}">
+
+        {{-- Self-Assessment --}}
+        <a href="{{ route('self-assessment.index') }}"
+           class="flex items-center px-4 py-2 rounded-lg transition
+           {{ request()->routeIs('self-assessment.*') ? 'bg-indigo-800 font-semibold' : 'hover:bg-indigo-600' }}">
           <i class="fa-solid fa-gears mr-2"></i> Self-Assessment
         </a>
-        <a href="{{ route('dosen.index') }}" class="flex items-center px-4 py-2 rounded-lg hover:bg-indigo-600 transition {{ request()->routeIs('dosen.index') ? 'bg-indigo-800' : '' }}">
-          <i class="fa-solid fa-user-tie mr-2"></i> Manajemen Dosen
+
+        {{-- Sertifikasi --}}
+        <a href="{{ route('sertifikasi.index') }}"
+           class="flex items-center px-4 py-2 rounded-lg transition
+           {{ request()->routeIs('sertifikasi.*') ? 'bg-indigo-800 font-semibold' : 'hover:bg-indigo-600' }}">
+          <i class="fa-solid fa-user-tie mr-2"></i> Sertifikasi
         </a>
-        <a href="{{ route('matakuliah.index') }}" class="flex items-center px-4 py-2 rounded-lg hover:bg-indigo-600 transition {{ request()->routeIs('matakuliah.index') ? 'bg-indigo-800' : '' }}">
-          <i class="fa-solid fa-book mr-2"></i> Manajemen Mata Kuliah
+
+        {{-- Penelitian --}}
+        <a href="{{ route('penelitian.index') }}"
+           class="flex items-center px-4 py-2 rounded-lg transition
+           {{ request()->routeIs('penelitian.*') ? 'bg-indigo-800 font-semibold' : 'hover:bg-indigo-600' }}">
+          <i class="fa-solid fa-book mr-2"></i> Penelitian
         </a>
-        <a href="{{ route('prodi.index') }}" class="flex items-center px-4 py-2 rounded-lg hover:bg-indigo-600 transition {{ request()->routeIs('prodi.index') ? 'bg-indigo-800' : '' }}">
+
+        {{-- Manajemen Prodi --}}
+        <a href="{{ route('prodi.index') }}"
+           class="flex items-center px-4 py-2 rounded-lg transition
+           {{ request()->routeIs('prodi.*') ? 'bg-indigo-800 font-semibold' : 'hover:bg-indigo-600' }}">
           <i class="fa-solid fa-building-columns mr-2"></i> Manajemen Prodi
         </a>
-        <a href="{{ route('laporan.index') }}" class="flex items-center px-4 py-2 rounded-lg hover:bg-indigo-600 transition {{ request()->routeIs('laporan.index') ? 'bg-indigo-800' : '' }}">
+
+        {{-- Laporan --}}
+        <a href="{{ route('laporan.index') }}"
+           class="flex items-center px-4 py-2 rounded-lg transition
+           {{ request()->routeIs('laporan.*') ? 'bg-indigo-800 font-semibold' : 'hover:bg-indigo-600' }}">
           <i class="fa-solid fa-file-lines mr-2"></i> Laporan
         </a>
       </nav>
 
+      {{-- Logout --}}
       <div class="mt-auto pt-4 border-t border-indigo-500 text-center">
         <form action="{{ route('logout') }}" method="POST">
           @csrf
@@ -62,6 +86,7 @@
 
     {{-- Main Content --}}
     <main class="flex-1 p-8">
+      {{-- Header --}}
       <nav class="flex justify-between items-center mb-6">
         <h4 class="text-2xl font-bold text-gray-800">@yield('page_title', 'Dashboard')</h4>
         <div class="text-right">
@@ -69,14 +94,15 @@
         </div>
       </nav>
 
+      {{-- Alert sukses --}}
       @if(session('success'))
         <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
           {{ session('success') }}
         </div>
       @endif
 
+      {{-- Konten halaman --}}
       @yield('content')
-
     </main>
   </div>
 

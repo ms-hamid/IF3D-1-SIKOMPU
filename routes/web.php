@@ -43,22 +43,24 @@ Route::get('/self-assessment', function () {
 })->name('self-assessment.index');
 
 // ============================
-// MANAJEMEN DOSEN
+// Sertifikasi
 // ============================
-Route::prefix('dosen')->name('dosen.')->group(function () {
-    Route::get('/', [DosenController::class, 'index'])->name('index');
-    Route::get('/create', [DosenController::class, 'create'])->name('create');
-    Route::post('/', [DosenController::class, 'store'])->name('store');
-});
+Route::get('/sertifikasi', function () {
+    return view('pages.sertifikasi');
+})->name('sertifikasi.index');
 
 // ============================
-// MANAJEMEN MATA KULIAH
+// Penelitian
 // ============================
-Route::prefix('matakuliah')->name('matakuliah.')->group(function () {
-    Route::get('/', [MatakuliahController::class, 'index'])->name('index');
-    Route::get('/create', [MatakuliahController::class, 'create'])->name('create');
-    Route::post('/', [MatakuliahController::class, 'store'])->name('store');
-});
+Route::get('/penelitian', function () {
+    return view('pages.penelitian');
+})->name('penelitian.index');
+
+// Route::prefix('matakuliah')->name('matakuliah.')->group(function () {
+//     Route::get('/', [MatakuliahController::class, 'index'])->name('index');
+//     Route::get('/create', [MatakuliahController::class, 'create'])->name('create');
+//     Route::post('/', [MatakuliahController::class, 'store'])->name('store');
+// });
 
 // ============================
 // MANAJEMEN PROGRAM STUDI
