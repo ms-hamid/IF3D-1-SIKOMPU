@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->enum('semester', ['Ganjil', 'Genap']);
             $table->string('tahun_ajaran', 9);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

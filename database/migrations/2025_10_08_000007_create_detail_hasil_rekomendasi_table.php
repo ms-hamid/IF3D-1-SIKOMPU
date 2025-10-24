@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->enum('peran_penugasan', ['Koordinator', 'Pengampu']);
             $table->decimal('skor_dosen_di_mk', 5, 2);
+            $table->softDeletes();
         });
     }
 

@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->string('kode_prodi', 20)->unique();
             $table->string('nama_prodi', 255);
             $table->enum('jenjang', ['D3', 'D4', 'S2 Terapan']);
+            $table->softDeletes();
         });
     }
 

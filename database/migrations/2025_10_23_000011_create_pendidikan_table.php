@@ -7,12 +7,13 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('self_assessments', function (Blueprint $table) {
+        Schema::create('pendidikan', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('matakuliah_id')->constrained('mata_kuliah')->cascadeOnDelete();
-            $table->integer('nilai');
-            $table->text('catatan');
+            $table->enum('jenjang', ['D3','D4','S1','S2','S3']);
+            $table->string('jurusan', 255);
+            $table->string('universitas', 255);
+            $table->year('tahun_lulus');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -20,6 +21,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('self_assessments');
+        Schema::dropIfExists('pendidikan');
     }
 };
