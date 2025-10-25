@@ -34,36 +34,50 @@
 
   {{-- Progress Penilaian --}}
   <div class="bg-green-50 border border-green-300 rounded-lg p-5">
-    <h6 class="text-green-700 font-semibold mb-2 flex items-center gap-2">
-      <i class="fa-solid fa-square-check"></i> Penilaian Kemajuan
-    </h6>
-    <p class="text-gray-700 text-sm mb-3">9 dari 38 mata kuliah selesai</p>
-    <div class="w-full bg-green-200 rounded-full h-3 mb-1">
-      <div class="bg-green-600 h-3 rounded-full" style="width: 20%"></div>
-    </div>
-    <p class="text-right text-green-700 text-sm font-medium">20%</p>
+      <h6 class="text-green-700 font-semibold mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-square-check"></i> Penilaian Kemajuan
+      </h6>
+      <p class="text-gray-700 text-sm mb-1">9 dari 38 mata kuliah selesai</p>
+
+      {{-- Teks pemberitahuan dengan highlight --}}
+      <p class="text-sm mb-3 bg-yellow-100 text-yellow-800 px-3 py-2 rounded-md font-medium">
+        Biarkan skala (Bintang) tetap 1 jika Anda merasa belum kompeten di mata kuliah tersebut.
+      </p>
+
+      <div class="w-full bg-green-200 rounded-full h-3 mb-1">
+        <div class="bg-green-600 h-3 rounded-full" style="width: 20%"></div>
+      </div>
+      <p class="text-right text-green-700 text-sm font-medium">20%</p>
   </div>
+
+
+  {{-- Search Box Compact --}}
+  <div class="mb-4 flex items-center">
+      <x-search-input placeholder="Cari mata kuliah..." width="w-1/4" x-model="search" />
+  </div>
+
 
   {{-- Grid Mata Kuliah --}}
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @foreach ([
-      ['nama' => 'Pengantar Proyek Perangkat Lunak', 'kode' => 'IF101', 'rating' => 5],
-      ['nama' => 'Pengantar Teknologi Informasi', 'kode' => 'IF102', 'rating' => 4],
-      ['nama' => 'Dasar Pemrograman Web', 'kode' => 'IF103', 'rating' => 4],
-      ['nama' => 'Dasar Pemrograman', 'kode' => 'IF104', 'rating' => 2],
-      ['nama' => 'Sistem Komputer', 'kode' => 'IF105', 'rating' => 5],
-      ['nama' => 'Matematika', 'kode' => 'IF106', 'rating' => 5],
+      ['nama' => 'Pengantar Proyek Perangkat Lunak', 'kode' => 'IF101'],
+      ['nama' => 'Pengantar Teknologi Informasi', 'kode' => 'IF102'],
+      ['nama' => 'Dasar Pemrograman Web', 'kode' => 'IF103'],
+      ['nama' => 'Dasar Pemrograman', 'kode' => 'IF104'],
+      ['nama' => 'Sistem Komputer', 'kode' => 'IF105'],
+      ['nama' => 'Matematika', 'kode' => 'IF106'],
     ] as $m)
-      <div x-data="{ rating: {{ $m['rating'] }}, hoverRating: 0 }" class="bg-white rounded-xl p-5 border border-gray-200 relative hover:shadow-lg transition">
+      <div x-data="{ rating: 1, hoverRating: 0 }" 
+           class="bg-white rounded-xl p-5 border border-gray-200 relative hover:shadow-lg transition">
 
         <div class="absolute top-2 right-2 bg-green-100 text-green-700 text-xs px-2 py-1 rounded-lg font-semibold">
-          Sudah diisi
+          Terisi
         </div>
 
         <h5 class="font-semibold text-gray-800">{{ $m['nama'] }}</h5>
         <p class="text-gray-500 text-sm mb-3">{{ $m['kode'] }}</p>
 
-        {{-- Rating bintang 1-8, klik simpan di frontend --}}
+        {{-- Rating bintang 1-8 --}}
         <div class="flex items-center mb-3">
           <template x-for="i in 8" :key="i">
             <i 
@@ -86,6 +100,13 @@
       </div>
     @endforeach
   </div>
+
+
+  {{-- Tombol Submit --}}
+  <div class="mt-6 flex justify-end">
+      <x-submit-button label="Simpan Penilaian" color="bg-red-600" hover="hover:bg-red-700" />
+  </div>
+
 
 </main>
 
