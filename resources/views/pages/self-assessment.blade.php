@@ -41,7 +41,11 @@
 
       {{-- Teks pemberitahuan dengan highlight --}}
       <p class="text-sm mb-3 bg-yellow-100 text-yellow-800 px-3 py-2 rounded-md font-medium">
-        Biarkan skala (Bintang) tetap 1 jika Anda merasa belum kompeten di mata kuliah tersebut.
+        Biarkan skala (Bintang) tetap 1 jika Anda merasa belum kompeten di mata kuliah tersebut. 
+        <a href="{{ asset('pdf/skala-penilaian.pdf') }}" target="_blank" 
+          class="underline font-semibold text-yellow-900 hover:text-yellow-700 ml-1">
+          Lihat skala penilaian
+        </a>
       </p>
 
       <div class="w-full bg-green-200 rounded-full h-3 mb-1">
