@@ -35,6 +35,11 @@ Route::get('/dashboard', function () {
     return redirect()->route('dashboard.dosen');
 })->name('dashboard');
 
+// Halaman Ganti Password (frontend dummy)
+Route::get('/ganti_password', function () {
+    return view('pages.ganti_password');
+})->name('ganti_password');
+
 // ============================
 // GENERATE HASIL 
 // ============================

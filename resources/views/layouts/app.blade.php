@@ -6,7 +6,7 @@
   <title>@yield('title', 'SIKOMPU')</title>
 
   <style>
-  [x-cloak] { display: none !important; }
+    [x-cloak] { display: none !important; }
   </style>
 
   {{-- Tailwind CSS CDN --}}
@@ -22,42 +22,45 @@
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
 </head>
 
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-100 font-sans flex flex-col min-h-screen">
 
-  <div class="flex h-screen overflow-hidden">
-    {{-- Sidebar (tetap di kiri) --}}
-    <aside class="w-64 bg-white border-r border-gray-200 fixed top-0 left-0 h-screen overflow-y-auto z-30">
-      <x-sidebar />
-    </aside>
+  {{-- Sidebar --}}
+  <aside class="w-64 bg-white border-r border-gray-200 fixed top-0 left-0 h-screen overflow-y-auto z-30">
+    <x-sidebar />
+  </aside>
 
-    {{-- Main Content (kanan sidebar) --}}
-    <div class="flex-1 ml-64 flex flex-col h-screen">
-      
-      {{-- Header (sticky di atas) --}}
-      <header class="sticky top-0 z-20 bg-gray-50 border-b border-gray-200 px-8 py-4 flex justify-between items-center">
-        <h4 class="text-2xl font-bold text-gray-800">
-          @yield('page_title', 'Dashboard')
-        </h4>
-        <div class="text-right">
-          <span class="text-gray-500">👤 {{ auth()->user()->name ?? 'Guest' }}</span>
+  {{-- Main content wrapper --}}
+  <div class="flex-1 ml-64 flex flex-col">
+    
+    {{-- Header --}}
+    <x-navbar />
+  
+    <!-- <header class="sticky top-0 z-20 bg-gray-50 border-b border-gray-200 px-8 py-4 flex justify-between items-center">
+      <h4 class="text-2xl font-bold text-gray-800">
+        @yield('page_title', 'Dashboard')
+      </h4>
+      <div class="text-right">
+        <span class="text-gray-500">👤 {{ auth()->user()->name ?? 'Guest' }}</span>
+      </div>
+    </header> -->
+
+    {{-- Konten halaman --}}
+    <main class="flex-1 overflow-y-auto p-8">
+      {{-- Alert sukses --}}
+      @if(session('success'))
+        <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
+          {{ session('success') }}
         </div>
-      </header>
+      @endif
 
-      {{-- Konten halaman (scrollable) --}}
-      <main class="flex-1 overflow-y-auto p-8">
-        {{-- Alert sukses --}}
-        @if(session('success'))
-          <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
-            {{ session('success') }}
-          </div>
-        @endif
+      @yield('content')
+    </main>
 
-        @yield('content')
-      </main>
-    </div>
+    {{-- Footer --}}
+    <x-footer />
+
   </div>
 
   {{-- Scripts --}}
