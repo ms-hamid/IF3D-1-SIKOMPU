@@ -23,34 +23,38 @@
     <div
         x-cloak
         x-show="openModal"
-        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4"
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
+        class="fixed inset-0 flex items-start justify-center sm:items-center bg-black/60 z-50 p-4 min-h-screen"
+        style="display: none;"
     >
-        <div @click.away="openModal = false" class="bg-white rounded-2xl shadow-lg p-5 sm:p-6 w-full max-w-md">
+        <div 
+            @click.away="openModal = false" 
+            class="bg-white shadow-lg p-5 sm:p-6 w-full max-w-md"
+        >
             <x-penelitian />
         </div>
     </div>
 
     {{-- Statistik ringkas --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
-        <div class="bg-blue-100 p-4 rounded-xl border border-blue-300 text-center">
+        <div class="bg-blue-100 p-4 rounded border border-blue-300 text-center">
             <h3 class="text-xs sm:text-sm text-gray-500">Total Penelitian</h3>
             <p class="text-2xl sm:text-3xl font-semibold text-blue-700">2</p>
             <p class="text-gray-500 text-xs sm:text-sm">Karya penelitian</p>
         </div>
 
-        <div class="bg-green-100 p-4 rounded-xl border border-green-300 text-center">
+        <div class="bg-green-100 p-4 rounded border border-green-300 text-center">
             <h3 class="text-xs sm:text-sm text-gray-500">Total Bonus</h3>
             <p class="text-2xl sm:text-3xl font-semibold text-green-700">+1.0</p>
             <p class="text-gray-500 text-xs sm:text-sm">Nilai bonus penelitian</p>
         </div>
 
-        <div class="bg-purple-100 p-4 rounded-xl border border-purple-300 text-center">
+        <div class="bg-purple-100 p-4 rounded border border-pink-300 text-center">
             <h3 class="text-xs sm:text-sm text-gray-500">Bidang Aktif</h3>
             <p class="text-2xl sm:text-3xl font-semibold text-pink-700">5</p>
             <p class="text-gray-500 text-xs sm:text-sm">Bidang Penelitian</p>
@@ -94,7 +98,7 @@
 
             <div class="text-xs sm:text-sm text-gray-600 mb-2">
                 <p class="font-semibold mb-1">Mata Kuliah Terkait:</p>
-                <p class="bg-gray-50 border rounded-md p-2">{{ $p['mata_kuliah'] }}</p>
+                <p class="bg-gray-200 rounded-md p-2">{{ $p['mata_kuliah'] }}</p>
             </div>
 
             <div class="flex justify-between items-center mt-2">

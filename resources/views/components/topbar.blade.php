@@ -5,10 +5,11 @@
         {{-- Tombol Hamburger (Mobile) --}}
         <button 
             @click="sidebarOpen = !sidebarOpen"
-            class="text-gray-700 hover:text-blue-600 focus:outline-none lg:hidden"
+            class="text-gray-700 hover:text-blue-600 focus:outline-none lg:hidden transition-transform duration-200"
             aria-label="Toggle sidebar">
-            <i class="fa-solid fa-bars text-xl"></i>
+            <i class="fa-solid fa-bars-staggered text-xl"></i>
         </button>
+
 
         {{-- Judul Halaman --}}
         <h1 class="text-lg sm:text-xl font-semibold text-gray-800">
@@ -38,27 +39,39 @@
             x-cloak
             class="relative flex items-center gap-3"
         >
-            {{-- Foto Profil --}}
+
+            {{-- Foto Profil Dummy --}}
             <button 
                 @click="open = !open"
                 class="focus:outline-none flex items-center"
             >
-                <img 
-                    src="{{ Auth::user()->profile_photo_url ?? asset('images/default-profile.png') }}" 
-                    alt="Profile"
-                    class="h-10 w-10 rounded-full border border-gray-200 shadow-sm object-cover bg-gray-50 cursor-pointer"
+                {{-- Avatar Dummy --}}
+                @php
+                    $name = auth()->user()->name ?? 'John Doe';
+                    $initial = strtoupper(substr($name, 0, 1));
+                    // Warna tetap: gradasi biru navy
+                    $color = 'from-blue-700 to-blue-900';
+                @endphp
+
+                <div 
+                    class="h-10 w-10 rounded-full bg-gradient-to-br {{ $color }} 
+                        flex items-center justify-center text-white font-semibold cursor-pointer shadow-sm"
                 >
+                    {{ $initial }}
+                </div>
 
                 {{-- Nama User (tampil di tablet & desktop) --}}
                 <div class="hidden sm:flex flex-col leading-tight text-right ml-2">
                     <span class="text-sm font-semibold text-gray-800">
-                        {{ auth()->user()->name ?? 'John Doe' }}
+                        {{ $name }}
                     </span>
                     <span class="text-xs text-gray-500">
                         {{ auth()->user()->role ?? 'User' }}
                     </span>
                 </div>
             </button>
+
+
 
             {{-- Tombol Titik Tiga (desktop/tablet) --}}
             <button 

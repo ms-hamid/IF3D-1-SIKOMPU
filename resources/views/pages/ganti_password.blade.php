@@ -29,7 +29,7 @@
             id="current_password"
             name="current_password"
             placeholder="Masukkan password lama"
-            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            class="w-full bg-white border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
@@ -43,7 +43,7 @@
             id="new_password"
             name="new_password"
             placeholder="Masukkan password baru"
-            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            class="w-full bg-white border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
@@ -57,7 +57,7 @@
             id="confirm_password"
             name="confirm_password"
             placeholder="Ulangi password baru"
-            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            class="w-full bg-white border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
       </div>

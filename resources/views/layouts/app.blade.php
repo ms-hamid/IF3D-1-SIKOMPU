@@ -17,8 +17,8 @@
 
     {{-- ======================== SIDEBAR ======================== --}}
     <aside 
-        class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 shadow-sm transform 
-               transition-transform duration-300 ease-in-out lg:translate-x-0 z-50"
+        class="fixed inset-y-0 left-0 w-64 z-50 bg-white border-r border-gray-200 shadow-sm transform 
+                transition-transform duration-300 ease-in-out lg:translate-x-0"
         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
         @include('components.sidebar')
     </aside>
@@ -27,15 +27,18 @@
     <div 
         x-show="sidebarOpen"
         @click="sidebarOpen = false"
-        class="fixed inset-0 bg-gray-900/20 lg:hidden z-40 transition-opacity duration-300 ease-in-out"
+        class="fixed inset-0 bg-black/50 lg:hidden z-40 transition-opacity duration-300 ease-in-out pointer-events-auto"
         x-transition.opacity
     ></div>
 
+
     {{-- ======================== MAIN CONTENT WRAPPER ======================== --}}
-    <div class="flex flex-1 flex-col lg:ml-64">
+    <div class="flex flex-1 flex-col lg:ml-64 relative z-0">
 
         {{-- ======================== TOPBAR ======================== --}}
-        @include('components.topbar')
+        <div class="sticky top-0 z-50 bg-white shadow-sm"> {{-- sticky + top-0 + z-50 --}}
+            @include('components.topbar')
+        </div>
 
         {{-- ======================== PAGE CONTENT ======================== --}}
         <main class="flex-1 px-2 sm:px-6 py-3 sm:py-5 overflow-y-auto">
