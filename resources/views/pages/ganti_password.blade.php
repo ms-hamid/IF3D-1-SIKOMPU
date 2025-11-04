@@ -63,13 +63,13 @@
       </div>
 
       {{-- Tombol Simpan --}}
-      <div class="flex justify-end mt-8">
-        <button
-          type="submit"
-          class="bg-[#1E40AF] text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition-all"
-        >
-          Simpan Perubahan
-        </button>
+      <div class="mt-6 md:col-span-2">
+          <button
+              type="submit"
+              class="w-full bg-[#1E40AF] text-white px-4 py-3 rounded-xl hover:bg-blue-700 transition-all text-sm font-medium"
+          >
+              Simpan Perubahan
+          </button>
       </div>
     </form>
   </div>

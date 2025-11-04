@@ -1,71 +1,58 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" x-data="{ sidebarOpen: false }" x-cloak>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>@yield('title', 'SIKOMPU')</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Dashboard')</title>
 
-  <style>
-    [x-cloak] { display: none !important; }
-  </style>
+    {{-- Font Awesome + Tailwind + Vite --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-  {{-- Tailwind CSS CDN --}}
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  {{-- Bootstrap (opsional) --}}
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  {{-- Font Awesome --}}
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-
-  {{-- Custom CSS --}}
-  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-
-  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    {{-- Bootstrap Icons --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
 
-<body class="bg-gray-100 font-sans flex flex-col min-h-screen">
+<body class="bg-gray-100 flex flex-col min-h-screen">
 
-  {{-- Sidebar --}}
-  <aside class="w-64 bg-white border-r border-gray-200 fixed top-0 left-0 h-screen overflow-y-auto z-30">
-    <x-sidebar />
-  </aside>
+    {{-- ======================== SIDEBAR ======================== --}}
+    <aside 
+        class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 shadow-sm transform 
+               transition-transform duration-300 ease-in-out lg:translate-x-0 z-50"
+        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+        @include('components.sidebar')
+    </aside>
 
-  {{-- Main content wrapper --}}
-  <div class="flex-1 ml-64 flex flex-col">
-    
-    {{-- Header --}}
-    <x-navbar />
-  
-    <!-- <header class="sticky top-0 z-20 bg-gray-50 border-b border-gray-200 px-8 py-4 flex justify-between items-center">
-      <h4 class="text-2xl font-bold text-gray-800">
-        @yield('page_title', 'Dashboard')
-      </h4>
-      <div class="text-right">
-        <span class="text-gray-500">👤 {{ auth()->user()->name ?? 'Guest' }}</span>
-      </div>
-    </header> -->
+    {{-- ======================== OVERLAY (Mobile) ======================== --}}
+    <div 
+        x-show="sidebarOpen"
+        @click="sidebarOpen = false"
+        class="fixed inset-0 bg-gray-900/20 lg:hidden z-40 transition-opacity duration-300 ease-in-out"
+        x-transition.opacity
+    ></div>
 
-    {{-- Konten halaman --}}
-    <main class="flex-1 overflow-y-auto p-8">
-      {{-- Alert sukses --}}
-      @if(session('success'))
-        <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
-          {{ session('success') }}
-        </div>
-      @endif
+    {{-- ======================== MAIN CONTENT WRAPPER ======================== --}}
+    <div class="flex flex-1 flex-col lg:ml-64">
 
-      @yield('content')
-    </main>
+        {{-- ======================== TOPBAR ======================== --}}
+        @include('components.topbar')
 
-    {{-- Footer --}}
-    <x-footer />
+        {{-- ======================== PAGE CONTENT ======================== --}}
+        <main class="flex-1 px-2 sm:px-6 py-3 sm:py-5 overflow-y-auto">
+            @yield('content')
+        </main>
 
-  </div>
+        {{-- ======================== FOOTER ======================== --}}
+        <footer class="bg-white border-t border-gray-200 shadow-sm mt-auto">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center text-gray-500 text-xs sm:text-sm">
+                <p class="text-center sm:text-left">&copy; {{ date('Y') }} Politeknik Negeri Batam. All rights reserved.</p>
+                <p class="text-center sm:text-right mt-2 sm:mt-0">Versi 1.0.0</p>
+            </div>
+        </footer>
 
-  {{-- Scripts --}}
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ asset('js/app.js') }}"></script>
-  @stack('scripts')
+    </div>
+
+    {{-- Alpine.js --}}
+    <script src="https://unpkg.com/alpinejs" defer></script>
 </body>
 </html>
