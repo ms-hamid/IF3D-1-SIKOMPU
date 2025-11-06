@@ -1,11 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DosenController;
 use App\Http\Controllers\MatakuliahController;
 use App\Http\Controllers\ProdiController;
 use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\DashboardStrukturalController;
+use App\Http\Controllers\ManajemenDosenController;
+use App\Http\Controllers\ManajemenMatakuliahController;
 
 /*
 |--------------------------------------------------------------------------
@@ -72,22 +76,59 @@ Route::get('/penelitian', function () {
 // ============================
 // MANAJEMEN PROGRAM STUDI
 // ============================
-Route::prefix('prodi')->name('prodi.')->group(function () {
-    Route::get('/', [ProdiController::class, 'index'])->name('index');
-    Route::get('/create', [ProdiController::class, 'create'])->name('create');
-    Route::post('/', [ProdiController::class, 'store'])->name('store');
-});
+Route::get('/manajemen-prodi', function () {
+    return view('pages.manajemen-prodi'); // buat file ini nanti
+})->name('manajemen.prodi');
+Route::resource('prodi', ProdiController::class);
+Route::get('/prodi/create', function () {
+    return view('pages.prodi-create'); // ganti dengan nama file blade kamu
+})->name('prodi.create');
+// ============================
+// MANAJEMEN DOSEN
+// ============================
+Route::get('/manajemen-dosen', function () {
+    return view('pages.manajemen-dosen'); // buat file ini nanti
+})->name('manajemen.dosen');
+
+// ============================
+// MANAJEMEN MATAKULIAH
+// ============================
+Route::get('/manajemen-matkul', function () {
+    return view('pages.manajemen-matkul'); // buat file ini nanti
+})->name('manajemen.matkul');
+Route::resource('matakuliah', MatakuliahController::class);
+Route::get('/matakuliah/create', [MatakuliahController::class, 'create'])->name('matakuliah.create');
+
+// ============================
+// HASIL REKOMENDASI
+// ============================
+Route::get('/hasil-rekomendasi', function () {
+    return view('pages.hasil-rekomendasi'); // buat file ini nanti
+})->name('hasil.rekomendasi');
+Route::resource('matakuliah', MatakuliahController::class);
+Route::get('/matakuliah/create', [MatakuliahController::class, 'create'])->name('matakuliah.create');
 
 // ============================
 // STRUKTURAL JURUSAN (Placeholder)
 // ============================
-Route::get('/struktural', function () {
-    return view('pages.struktural.index'); // buat file ini nanti
-})->name('struktural.index');
+Route::get('/dashboard_struktural', function () {
+    return view('pages.dashboard_struktural'); // buat file ini nanti
+})->name('dashboard.struktural');
 
 // ============================
 // MANAJEMEN LAPORAN
 // ============================
+Route::get('/laporan', function () {
+    return view('pages.laporan'); // buat file ini nanti
+})->name('laporan.');
+Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+
+// ============================
+// LAPORAN Struktural
+// ============================
+Route::get('/laporan-struktural', function () {
+    return view('pages.laporan-struktural'); // buat file ini nanti
+})->name('laporan.struktural');
 Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
 
 // ============================
@@ -97,3 +138,4 @@ Route::post('/logout', function () {
     Auth::logout();
     return redirect('/'); // arahkan ke halaman utama setelah logout
 })->name('logout');
+
