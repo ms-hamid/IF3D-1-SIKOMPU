@@ -52,9 +52,15 @@
   </div>
 
   {{-- Search Box --}}
-  <div class="mb-3 flex bg-white justify-start sm:justify-end">
-    <x-search-input placeholder="Cari mata kuliah..." width="w-full sm:w-1/4" x-model="search" class="text-sm" />
+  <div class="mb-3 flex justify-start sm:justify-end">
+    <x-search-input 
+      placeholder="Cari mata kuliah..." 
+      width="w-full sm:w-1/4" 
+      x-model="search" 
+      class="text-sm"
+    />
   </div>
+
 
   {{-- Grid Mata Kuliah --}}
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
