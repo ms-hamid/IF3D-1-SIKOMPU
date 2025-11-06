@@ -1,4 +1,4 @@
-<aside 
+ <aside 
   class="fixed top-0 left-0 z-40 w-64 h-screen bg-white border-r border-gray-200 shadow-sm transform 
          -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out"
   :class="{ 'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen }"
@@ -22,6 +22,11 @@
           // 🔹 SIMULASI ROLE SEMENTARA (ubah sesuai role yang mau kamu lihat)
           $role = 'koordinator'; // ubah ke 'admin' atau 'koordinator'
 
+          // 🔹 Menu umum untuk semua role
+          $menus = [
+              ['route' => 'dashboard.dosen', 'icon' => 'fa-solid fa-gauge', 'label' => 'Dashboard'],
+          ];
+
           // 🔹 Menu khusus dosen
           if ($role === 'dosen') {
               $menus = array_merge($menus, [
@@ -33,9 +38,9 @@
           }
 
           // 🔹 Menu khusus structural
-          if ($role === 'structural') {
+          if ($role === 'koordinator') {
               $menus = array_merge($menus, [
-                
+
                 // tambah menu structural disini 
 
               ]);
@@ -67,3 +72,4 @@
 
   </div>
 </aside>
+ 
