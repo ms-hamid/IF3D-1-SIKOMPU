@@ -35,8 +35,9 @@
           // 🔹 Menu khusus structural
           if ($role === 'structural') {
               $menus = array_merge($menus, [
-                  ['route' => 'penentuan.index', 'icon' => 'fa-solid fa-people-group', 'label' => 'Penentuan Pengampu'],
-                  ['route' => 'rekap.index', 'icon' => 'fa-solid fa-list-check', 'label' => 'Rekapitulasi'],
+                
+                // tambah menu structural disini 
+
               ]);
           }
       @endphp
