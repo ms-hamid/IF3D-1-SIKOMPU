@@ -139,3 +139,7 @@ Route::post('/logout', function () {
     return redirect('/'); // arahkan ke halaman utama setelah logout
 })->name('logout');
 
+// tes sidebar untuk admin/struktural
+Route::get('/tes-sidebar', function () {
+    return view('components.sidebaradmin'); // atau sesuaikan nama layout yang kamu pakai
+});
