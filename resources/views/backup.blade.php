@@ -245,66 +245,8 @@
 @endsection -->
 
 
-<!DOCTYPE html>
-<html lang="id" x-data="{ sidebarOpen: false }" x-cloak>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard')</title>
+<!-- Sidebar
 
-    {{-- Font Awesome + Tailwind + Vite --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    {{-- Bootstrap Icons --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-</head>
-
-<body class="bg-gray-100 flex flex-col min-h-screen overflow-x-hidden">
-
-    {{-- ======================== OVERLAY (Mobile) ======================== --}}
-    <div 
-        x-show="sidebarOpen"
-        @click="sidebarOpen = false"
-        class="fixed inset-0 bg-black/50 lg:hidden z-40 transition-opacity duration-300 ease-in-out"
-        x-transition.opacity
-    ></div>
-
-    {{-- ======================== SIDEBAR ======================== --}}
-    <aside 
-        class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 shadow-sm transform 
-               transition-transform duration-300 ease-in-out lg:translate-x-0 z-50"
-        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
-        @include('components.sidebar')
-    </aside>
-
-    {{-- ======================== MAIN CONTENT WRAPPER ======================== --}}
-    <div class="flex flex-1 flex-col lg:ml-64 relative z-0">
-
-        {{-- ======================== TOPBAR ======================== --}}
-        <div class="sticky top-0 z-50 bg-white shadow-sm"> {{-- sticky + top-0 + z-50 --}}
-            @include('components.topbar')
-        </div>
-
-        {{-- ======================== PAGE CONTENT ======================== --}}
-        <main class="flex-1 px-2 sm:px-6 py-3 sm:py-5 overflow-y-auto relative z-0">
-            @yield('content')
-        </main>
-
-        {{-- ======================== FOOTER ======================== --}}
-        <footer class="bg-white border-t border-gray-200 shadow-sm mt-auto relative z-0">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center text-gray-500 text-xs sm:text-sm">
-                <p class="text-center sm:text-left">&copy; {{ date('Y') }} Politeknik Negeri Batam. All rights reserved.</p>
-                <p class="text-center sm:text-right mt-2 sm:mt-0">Versi 1.0.0</p>
-            </div>
-        </footer>
-    </div>
-
-    {{-- Alpine.js --}}
-    <script src="https://unpkg.com/alpinejs" defer></script>
-</body>
-
-Sidebar
 <aside 
   class="fixed top-0 left-0 z-40 w-64 h-screen bg-white border-r border-gray-200 shadow-sm transform 
          -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out"
@@ -358,75 +300,7 @@ Sidebar
     </nav>
 
   </div>
-</aside>
+</aside> -->
 
-<aside 
-  class="fixed top-0 left-0 z-40 w-64 h-screen bg-white border-r border-gray-200 shadow-sm transform 
-         -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out"
-  :class="{ 'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen }"
->
-  <div class="flex flex-col h-full justify-between px-3 pt-3 pb-5 overflow-y-auto">
 
-    {{-- Logo --}}
-    <div class="flex items-center mb-5 space-x-3 pl-1">
-      <img src="{{ asset('images/logo_sikompu.png') }}" alt="Logo SiKompu" class="w-14 h-14 object-contain -ml-1">
-      <div>
-        <h1 class="text-lg font-bold text-[#1E3A8A] leading-tight">SIKOMPU</h1>
-        <p class="text-[11px] text-gray-600 leading-tight">SISTEM PENENTUAN<br>KOORDINATOR PENGAMPU</p>
-      </div>
-    </div>
-
-    <div class="border-t border-gray-200 mb-3"></div>
-
-    {{-- Navigasi --}}
-    <nav class="flex-1 space-y-1 text-[15px]">
-      @php
-          // 🔹 SIMULASI ROLE SEMENTARA (ubah sesuai role yang mau kamu lihat)
-          $role = 'dosen'; // ubah ke 'admin' atau 'koordinator'
-
-          // 🔹 Menu khusus dosen
-          if ($role === 'dosen') {
-              $menus = array_merge($menus, [
-                  ['route' => 'self-assessment.index', 'icon' => 'fa-regular fa-square-check', 'label' => 'Self Assessment'],
-                  ['route' => 'sertifikasi.index', 'icon' => 'fa-solid fa-id-card', 'label' => 'Sertifikasi'],
-                  ['route' => 'penelitian.index', 'icon' => 'fa-solid fa-flask', 'label' => 'Penelitian'],
-                  ['route' => 'laporan.index', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Laporan'],
-              ]);
-          }
-
-          // 🔹 Menu khusus structural
-          if ($role === 'structural') {
-              $menus = array_merge($menus, [
-
-                // tambah menu structural disini 
-
-              ]);
-          }
-      @endphp
-
-      {{-- Loop menu --}}
-      @foreach ($menus as $menu)
-          @php
-              $isActive = request()->routeIs(Str::before($menu['route'], '.') . '.*');
-          @endphp
-
-          <a href="{{ route($menu['route']) }}"
-            class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium transition-all duration-300
-            {{ $isActive 
-                ? 'bg-gradient-to-br from-[#1E3A8A] to-[#1E40AF] text-white' 
-                : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700 active:bg-blue-50 focus:bg-blue-50 focus:text-blue-700' }}">
-            
-            <div class="flex items-center justify-center w-8 h-8 rounded-md 
-                        {{ $isActive ? 'bg-white text-blue-900' : 'text-gray-500 group-hover:bg-blue-600 group-hover:text-white' }}
-                        transition-colors duration-300">
-              <i class="{{ $menu['icon'] }} text-sm"></i>
-            </div>
-
-            <span>{{ $menu['label'] }}</span>
-          </a>
-      @endforeach
-    </nav>
-
-  </div>
-</aside>
 

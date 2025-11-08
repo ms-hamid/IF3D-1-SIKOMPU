@@ -5,14 +5,28 @@
 >
   <div class="flex flex-col h-full justify-between px-3 pt-3 pb-5 overflow-y-auto">
 
-    {{-- Logo --}}
-    <div class="flex items-center mb-5 space-x-3 pl-1">
-      <img src="{{ asset('images/logo_sikompu.png') }}" alt="Logo SiKompu" class="w-14 h-14 object-contain -ml-1">
-      <div>
-        <h1 class="text-lg font-bold text-[#1E3A8A] leading-tight">SIKOMPU</h1>
-        <p class="text-[11px] text-gray-600 leading-tight">SISTEM PENENTUAN<br>KOORDINATOR PENGAMPU</p>
+    {{-- Logo Section --}}
+    <div class="flex items-center space-x-3 mb-5 pl-1">
+      {{-- Logo Container --}}
+      <div class="w-14 h-14 overflow-hidden rounded-xl bg-white flex items-center justify-center">
+        <img 
+          src="{{ asset('images/logo_sikompu.png') }}" 
+          alt="Logo SiKompu" 
+          class="w-full h-full object-cover object-center scale-[1.7]"
+        >
+      </div>
+
+      {{-- Logo Text --}}
+      <div class="leading-tight">
+        <h1 class="text-lg font-bold text-[#1E3A8A] tracking-wide">SIKOMPU</h1>
+        <p class="text-[11px] text-gray-600 uppercase">
+          Sistem Penentuan<br>Koordinator Pengampu
+        </p>
       </div>
     </div>
+
+
+
 
     <div class="border-t border-gray-200 mb-3"></div>
 
@@ -20,7 +34,7 @@
     <nav class="flex-1 space-y-1 text-[15px]">
       @php
           // 🔹 SIMULASI ROLE SEMENTARA (ubah sesuai role yang mau kamu lihat)
-          $role = 'koordinator'; // ubah ke 'admin' atau 'koordinator'
+          $role = 'dosen'; // ubah ke 'admin' atau 'koordinator'
 
           // 🔹 Menu umum untuk semua role
           $menus = [

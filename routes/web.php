@@ -41,7 +41,7 @@ Route::get('/ganti_password', function () {
 })->name('ganti_password');
 
 // ============================
-// GENERATE HASIL 
+// SELF-ASSESMENT
 // ============================
 Route::get('/self-assessment', function () {
     return view('pages.self-assessment');
@@ -61,11 +61,12 @@ Route::get('/penelitian', function () {
     return view('pages.penelitian');
 })->name('penelitian.index');
 
-// Route::prefix('matakuliah')->name('matakuliah.')->group(function () {
-//     Route::get('/', [MatakuliahController::class, 'index'])->name('index');
-//     Route::get('/create', [MatakuliahController::class, 'create'])->name('create');
-//     Route::post('/', [MatakuliahController::class, 'store'])->name('store');
-// });
+// ============================
+// Penelitian
+// ============================
+Route::get('/laporan', function () {
+    return view('pages.laporan');
+})->name('laporan.index');
 
 
 
@@ -85,10 +86,7 @@ Route::get('/struktural', function () {
     return view('pages.struktural.index'); // buat file ini nanti
 })->name('struktural.index');
 
-// ============================
-// MANAJEMEN LAPORAN
-// ============================
-Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+
 
 // ============================
 // LOGOUT

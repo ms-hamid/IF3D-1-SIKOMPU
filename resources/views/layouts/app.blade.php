@@ -54,7 +54,6 @@
                 <p class="text-center sm:text-right mt-2 sm:mt-0">Versi 1.0.0</p>
             </div>
         </footer>
-
     </div>
 
     {{-- Alpine.js --}}
