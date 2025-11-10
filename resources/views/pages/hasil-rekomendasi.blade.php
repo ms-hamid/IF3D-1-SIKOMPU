@@ -15,7 +15,7 @@
     
     {{-- Tombol Aksi Ekspor (Diposisikan di kanan atas) --}}
     <div class="flex space-x-3 mt-4 sm:mt-0">
-        <button class="flex items-center px-4 py-2 text-sm font-medium text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition duration-150 shadow-sm">
+        <button class="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600  border-red-600 rounded-lg hover:bg-red-700 transition duration-150 shadow-md">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             Ekspor PDF
         </button>
@@ -70,6 +70,14 @@ $cards = [
     <option value="" disabled selected>Semua Program Studi</option>
     <option>Teknik Informatika</option>
     <option>Teknik Geomatika</option>
+    <option>Teknik Rekayasa Multimedia</option>
+    <option>Animasi</option>
+    <option>Rekayasa Keamanan Siber</option>
+    <option>Teknik Rekayasa Perangkat Lunak</option>
+    <option>Teknologi Permainan</option>
+    <option>S2 Magister Terapan Teknik Komputer</option>
+
+
     {{-- ... Opsi lainnya ... --}}
    </select>
 
