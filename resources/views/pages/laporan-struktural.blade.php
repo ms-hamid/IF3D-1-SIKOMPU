@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
+
 @section('title', 'Hasil Rekomendasi')
+
+
+@section('title', 'Laporan')
+@section('page_title', 'Laporan')
 
 
 @section('content')
@@ -18,7 +23,8 @@
 
     {{-- Grid Laporan Utama (Laporan Akademik & Laporan Manajemen) --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-2 mb-2">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6"> {{-- Ganti grid-cols-2 lg:grid-cols-2 dengan grid-cols-1 sm:grid-cols-2 dan tambahkan gap-6 --}}
+        
         {{-- Kiri: Laporan Akademik --}}
         <div class="bg-white p-6 shadow-lg rounded-xl border border-gray-100 space-y-4">
             <div class="flex items-center space-x-3 text-blue-600">
@@ -121,7 +127,8 @@
                     </span>
                 </div>
                 <p class="text-xs text-gray-500">Log aktivitas pengguna dan perubahan data</p>
-                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-2 sm:space-x-6 mt-2">
+                {{-- PERBAIKAN JARAK: Menyeragamkan space-x menjadi 3 --}}
+                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 mt-2">
                     <select class="flex-1 border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500">
                         <option>30 Hari Terakhir</option>
                     </select>
@@ -137,33 +144,36 @@
             </div>
         </div>
     </div>
+    </div>
 
-   {{-- Laporan Terbaru --}}
+
+ {{-- Laporan Terbaru (Bagian Tabel) --}}
 <div class="bg-white p-6 shadow-lg rounded-xl border border-gray-100 mt-6">
     <h3 class="text-xl font-bold text-gray-800 mb-4">Laporan Terbaru</h3>
     <p class="text-sm text-gray-500 mb-6">History laporan yang telah di-generate</p>
 
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 table-fixed"> {{-- Tambahkan table-fixed untuk kontrol lebar kolom --}}
+        {{-- Kunci: table-fixed dan w-full --}}
+        <table class="min-w-full divide-y divide-gray-200 table-fixed w-full"> 
             <thead class="bg-gray-50">
                 <tr>
-                    {{-- Nama Laporan: Beri lebar yang cukup (misal 40%) --}}
-                    <th class="w-2/5 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {{-- Nama Laporan: 4/12 (33.3%) --}}
+                    <th class="w-4/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Nama Laporan
                     </th>
-                    {{-- Periode: Sedikit lebih lebar dari kolom status --}}
-                    <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {{-- Periode: 3/12 (25%) --}}
+                    <th class="w-3/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Periode
                     </th>
-                    {{-- Dibuat: Lebar spesifik untuk tanggal/waktu --}}
-                    <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {{-- Dibuat: 3/12 (25%) --}}
+                    <th class="w-3/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Dibuat
                     </th>
-                    {{-- Status: Kolom tersempit --}}
+                    {{-- Status: 1/12 (8.3%) --}}
                     <th class="w-1/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
                     </th>
-                    {{-- Aksi: Kolom tersempit, rata kanan --}}
+                    {{-- Aksi: 1/12 (8.3%) --}}
                     <th class="w-1/12 px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Aksi
                     </th>
@@ -179,25 +189,26 @@
 
                 @foreach ($recentReports as $report)
                 <tr>
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900"> {{-- Default rata kiri --}}
+                    {{-- Tambahkan kelas lebar w-X/12 pada <td> untuk memastikan lebar baris data sesuai header --}}
+                    <td class="w-4/12 px-6 py-4 text-sm font-medium text-gray-900">
                         <div class="flex items-center">
                             <span class="mr-2">{{ $report['icon'] }}</span>
                             {{ $report['name'] }}
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-500"> {{-- Default rata kiri --}}
+                    <td class="w-3/12 px-6 py-4 text-sm text-gray-500">
                         {{ $report['periode'] }}
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-500"> {{-- Default rata kiri --}}
+                    <td class="w-3/12 px-6 py-4 text-sm text-gray-500">
                         {{ $report['dibuat'] }}
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="w-1/12 px-6 py-4">
                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                             {{ $report['status'] }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-sm font-medium text-right"> {{-- Rata kanan --}}
-                        <div class="flex space-x-2 justify-end"> {{-- Atur flex item ke kanan --}}
+                    <td class="w-1/12 px-6 py-4 text-sm font-medium text-right">
+                        <div class="flex space-x-2 justify-end">
                             <button class="text-blue-600 hover:text-blue-900" title="Unduh">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                             </button>
@@ -211,6 +222,5 @@
             </tbody>
         </table>
     </div>
-</div>
 </main>
 @endsection

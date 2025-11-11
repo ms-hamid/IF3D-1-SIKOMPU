@@ -14,11 +14,8 @@
         </div>
     
         <div class="flex items-center gap-3">
-          <button 
-            class="px-4 py-2 bg-white-100 text-gray rounded-md text-sm hover:bg-white-700 flex items-center gap-2">
+          <button class="flex items-center gap-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 text-sm sm:text-base">
             <i class="fa-solid fa-rotate-right"></i> Refresh
-          </button>
-    
           @if (Route::has('matakuliah.create'))
             <a href="{{ route('matakuliah.create') }}" 
                class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 flex items-center gap-2">
@@ -29,17 +26,17 @@
       </div>
     {{-- Statistik ringkas --}}
  <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2 mb-4">
-    <div class="items-center p-6 bg-green-100 rounded-xl shadow-sm border-green-100 text-center">
+    <div class="items-center p-6 bg-green-100 rounded-xl shadow-sm border-green-100 text-center rounded-lg hover:bg-gray-100  transition">
         <p class="text-gray-700 text-sm font-semibold">Total Mata Kuliah</p>
         <p class="text-3xl font-bold text-green-700 mt-1">8</p> 
         <p class="text-xs text-gray-500 mt-1">Mata kuliah terdaftar</p>
     </div>
-    <div class="items-center p-6 bg-blue-100 rounded-xl shadow-sm border-blue-100 text-center">
+    <div class="items-center p-6 bg-blue-100 rounded-xl shadow-sm border-blue-100 text-center rounded-lg hover:bg-gray-100  transition">
       <p class="text-gray-700 text-sm font-semibold">Total SKS</p>
       <p class="text-3xl font-bold text-blue-700 mt-1">18</p> 
       <p class="text-xs text-gray-500 mt-1">Satuan kredit semester</p>
     </div>
-    <div class="items-center p-6 bg-purple-100 rounded-xl shadow-sm border-purple-100 text-center">
+    <div class="items-center p-6 bg-purple-100 rounded-xl shadow-sm border-purple-100 text-center rounded-lg hover:bg-gray-100  transition">
         <p class="text-gray-700 text-sm font-semibold">Kategori Aktif</p>
         <p class="text-3xl font-bold text-purple-700 mt-1">5</p> 
         <p class="text-xs text-gray-500 mt-1">Kategori kompetensi</p>

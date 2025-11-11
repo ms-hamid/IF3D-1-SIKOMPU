@@ -2,7 +2,6 @@
 
 @section('title', 'Manajemen Dosen')
 @section('page_title', 'Manajemen Dosen')
-
 @section('content')
 <main class="flex-1 p-4 sm:p-6 space-y-6" x-data="{ openModal: false }" @close-modal.window="openModal = false">
 
@@ -14,7 +13,7 @@
             <p class="text-sm text-gray-500">Kelola data dosen dan laboran dalam sistem</p>
           </div>
           <button class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-md transition">
-            <i class="fa-solid fa-plus mr-2"></i> Tambah Dosen Baru
+            <i class="fa-solid fa-plus mr-2"></i> Tambah Data Dosen Baru
           </button>
         </div>
     
@@ -38,23 +37,27 @@
           </div>
     
           {{-- Table --}}
+          {{-- Tambahkan overflow-x-auto pada div pembungkus untuk responsif --}}
           <div class="overflow-x-auto">
-            <table class="min-w-full text-sm text-left border-collapse">
+            {{-- Ganti min-w-full menjadi w-full dan tambahkan table-fixed --}}
+            <table class="w-full text-sm text-left border-collapse table-fixed">
               <thead class="bg-gray-50 text-gray-700">
                 <tr>
-                  <th class="px-4 py-2 font-medium">No</th>
-                  <th class="px-4 py-2 font-medium">Nama Dosen</th>
-                  <th class="px-4 py-2 font-medium">NIDN/NIP</th>
-                  <th class="px-4 py-2 font-medium">Prodi</th>
-                  <th class="px-4 py-2 font-medium">Beban Mengajar</th>
-                  <th class="px-4 py-2 font-medium">Status</th>
-                  <th class="px-4 py-2 font-medium text-center">Aksi</th>
+                  {{-- Sesuaikan lebar kolom (total 12 unit): --}}
+                  <th class="w-1/12 px-4 py-2 font-medium">No</th>
+                  <th class="w-3/12 px-4 py-2 font-medium">Nama Dosen</th>
+                  <th class="w-2/12 px-4 py-2 font-medium">NIDN/NIP</th>
+                  <th class="w-2/12 px-4 py-2 font-medium">Prodi</th>
+                  <th class="w-2/12 px-4 py-2 font-medium">Beban Mengajar</th>
+                  <th class="w-1/12 px-4 py-2 font-medium text-center">Status</th>
+                  <th class="w-1/12 px-4 py-2 font-medium text-center">Aksi</th>
                 </tr>
               </thead>
               <tbody class="text-gray-700">
                 <tr class="border-t">
                   <td class="px-4 py-2">1</td>
-                  <td class="px-4 py-2">
+                  {{-- Tambahkan w-3/12 pada <td> yang sesuai dengan <th> --}}
+                  <td class="w-3/12 px-4 py-2">
                     <div class="flex items-center space-x-3">
                       <img src="https://randomuser.me/api/portraits/men/1.jpg" class="w-8 h-8 rounded-full">
                       <div>
@@ -63,9 +66,9 @@
                       </div>
                     </div>
                   </td>
-                  <td class="px-4 py-2">0123456789</td>
-                  <td class="px-4 py-2">Teknik Informatika</td>
-                  <td class="px-4 py-2">
+                  <td class="w-2/12 px-4 py-2">0123456789</td>
+                  <td class="w-2/12 px-4 py-2">Teknik Informatika</td>
+                  <td class="w-2/12 px-4 py-2">
                     <div class="flex items-center space-x-2">
                       <span>14/16 SKS</span>
                       <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -73,8 +76,8 @@
                       </div>
                     </div>
                   </td>
-                  <td class="px-4 py-2"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Aktif</span></td>
-                  <td class="px-4 py-2 text-center space-x-2">
+                  <td class="w-1/12 px-4 py-2"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Aktif</span></td>
+                  <td class="w-1/12 px-4 py-2 text-center space-x-2">
                     <a href="#" class="text-blue-600 hover:text-blue-800">
                         <i class="fas fa-pen"></i>
                       </a>
@@ -86,7 +89,7 @@
     
                 <tr class="border-t">
                   <td class="px-4 py-2">2</td>
-                  <td class="px-4 py-2">
+                  <td class="w-3/12 px-4 py-2">
                     <div class="flex items-center space-x-3">
                       <img src="https://randomuser.me/api/portraits/women/2.jpg" class="w-8 h-8 rounded-full">
                       <div>
@@ -95,9 +98,9 @@
                       </div>
                     </div>
                   </td>
-                  <td class="px-4 py-2">0123456790</td>
-                  <td class="px-4 py-2">Sistem Informasi</td>
-                  <td class="px-4 py-2">
+                  <td class="w-2/12 px-4 py-2">0123456790</td>
+                  <td class="w-2/12 px-4 py-2">Sistem Informasi</td>
+                  <td class="w-2/12 px-4 py-2">
                     <div class="flex items-center space-x-2">
                       <span>8/12 SKS</span>
                       <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -105,8 +108,8 @@
                       </div>
                     </div>
                   </td>
-                  <td class="px-4 py-2"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Aktif</span></td>
-                  <td class="px-4 py-2 text-center space-x-2">
+                  <td class="w-1/12 px-4 py-2"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Aktif</span></td>
+                  <td class="w-1/12 px-4 py-2 text-center space-x-2">
                     <a href="#" class="text-blue-600 hover:text-blue-800">
                         <i class="fas fa-pen"></i>
                       </a>
@@ -118,7 +121,7 @@
     
                 <tr class="border-t">
                   <td class="px-4 py-2">3</td>
-                  <td class="px-4 py-2">
+                  <td class="w-3/12 px-4 py-2">
                     <div class="flex items-center space-x-3">
                       <img src="https://randomuser.me/api/portraits/men/3.jpg" class="w-8 h-8 rounded-full">
                       <div>
@@ -127,9 +130,9 @@
                       </div>
                     </div>
                   </td>
-                  <td class="px-4 py-2">0123456791</td>
-                  <td class="px-4 py-2">Teknik Elektro</td>
-                  <td class="px-4 py-2">
+                  <td class="w-2/12 px-4 py-2">0123456791</td>
+                  <td class="w-2/12 px-4 py-2">Teknik Elektro</td>
+                  <td class="w-2/12 px-4 py-2">
                     <div class="flex items-center space-x-2">
                       <span>12/16 SKS</span>
                       <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -137,8 +140,8 @@
                       </div>
                     </div>
                   </td>
-                  <td class="px-4 py-2"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Aktif</span></td>
-                  <td class="px-4 py-2 text-center space-x-2">
+                  <td class="w-1/12 px-4 py-2"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Aktif</span></td>
+                  <td class="w-1/12 px-4 py-2 text-center space-x-2">
                     <a href="#" class="text-blue-600 hover:text-blue-800">
                         <i class="fas fa-pen"></i>
                       </a>
