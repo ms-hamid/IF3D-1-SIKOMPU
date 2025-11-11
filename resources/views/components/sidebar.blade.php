@@ -36,7 +36,7 @@
            * Simulasi role sementara (ubah sesuai login user)
            * 'dosen' | 'koordinator' | 'admin'
            */
-          $role = 'koordinator';
+          $role = 'dosen';
 
           // Menu dasar (umum)
           $menus = [];
