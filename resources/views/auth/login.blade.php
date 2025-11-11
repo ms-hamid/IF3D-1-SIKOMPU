@@ -1,5 +1,7 @@
 @extends('layouts.guest')
 
+
+
 @section('content')
     <!-- Logo -->
     <x-logo />

@@ -72,59 +72,58 @@ Route::get('/laporan', function () {
     return view('pages.laporan');
 })->name('laporan.index');
 
+// Dashboard Struktural
+Route::get('/dashboard-struktural', function () {
+    return view('pages.dashboard_struktural'); // file: resources/views/pages/dashboard_struktural.blade.php
+})->name('dashboard.struktural');
+
+
+// ============================
+// MANAJEMEN DOSEN
+// ============================
+Route::get('/manajemen-dosen', function () {
+    return view('pages.manajemen-dosen');
+})->name('manajemen.dosen');
 
 
 // ============================
 // MANAJEMEN PROGRAM STUDI
 // ============================
 Route::get('/manajemen-prodi', function () {
-    return view('pages.manajemen-prodi'); // buat file ini nanti
+    return view('pages.manajemen-prodi');
 })->name('manajemen.prodi');
+
 Route::resource('prodi', ProdiController::class);
-Route::get('/prodi/create', function () {
-    return view('pages.prodi-create'); // ganti dengan nama file blade kamu
-})->name('prodi.create');
-// ============================
-// MANAJEMEN DOSEN
-// ============================
-Route::get('/manajemen-dosen', function () {
-    return view('pages.manajemen-dosen'); // buat file ini nanti
-})->name('manajemen.dosen');
+Route::get('/prodi/create', [ProdiController::class, 'create'])->name('prodi.create');
+
 
 // ============================
 // MANAJEMEN MATAKULIAH
 // ============================
 Route::get('/manajemen-matkul', function () {
-    return view('pages.manajemen-matkul'); // buat file ini nanti
+    return view('pages.manajemen-matkul');
 })->name('manajemen.matkul');
+
 Route::resource('matakuliah', MatakuliahController::class);
 Route::get('/matakuliah/create', [MatakuliahController::class, 'create'])->name('matakuliah.create');
+
 
 // ============================
 // HASIL REKOMENDASI
 // ============================
 Route::get('/hasil-rekomendasi', function () {
-    return view('pages.hasil-rekomendasi'); // buat file ini nanti
+    return view('pages.hasil-rekomendasi');
 })->name('hasil.rekomendasi');
-Route::resource('matakuliah', MatakuliahController::class);
-Route::get('/matakuliah/create', [MatakuliahController::class, 'create'])->name('matakuliah.create');
-
-// ============================
-// STRUKTURAL JURUSAN (Placeholder)
-// ============================
-Route::get('/dashboard_struktural', function () {
-    return view('pages.dashboard_struktural'); // buat file ini nanti
-})->name('dashboard.struktural');
-
 
 
 // ============================
-// LAPORAN Struktural
+// LAPORAN STRUKTURAL
 // ============================
 Route::get('/laporan-struktural', function () {
-    return view('pages.laporan-struktural'); // buat file ini nanti
+    return view('pages.laporan-struktural');
 })->name('laporan.struktural');
-Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+
+
 
 
 // ============================

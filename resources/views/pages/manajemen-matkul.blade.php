@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Manajemen MataKuliah')
-@section('page_title', 'Manajemen Matakuliah')
+
 
 @section('content')
 <main class="flex-1 p-4 sm:p-6 space-y-6" x-data="{ openModal: false }" @close-modal.window="openModal = false">
