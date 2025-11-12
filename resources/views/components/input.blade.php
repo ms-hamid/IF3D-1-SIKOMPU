@@ -7,13 +7,22 @@
 ])
 
 <div class="w-full">
+  {{-- Label --}}
+  <label for="{{ $id }}" class="block text-sm font-semibold text-gray-700 mb-2 tracking-wide">
+    {{ $label }}
+  </label>
+
+  {{-- Input Container --}}
   <div class="relative group">
     {{-- Icon (optional) --}}
     @if ($icon)
-      <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 
-                   group-focus-within:text-blue-500 transition-colors duration-300">
-        {{ $icon }}
-      </span>
+    @if ($icon)
+    <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 
+            group-focus-within:text-blue-500 transition-all duration-300 ease-in-out transform group-focus-within:scale-110">
+      {{ $icon }}
+    </span>
+@endif
+
     @endif
 
     {{-- Input Field --}}
@@ -21,32 +30,17 @@
       type="{{ $type }}"
       name="{{ $id }}"
       id="{{ $id }}"
-      placeholder=" "
+      placeholder="{{ $placeholder ?: $label }}"
       {{ $attributes->merge([
         'class' =>
-          'peer w-full rounded-lg border border-gray-300 bg-white 
-          text-gray-900 placeholder-transparent focus:outline-none 
-          focus:border-blue-500 focus:ring-2 focus:ring-blue-300 
-          transition-all duration-300
-          '.($icon ? 'pl-10 pr-3' : 'px-4').' py-3 text-sm sm:text-base'
+          'peer w-full rounded-xl border border-gray-300 bg-white text-gray-900 
+          placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 
+          transition-all duration-300 shadow-sm hover:shadow-md
+          '.($icon ? 'pl-10 pr-5' : 'px-4').' py-3 text-sm sm:text-base'
       ]) }}
       required
     />
 
-    {{-- Floating Label --}}
-    <label for="{{ $id }}"
-      class="absolute text-gray-500 text-sm 
-             left-{{ $icon ? '10' : '4' }} top-3.5 px-1 bg-white
-             transition-all duration-300 ease-in-out 
-             peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-gray-400 
-             peer-placeholder-shown:text-sm
-             peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:text-blue-600
-             peer-valid:top-0 peer-valid:-translate-y-1/2 peer-valid:text-xs peer-valid:text-blue-600">
-      {{ $label }}
-    </label>
-
-    {{-- Blue Animated Underline --}}
-    <span class="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-blue-400 to-blue-600 
-                 scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300 origin-left rounded"></span>
+    
   </div>
 </div>
