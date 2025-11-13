@@ -19,7 +19,7 @@ class User extends Authenticatable
      * @var list<string>
      */
         protected $fillable = [
-            'nama',
+            'nama_lengkap',
             'nidn',
             'password',
             'jabatan',
@@ -72,4 +72,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function hasRole($roles)
+    {
+        if (is_string($roles)) {
+            $roles = [$roles];
+        }
+
+         return in_array($this->jabatan, $roles);
+    }
+
 }

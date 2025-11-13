@@ -33,20 +33,30 @@
     <nav class="flex-1 space-y-1 text-[15px]">
       @php
           /**
-           * Simulasi role sementara (ubah sesuai login user)
-           * 'dosen' | 'koordinator' | 'admin'
+           * Ambil role dari user yang login
            */
-          $role = 'dosen';
+          $user = auth()->user();
+          $jabatan = $user ? $user->jabatan : null;
+          
+          // Tentukan role berdasarkan jabatan
+          $role = 'guest';
+          $struktural = ['Kepala Jurusan', 'Sekretaris Jurusan', 'Kepala Program Studi'];
+          
+          if (in_array($jabatan, $struktural)) {
+              $role = 'struktural';
+          } elseif (in_array($jabatan, ['Dosen', 'Laboran'])) {
+              $role = 'dosen';
+          }
 
           // Menu dasar (umum)
           $menus = [];
 
           // ---------------------------
-          // ROLE: DOSEN
+          // ROLE: DOSEN & LABORAN
           // ---------------------------
           if ($role === 'dosen') {
               $menus = [
-                  ['route' => 'dashboard.dosen', 'icon' => 'fa-solid fa-gauge', 'label' => 'Dashboard Dosen'],
+                  ['route' => 'dashboard.dosen', 'icon' => 'fa-solid fa-gauge', 'label' => 'Dashboard'],
                   ['route' => 'self-assessment.index', 'icon' => 'fa-regular fa-square-check', 'label' => 'Self Assessment'],
                   ['route' => 'sertifikasi.index', 'icon' => 'fa-solid fa-id-card', 'label' => 'Sertifikasi'],
                   ['route' => 'penelitian.index', 'icon' => 'fa-solid fa-flask', 'label' => 'Penelitian'],
@@ -55,27 +65,16 @@
           }
 
           // ---------------------------
-          // ROLE: KOORDINATOR / STRUKTURAL
+          // ROLE: STRUKTURAL (Kepala, Sekretaris, Kaprodi)
           // ---------------------------
-          if ($role === 'koordinator') {
+          if ($role === 'struktural') {
               $menus = [
-                  ['route' => 'dashboard.struktural', 'icon' => 'fa-solid fa-gauge', 'label' => 'Dashboard Struktural'],
+                  ['route' => 'dashboard.struktural', 'icon' => 'fa-solid fa-gauge', 'label' => 'Dashboard'],
                   ['route' => 'manajemen.dosen', 'icon' => 'fa-solid fa-user-tie', 'label' => 'Manajemen Dosen'],
                   ['route' => 'manajemen.prodi', 'icon' => 'fa-solid fa-building-columns', 'label' => 'Manajemen Prodi'],
                   ['route' => 'manajemen.matkul', 'icon' => 'fa-solid fa-book', 'label' => 'Manajemen Matakuliah'],
-                  ['route' => 'hasil.rekomendasi', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Hasil Rekomendasi'],
-                  ['route' => 'laporan.struktural', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Laporan Struktural'],
-              ];
-          }
-
-          // ---------------------------
-          // ROLE: ADMIN (opsional)
-          // ---------------------------
-          if ($role === 'admin') {
-              $menus = [
-                  ['route' => 'dashboard.admin', 'icon' => 'fa-solid fa-gauge', 'label' => 'Dashboard Admin'],
-                  ['route' => 'user.management', 'icon' => 'fa-solid fa-users', 'label' => 'Manajemen User'],
-                  ['route' => 'setting.index', 'icon' => 'fa-solid fa-gear', 'label' => 'Pengaturan Sistem'],
+                  ['route' => 'hasil.rekomendasi', 'icon' => 'fa-solid fa-chart-line', 'label' => 'Hasil Rekomendasi'],
+                  ['route' => 'laporan.struktural', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Laporan'],
               ];
           }
       @endphp
@@ -95,7 +94,7 @@
                   : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700 active:bg-blue-50 focus:bg-blue-50 focus:text-blue-700' }}">
             
             <div class="flex items-center justify-center w-8 h-8 rounded-md 
-                        {{ $isActive ? 'bg-white text-blue-900' : 'text-gray-500 group-hover:bg-blue-600 group-hover:text-white' }}
+                        {{ $isActive ? 'bg-white text-blue-900' : 'text-gray-500' }}
                         transition-colors duration-300">
               <i class="{{ $menu['icon'] }} text-sm"></i>
             </div>
@@ -105,6 +104,18 @@
       @endforeach
     </nav>
 
+    {{-- ===========================
+         USER INFO (Tanpa Logout)
+    ============================ --}}
+    <div class="border-t border-gray-200 pt-3 mt-3">
+      @if(auth()->check())
+        <div class="px-4 py-2 bg-gray-50 rounded-lg">
+          <p class="text-xs text-gray-500 mb-1">Login sebagai:</p>
+          <p class="text-sm font-semibold text-gray-800 truncate">{{ auth()->user()->nama_lengkap }}</p>
+          <p class="text-xs text-gray-500 mt-0.5">{{ auth()->user()->jabatan }}</p>
+        </div>
+      @endif
+    </div>
+
   </div>
-</aside>
 </aside>

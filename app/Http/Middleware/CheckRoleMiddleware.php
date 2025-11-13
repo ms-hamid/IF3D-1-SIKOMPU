@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 /**
  * Class CheckRoleMiddleware
  * @package App\Http\Middleware
- * * Middleware kustom untuk mengecek apakah user yang terautentikasi memiliki 
+ * Middleware kustom untuk mengecek apakah user yang terautentikasi memiliki 
  * peran yang dibutuhkan untuk mengakses rute tertentu.
  */
 class CheckRoleMiddleware
@@ -24,19 +24,18 @@ class CheckRoleMiddleware
     {
         // 1. Pastikan user sudah login
         if (!Auth::check()) {
-            // Jika belum login, kembalikan 401 Unauthorized
-            return response()->json(['message' => 'Unauthorized. Harap login terlebih dahulu.'], 401);
+            return redirect()->route('login')->with('error', 'Anda harus login terlebih dahulu');
         }
 
         $user = Auth::user();
         
-        // Split roles jika ada lebih dari satu (e.g., 'admin,superadmin')
+        // Split roles jika ada lebih dari satu (e.g., 'Dosen,Laboran')
         $requiredRoles = explode(',', $role);
 
         // 2. Cek peran menggunakan method hasRole() pada model User
         if (!$user->hasRole($requiredRoles)) {
-            // Jika user tidak memiliki peran yang dibutuhkan, kembalikan 403 Forbidden
-            return response()->json(['message' => 'Forbidden. Anda tidak memiliki akses sebagai ' . implode(' atau ', $requiredRoles)], 403);
+            // Redirect ke dashboard sesuai role mereka
+            abort(403, 'Anda tidak memiliki akses ke halaman ini');
         }
 
         return $next($request);
