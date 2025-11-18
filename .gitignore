@@ -1,0 +1,15 @@
+# --- SYSTEM FILES (Sampah Laptop) ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- PYTHON (Folder C) ---
+FolderC/venv/
+FolderC/.venv/
+FolderC/__pycache__/
+*.pyc
+
+# --- LARAVEL (Folder B) ---
+# Kita kosongkan bagian ini, karena Folder B sudah punya .gitignore sendiri.
+# Git akan otomatis membaca .gitignore yang ada di dalam Folder B.
