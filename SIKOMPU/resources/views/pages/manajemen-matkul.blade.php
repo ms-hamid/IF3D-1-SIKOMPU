@@ -164,7 +164,7 @@
 
                     {{-- Action Buttons --}}
                     <div class="flex gap-2 border-t border-gray-100 pt-3">
-                        <button 
+                        <button
                             class="flex-1 flex items-center justify-center px-3 py-2 text-xs font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition">
                             <i class="fa-solid fa-edit mr-1"></i> Edit
                         </button>
@@ -205,6 +205,7 @@
 
 </main>
 
-{{-- Include Modal Form Tambah Mata Kuliah --}}
+{{-- Include Modal Mata Kuliah --}}
 @include('components.tambah_matkul')
+@include('components.delete-matkul')
 @endsection

@@ -6,27 +6,11 @@ use App\Models\MataKuliah;
 use Illuminate\Http\Request;
 use App\Http\Resources\MataKuliahResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class MataKuliahController extends Controller
 {
-    /**
-     * Middleware construct: Memastikan semua operasi CUD (store, update, destroy)
-     * hanya dapat diakses oleh user dengan peran 'admin' atau 'superadmin'.
-     */
-    public function __construct()
-    {
-        // Peringatan: Anda harus mengimplementasikan logic 'hasRole' pada model User Anda.
-        $this->middleware('check.role:admin')->except(['index', 'show']);
-    }
 
-    /**
-     * GET /api/mata-kuliah
-     * Mendapatkan daftar semua Mata Kuliah.
-     * Dapat difilter berdasarkan prodi_id (opsional).
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
-     */
     public function index(Request $request)
     {
         $query = MataKuliah::with('prodi');
@@ -36,92 +20,202 @@ class MataKuliahController extends Controller
             $query->where('prodi_id', $request->prodi_id);
         }
 
-        $mataKuliah = $query->latest()->paginate(15);
+        // Filter opsional berdasarkan semester
+        if ($request->has('semester') && is_numeric($request->semester)) {
+            $query->where('semester', $request->semester);
+        }
+
+        // Sorting berdasarkan semester, lalu nama_mk
+        $mataKuliah = $query->orderBy('semester', 'asc')
+                            ->orderBy('nama_mk', 'asc')
+                            ->get();
         
-        // Menggunakan Resource Collection untuk mengembalikan daftar Mata Kuliah
-        return MataKuliahResource::collection($mataKuliah);
+        // Group by semester untuk view
+        $mataKuliahBySemester = $mataKuliah->groupBy('semester');
+        
+        // Hitung statistik
+        $totalMataKuliah = $mataKuliah->count();
+        $totalSKS = $mataKuliah->sum('sks');
+        $totalSemester = $mataKuliah->pluck('semester')->unique()->count();
+
+        $prodiList = \App\Models\Prodi::orderBy('nama_prodi', 'asc')->get();
+
+        return view('pages.manajemen-matkul', compact(
+            'mataKuliahBySemester',
+            'totalMataKuliah',
+            'totalSKS',
+            'totalSemester',
+            'prodiList' 
+        ));
     }
 
-    /**
-     * POST /api/mata-kuliah
-     * Menyimpan data Mata Kuliah baru. (Admin Only)
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+    public function create()
+    {
+        $prodiList = \App\Models\Prodi::orderBy('nama_prodi', 'asc')->get();
+        
+        return view('pages.manajemen-matkul', compact('prodiList'));
+    }
+
     public function store(Request $request)
     {
-        $request->validate([
-            'kode_mk' => 'required|string|max:20|unique:mata_kuliah,kode_mk',
-            'nama_mk' => 'required|string|max:255',
-            'sks' => 'required|integer|min:1|max:6',
-            'prodi_id' => 'required|integer|exists:prodi,id',
-        ], [
-            'kode_mk.unique' => 'Kode Mata Kuliah sudah terdaftar.',
-            'prodi_id.exists' => 'ID Program Studi tidak valid.',
-        ]);
+        try {
+            $validated = $request->validate([
+                'kode_mk' => 'required|string|max:20|unique:mata_kuliah,kode_mk',
+                'nama_mk' => 'required|string|max:255',
+                'sks' => 'required|integer|min:1|max:6',
+                'sesi' => 'required|integer|min:1|max:20',
+                'semester' => 'required|integer|min:1|max:8',
+                'prodi_id' => 'required|integer|exists:prodi,id',
+            ], [
+                'kode_mk.required' => 'Kode Mata Kuliah wajib diisi.',
+                'kode_mk.unique' => 'Kode Mata Kuliah sudah terdaftar.',
+                'nama_mk.required' => 'Nama Mata Kuliah wajib diisi.',
+                'sks.required' => 'Jumlah SKS wajib diisi.',
+                'sks.min' => 'Jumlah SKS minimal 1.',
+                'sks.max' => 'Jumlah SKS maksimal 6.',
+                'sesi.required' => 'Jumlah Sesi wajib diisi.',
+                'sesi.min' => 'Jumlah Sesi minimal 1.',
+                'sesi.max' => 'Jumlah Sesi maksimal 20.',
+                'semester.required' => 'Semester wajib diisi.',
+                'semester.min' => 'Semester minimal 1.',
+                'semester.max' => 'Semester maksimal 8.',
+                'prodi_id.required' => 'Program Studi wajib dipilih.',
+                'prodi_id.exists' => 'Program Studi tidak valid.',
+            ]);
 
-        $mk = MataKuliah::create($request->all());
+            $mk = MataKuliah::create($validated);
 
-        return response()->json([
-            'message' => 'Mata Kuliah berhasil ditambahkan.',
-            // Eager load prodi untuk resource
-            'data' => new MataKuliahResource($mk->load('prodi')) 
-        ], 201);
+            return redirect()
+                ->route('matakuliah.index')
+                ->with('success', 'Mata Kuliah "' . $mk->nama_mk . '" berhasil ditambahkan.');
+
+        } catch (ValidationException $e) {
+            return redirect()
+                ->back()
+                ->withErrors($e->validator)
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
-    /**
-     * GET /api/mata-kuliah/{mataKuliah}
-     * Menampilkan detail Mata Kuliah tertentu.
-     *
-     * @param  \App\Models\MataKuliah  $mataKuliah
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function show(MataKuliah $mataKuliah)
     {
-        return response()->json([
-            'data' => new MataKuliahResource($mataKuliah->load('prodi'))
-        ]);
+        $mataKuliah->load('prodi');
+        
+        // Hitung jumlah self assessment dan detail hasil rekomendasi
+        $jumlahSelfAssessment = $mataKuliah->selfAssessments()->count();
+        $jumlahRekomendasi = $mataKuliah->detailHasilRekomendasi()->count();
+        
+        return view('pages.manajemen-matkul', compact(
+            'mataKuliah',
+            'jumlahSelfAssessment',
+            'jumlahRekomendasi'
+        ));
     }
 
-    /**
-     * PATCH /api/mata-kuliah/{mataKuliah}
-     * Memperbarui data Mata Kuliah tertentu. (Admin Only)
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\MataKuliah  $mataKuliah
-     * @return \Illuminate\Http\JsonResponse
-     */
+    public function edit(MataKuliah $mataKuliah)
+    {
+        $prodiList = \App\Models\Prodi::orderBy('nama_prodi', 'asc')->get();
+        
+        return view('pages.edit-matkul', compact('mataKuliah', 'prodiList'));
+    }
+
     public function update(Request $request, MataKuliah $mataKuliah)
     {
-        $request->validate([
-            'kode_mk' => 'sometimes|string|max:20|unique:mata_kuliah,kode_mk,' . $mataKuliah->id,
-            'nama_mk' => 'sometimes|string|max:255',
-            'sks' => 'sometimes|integer|min:1|max:6',
-            'prodi_id' => 'sometimes|integer|exists:prodi,id',
-        ]);
+        try {
+            $validated = $request->validate([
+                'kode_mk' => 'required|string|max:20|unique:mata_kuliah,kode_mk,' . $mataKuliah->id,
+                'nama_mk' => 'required|string|max:255',
+                'sks' => 'required|integer|min:1|max:6',
+                'sesi' => 'required|integer|min:1|max:20',
+                'semester' => 'required|integer|min:1|max:8',
+                'prodi_id' => 'required|integer|exists:prodi,id',
+            ], [
+                'kode_mk.required' => 'Kode Mata Kuliah wajib diisi.',
+                'kode_mk.unique' => 'Kode Mata Kuliah sudah terdaftar.',
+                'nama_mk.required' => 'Nama Mata Kuliah wajib diisi.',
+                'sks.required' => 'Jumlah SKS wajib diisi.',
+                'sks.min' => 'Jumlah SKS minimal 1.',
+                'sks.max' => 'Jumlah SKS maksimal 6.',
+                'sesi.required' => 'Jumlah Sesi wajib diisi.',
+                'sesi.min' => 'Jumlah Sesi minimal 1.',
+                'sesi.max' => 'Jumlah Sesi maksimal 20.',
+                'semester.required' => 'Semester wajib diisi.',
+                'semester.min' => 'Semester minimal 1.',
+                'semester.max' => 'Semester maksimal 8.',
+                'prodi_id.required' => 'Program Studi wajib dipilih.',
+                'prodi_id.exists' => 'Program Studi tidak valid.',
+            ]);
 
-        $mataKuliah->update($request->all());
+            $mataKuliah->update($validated);
 
-        return response()->json([
-            'message' => 'Mata Kuliah berhasil diperbarui.',
-            'data' => new MataKuliahResource($mataKuliah->load('prodi'))
-        ]);
+            return redirect()
+                ->route('matakuliah.index')
+                ->with('success', 'Mata Kuliah "' . $mataKuliah->nama_mk . '" berhasil diperbarui.');
+
+        } catch (ValidationException $e) {
+            return redirect()
+                ->back()
+                ->withErrors($e->validator)
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
-    /**
-     * DELETE /api/mata-kuliah/{mataKuliah}
-     * Menghapus Mata Kuliah. (Admin Only)
-     *
-     * @param  \App\Models\MataKuliah  $mataKuliah
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function destroy(MataKuliah $mataKuliah)
     {
-        // Catatan: Pastikan database memiliki ON DELETE CASCADE di tabel yang berelasi
-        // (misalnya self_assessments) sebelum menghapus data Mata Kuliah.
-        $mataKuliah->delete();
+        try {
+            // Cek apakah mata kuliah sedang digunakan
+            $jumlahSelfAssessment = $mataKuliah->selfAssessments()->count();
+            $jumlahRekomendasi = $mataKuliah->detailHasilRekomendasi()->count();
+            
+            if ($jumlahSelfAssessment > 0 || $jumlahRekomendasi > 0) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Mata Kuliah tidak dapat dihapus karena masih digunakan dalam Self Assessment atau Rekomendasi.');
+            }
 
-        return response()->json(['message' => 'Mata Kuliah berhasil dihapus.'], 200);
+            $namaMK = $mataKuliah->nama_mk;
+            $mataKuliah->delete();
+
+            return redirect()
+                ->route('matakuliah.index')
+                ->with('success', 'Mata Kuliah "' . $namaMK . '" berhasil dihapus.');
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
+        }
+    }
+
+    public function filter(Request $request)
+    {
+        $query = MataKuliah::with('prodi');
+
+        if ($request->has('prodi_id') && $request->prodi_id != '') {
+            $query->where('prodi_id', $request->prodi_id);
+        }
+
+        if ($request->has('semester') && $request->semester != '') {
+            $query->where('semester', $request->semester);
+        }
+
+        $mataKuliah = $query->orderBy('semester', 'asc')
+                            ->orderBy('nama_mk', 'asc')
+                            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => MataKuliahResource::collection($mataKuliah)
+        ]);
     }
 }

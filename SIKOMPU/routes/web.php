@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DosenController;
-use App\Http\Controllers\MatakuliahController;
+use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\ProdiController;
 use App\Http\Controllers\LaporanController;
 
@@ -85,7 +85,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('prodi', ProdiController::class);
         
         // Manajemen Matakuliah
-        Route::resource('matakuliah', MatakuliahController::class);
+        Route::resource('matakuliah', MataKuliahController::class);
         
         // Hasil Rekomendasi
         Route::get('/hasil-rekomendasi', function () {
