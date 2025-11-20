@@ -6,195 +6,291 @@
 @section('content')
 <main class="flex-1 p-4 sm:p-6 space-y-6" x-data="{ openModal: false }" @close-modal.window="openModal = false">
 
-    {{-- Alert Success --}}
-    @if(session('success'))
-    <div x-data="{ show: true }" 
-         x-show="show"
-         x-transition
-         class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center justify-between">
-        <div class="flex items-center gap-2">
-            <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{{ session('success') }}</span>
-        </div>
-        <button @click="show = false" class="text-green-600 hover:text-green-800">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-    </div>
-    @endif
-
-    {{-- Alert Error --}}
-    @if($errors->any())
-    <div x-data="{ show: true }" 
-         x-show="show"
-         x-transition
-         class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
-        <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-                <svg class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span class="font-medium">Terjadi kesalahan:</span>
+  {{-- Card: Daftar Dosen --}}
+  <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
+    <div class="flex justify-between items-center p-4 border-b border-gray-200">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-800">Daftar Dosen/Laboran</h2>
+        <p class="text-sm text-gray-500">Kelola data dosen dan laboran dalam sistem</p>
+      </div>
+      <button @click="openModal = true"
+        class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-md transition">
+        <i class="fa-solid fa-plus mr-2"></i> Tambah Data Dosen Baru
+      </button>
+      <div x-show="openModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="openModal = false"></div>
+      
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      
+          <div x-transition:enter="ease-out duration-300"
+               x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+               x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+               x-transition:leave="ease-in duration-200"
+               x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+               x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+               class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full"> <div class="bg-white px-6 py-4 border-b border-gray-200">
+              <h3 class="text-xl font-bold text-gray-800" id="modal-title">
+                Tambah Data Dosen Baru
+              </h3>
             </div>
-            <button @click="show = false" class="text-red-600 hover:text-red-800">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-        <ul class="list-disc list-inside space-y-1 text-sm">
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
-
-    {{-- Card: Daftar Dosen --}}
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
-        <div class="flex justify-between items-center p-4 border-b border-gray-200">
-            <div>
-                <h2 class="text-lg font-semibold text-gray-800">Daftar Dosen/Laboran</h2>
-                <p class="text-sm text-gray-500">Kelola data dosen dan laboran dalam sistem</p>
-            </div>
-            <button @click="openModal = true" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-md transition">
-                <i class="fa-solid fa-plus mr-2"></i> Tambah Data Dosen Baru
-            </button>
-        </div>
-
-        <div class="p-4">
-            {{-- Search + Filter --}}
-            <form method="GET" action="{{ route('dosen.index') }}" class="flex flex-col sm:flex-row justify-between gap-3 mb-4">
-                <input type="text" 
-                       name="search" 
-                       value="{{ request('search') }}"
-                       placeholder="Cari dosen..." 
-                       class="w-full sm:w-1/3 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
-                <select name="prodi" 
-                        onchange="this.form.submit()"
-                        class="w-full sm:w-1/4 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
-                    <option value="">Semua Prodi</option>
-                    <option value="Teknik Informatika" {{ request('prodi') == 'Teknik Informatika' ? 'selected' : '' }}>Teknik Informatika</option>
-                    <option value="Teknologi Geomatika" {{ request('prodi') == 'Teknologi Geomatika' ? 'selected' : '' }}>Teknologi Geomatika</option>
-                    <option value="Teknologi Rekayasa Multimedia" {{ request('prodi') == 'Teknologi Rekayasa Multimedia' ? 'selected' : '' }}>Teknologi Rekayasa Multimedia</option>
-                    <option value="Animasi" {{ request('prodi') == 'Animasi' ? 'selected' : '' }}>Animasi</option>
-                    <option value="Rekayasa Keamanan Siber" {{ request('prodi') == 'Rekayasa Keamanan Siber' ? 'selected' : '' }}>Rekayasa Keamanan Siber</option>
-                    <option value="Teknologi Rekayasa Perangkat Lunak" {{ request('prodi') == 'Teknologi Rekayasa Perangkat Lunak' ? 'selected' : '' }}>Teknologi Rekayasa Perangkat Lunak</option>
-                    <option value="Teknologi Permainan" {{ request('prodi') == 'Teknologi Permainan' ? 'selected' : '' }}>Teknologi Permainan</option>
-                    <option value="S2 Magister Terapan Teknik Komputer" {{ request('prodi') == 'S2 Magister Terapan Teknik Komputer' ? 'selected' : '' }}>S2 Magister Terapan Teknik Komputer</option>
-                </select>
-            </form>
-
-            {{-- Table --}}
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left border-collapse table-fixed">
-                    <thead class="bg-gray-50 text-gray-700">
-                        <tr>
-                            <th class="w-1/12 px-4 py-3 font-medium">No</th>
-                            <th class="w-3/12 px-4 py-3 font-medium">Nama Dosen</th>
-                            <th class="w-2/12 px-4 py-3 font-medium">NIDN/NIP</th>
-                            <th class="w-2/12 px-4 py-3 font-medium">Prodi</th>
-                            <th class="w-2/12 px-4 py-3 font-medium">Beban Mengajar</th>
-                            <th class="w-1/12 px-4 py-3 font-medium text-center">Status</th>
-                            <th class="w-1/12 px-4 py-3 font-medium text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-gray-700">
-                        @forelse($dosens as $index => $dosen)
-                        <tr class="border-t hover:bg-gray-50">
-                            <td class="px-4 py-3">{{ $dosens->firstItem() + $index }}</td>
-                            <td class="w-3/12 px-4 py-3">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <span class="text-blue-600 font-semibold text-sm">{{ strtoupper(substr($dosen->nama, 0, 1)) }}</span>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">{{ $dosen->nama_lengkap }}</p>
-                                        <p class="text-xs text-gray-500">{{ $dosen->jabatan }}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="w-2/12 px-4 py-3">{{ $dosen->nidn }}</td>
-                            <td class="w-2/12 px-4 py-3">{{ $dosen->prodi }}</td>
-                            <td class="w-2/12 px-4 py-3">
-                                <div class="flex items-center space-x-2">
-                                    <span>{{ $dosen->beban_mengajar ?? 0 }}/16 SKS</span>
-                                    <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                        @php
-                                            $percentage = ($dosen->beban_mengajar ?? 0) / 16 * 100;
-                                            $color = $percentage >= 80 ? 'bg-green-500' : ($percentage >= 50 ? 'bg-yellow-400' : 'bg-blue-500');
-                                        @endphp
-                                        <div class="{{ $color }} h-full" style="width: {{ $percentage }}%"></div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="w-1/12 px-4 py-3 text-center">
-                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Aktif</span>
-                            </td>
-                            <td class="w-1/12 px-4 py-3 text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    {{-- Edit --}}
-                                    <a href="{{ route('dosen.edit', $dosen->id) }}" 
-                                        class="text-blue-600 hover:text-blue-800 transition"
-                                        title="Edit Dosen">
-                                          <i class="fas fa-pen"></i>
-                                    </a>
-        
-                                    {{-- Delete dengan Modal Custom --}}
-                                    <button type="button"
-                                            @click="$dispatch('confirm-delete', { id: {{ $dosen->id }}, nama: '{{ $dosen->nama }}' })"
-                                            class="text-red-500 hover:text-red-700 transition"
-                                            title="Hapus Dosen">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="px-4 py-8 text-center text-gray-500">
-                                <div class="flex flex-col items-center">
-                                    <svg class="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                    </svg>
-                                    <p>Tidak ada data dosen</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            {{-- Pagination --}}
-            <div class="flex justify-between items-center mt-4 text-sm text-gray-500">
-                <p>Menampilkan {{ $dosens->firstItem() ?? 0 }}–{{ $dosens->lastItem() ?? 0 }} dari {{ $dosens->total() }} data</p>
-                <div class="flex items-center space-x-1">
-                    {{ $dosens->links() }}
+      
+            <div class="bg-white px-6 pt-6 pb-4 sm:p-6">
+              <form action="#" method="POST" id="add-dosen-form">
+                @csrf
+                <div class="space-y-6">
+                  
+                  {{-- Nama Lengkap --}}
+                  <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-center">
+                    <label for="nama_lengkap" class="block text-sm font-medium text-gray-700 sm:col-span-1">Nama Lengkap</label>
+                    <input type="text" name="nama_lengkap" id="nama_lengkap" placeholder="Masukkan Nama Lengkap"
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm sm:col-span-2">
+                  </div>
+      
+                  {{-- NIDN / NIP --}}
+                  <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-center">
+                    <label for="nidn_nip" class="block text-sm font-medium text-gray-700 sm:col-span-1">NIDN/ NIP</label>
+                    <input type="text" name="nidn_nip" id="nidn_nip" placeholder="NIDN / NIP"
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm sm:col-span-2">
+                  </div>
+      
+                  {{-- Program Studi --}}
+                  <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-center">
+                    <label for="prodi" class="block text-sm font-medium text-gray-700 sm:col-span-1">Program Studi</label>
+                    <select name="prodi" id="prodi"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm sm:col-span-2">
+                        <option>Semua Prodi</option>
+          <option>Teknik Informatika</option>
+          <option>Teknik Geomatika</option>
+          <option>Teknologi Rekayasa Multimedia</option>
+          <option>Animasi</option>
+          <option>Rekayasa Keamanan Siber</option>
+          <option>Teknik Rekayasa Perangkat Lunak</option>
+          <option>Teknologi Permainan</option>
+          <option>S2 Magister Terapan Teknik Komputer</option>
+                        {{-- Tambahkan Opsi Prodi Lainnya --}}
+                    </select>
+                  </div>
+      
+                  {{-- Jabatan Akademik (Radio Button) --}}
+                  <div class="sm:grid sm:grid-cols-3 sm:gap-1 sm:items-center">
+                    <label class="block text-sm font-medium text-gray-700 sm:col-span-1">Jabatan Akademik</label>
+                    <div class="mt-1 space-x-2 sm:col-span-3">
+                      <label class="inline-flex items-center">
+                        <input type="radio" class="form-radio text-blue-600" name="jabatan_akademik" value="struktural" checked>
+                        <span class="ml-2 text-sm text-gray-700">Dosen Struktural</span>
+                      </label>
+                      <label class="inline-flex items-center">
+                        <input type="radio" class="form-radio text-blue-600" name="jabatan_akademik" value="biasa">
+                        <span class="ml-2 text-sm text-gray-700">Dosen Biasa</span>
+                      </label>
+                      <label class="inline-flex items-center">
+                        <input type="radio" class="form-radio text-blue-600" name="jabatan_akademik" value="laboran">
+                        <span class="ml-2 text-sm text-gray-700">Dosen Laboran</span>
+                      </label>
+                    </div>
+                  </div>
+      
+                  {{-- Username (Login) --}}
+                  <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-center">
+                    <label for="username" class="block text-sm font-medium text-gray-700 sm:col-span-1">Username (Login)</label>
+                    <input type="text" name="username" id="username"
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm sm:col-span-2">
+                  </div>
+      
+                  {{-- Password --}}
+                  <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-center">
+                    <label for="password" class="block text-sm font-medium text-gray-700 sm:col-span-1">Password</label>
+                    <div class="mt-1 sm:col-span-2 flex flex-col space-y-2">
+                      <input type="password" name="password" id="password"
+                             class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                      <div class="w-full flex justify-end">
+                          <button type="button" class="text-xs text-blue-600 hover:text-blue-800 font-medium">Reset Password</button>
+                      </div>
+                    </div>
+                  </div>
+                  
                 </div>
+              </form>
             </div>
+      
+            <div class="px-6 py-4 flex justify-between">
+              <button type="submit" form="add-dosen-form"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i class="fa-solid fa-user-plus mr-2"></i> Simpan Data Dosen
+              </button>
+              <button type="button" @click="openModal = false"
+                class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900" style="border: none; background: none;">
+                Batalkan
+              </button>
+            </div>
+      
+          </div>
         </div>
+      </div>
+    </div>
+    <div class="p-4">
+        {{-- Search + Filter + Total Dosen --}}
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mb-4">
+          <div class="flex w-full sm:w-2/3 space-x-3">
+            
+            {{-- Input Pencarian dengan Icon --}}
+            <div class="relative w-full sm:w-2/3">
+              <input type="text" name="cari" placeholder="Cari dosen..." autofocus
+                class="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none"
+              >
+              {{-- Ikon Search --}}
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+            </div>
+            
+            {{-- Filter Prodi (Select) --}}
+            <select class="w-full sm:w-1/3 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+              <option>Semua Prodi</option>
+          <option>Teknik Informatika</option>
+          <option>Teknik Geomatika</option>
+          <option>Teknologi Rekayasa Multimedia</option>
+          <option>Animasi</option>
+          <option>Rekayasa Keamanan Siber</option>
+          <option>Teknik Rekayasa Perangkat Lunak</option>
+          <option>Teknologi Permainan</option>
+          <option>S2 Magister Terapan Teknik Komputer</option>
+              {{-- ... Opsi Prodi lainnya ... --}}
+            </select>
+            
+          </div>
+          
+          {{-- Total Dosen --}}
+          <p class="text-sm text-gray-500 mt-2 sm:mt-0">
+            Total: 24 dosen
+          </p>
+        </div>
+
+      {{-- Table --}}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left border-collapse table-fixed">
+          <thead class="bg-gray-50 text-gray-700">
+            <tr>
+              <th class="w-1/12 px-4 py-2 font-medium">No</th>
+              <th class="w-3/12 px-4 py-2 font-medium">Nama Dosen</th>
+              <th class="w-2/12 px-4 py-2 font-medium">NIDN/NIP</th>
+              <th class="w-2/12 px-4 py-2 font-medium">Prodi</th>
+              <th class="w-2/12 px-4 py-2 font-medium">Beban Mengajar</th>
+              <th class="w-1/12 px-4 py-2 font-medium text-center">Status</th>
+              <th class="w-1/12 px-4 py-2 font-medium text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-700">
+            {{-- Contoh Data Dummy --}}
+        <tbody>
+          <tr class="border-t">
+            <td class="px-4 py-2">1</td>
+            <td class="px-4 py-2">
+              <div class="flex items-center space-x-3">
+                <img src="https://randomuser.me/api/portraits/men/1.jpg" class="w-8 h-8 rounded-full">
+                <div>
+                  <p class="font-medium">Dr. Ahmad Fauzi, M.T.</p>
+                  <p class="text-xs text-gray-500">Dosen Tetap</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-2">0123456789</td>
+            <td class="px-4 py-2">Teknik Informatika</td>
+            <td class="px-4 py-2">
+              <div class="flex items-center space-x-2">
+                <span>14/16 SKS</span>
+                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div class="h-full bg-green-500 w-[87.5%]"></div>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-2 text-center">
+              <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Aktif</span>
+            </td>
+            <td class="px-4 py-2 text-center space-x-2">
+              <a href="#" class="text-blue-600 hover:text-blue-800"><i class="fas fa-pen"></i></a>
+              <button class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+
+          <tr class="border-t">
+            <td class="px-4 py-2">2</td>
+            <td class="px-4 py-2">
+              <div class="flex items-center space-x-3">
+                <img src="https://randomuser.me/api/portraits/women/2.jpg" class="w-8 h-8 rounded-full">
+                <div>
+                  <p class="font-medium">Sari Indah, M.Kom.</p>
+                  <p class="text-xs text-gray-500">Dosen Struktural</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-2">0123456790</td>
+            <td class="px-4 py-2">Sistem Informasi</td>
+            <td class="px-4 py-2">
+              <div class="flex items-center space-x-2">
+                <span>8/12 SKS</span>
+                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div class="h-full bg-green-500 w-2/3"></div>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-2 text-center">
+              <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Aktif</span>
+            </td>
+            <td class="px-4 py-2 text-center space-x-2">
+              <a href="#" class="text-blue-600 hover:text-blue-800"><i class="fas fa-pen"></i></a>
+              <button class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+
+          <tr class="border-t">
+            <td class="px-4 py-2">3</td>
+            <td class="px-4 py-2">
+              <div class="flex items-center space-x-3">
+                <img src="https://randomuser.me/api/portraits/men/3.jpg" class="w-8 h-8 rounded-full">
+                <div>
+                  <p class="font-medium">Budi Santoso, M.T.</p>
+                  <p class="text-xs text-gray-500">Laboran</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-2">0123456791</td>
+            <td class="px-4 py-2">Teknik Elektro</td>
+            <td class="px-4 py-2">
+              <div class="flex items-center space-x-2">
+                <span>12/16 SKS</span>
+                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div class="h-full bg-green-500 w-3/4"></div>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-2 text-center">
+              <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Aktif</span>
+            </td>
+            <td class="px-4 py-2 text-center space-x-2">
+              <a href="#" class="text-blue-600 hover:text-blue-800"><i class="fas fa-pen"></i></a>
+              <button class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-    {{-- Include Modal --}}
-    @include('components.tambah-dosen')
-    @include('components.delete-dosen')
 
+      {{-- Pagination --}}
+      <div class="flex justify-between items-center mt-4 text-sm text-gray-500">
+        <p>Menampilkan 1–3 dari 24 data</p>
+        <div class="flex items-center space-x-1">
+          <button class="px-2 py-1 border border-gray-300 rounded-md">&lt;</button>
+          <button class="px-3 py-1 bg-blue-600 text-white rounded-md">1</button>
+          <button class="px-3 py-1 border border-gray-300 rounded-md">2</button>
+          <button class="px-3 py-1 border border-gray-300 rounded-md">3</button>
+          <button class="px-2 py-1 border border-gray-300 rounded-md">&gt;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      {{-- Include Form Tambah Dosen --}}
+      @include('components.dosen')
 </main>
-
-{{-- Script untuk auto-open modal jika ada error --}}
-@if($errors->any())
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('modalData', () => ({
-            openModal: true
-        }))
-    })
-</script>
-@endif
-
 @endsection

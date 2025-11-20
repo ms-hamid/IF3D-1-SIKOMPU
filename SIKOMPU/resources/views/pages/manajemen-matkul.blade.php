@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('title', 'Manajemen Mata Kuliah')
-@section('page_title', 'Manajemen Mata Kuliah')
 
 @section('content')
 <main class="flex-1 p-4 sm:p-6 space-y-6">
@@ -39,7 +38,7 @@
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-gray-300 pb-3 gap-3">
         <div>
             <h1 class="text-xl font-bold text-gray-800">Mata Kuliah</h1>
-            <p class="text-gray-500 text-sm">Kelola data mata kuliah per semester</p>
+            <p class="text-gray-500 text-sm">Kelola data mata kuliah dan kategori kompetensi</p>
         </div>
 
         {{-- Tombol Aksi --}}
@@ -52,15 +51,15 @@
             </button>
 
             {{-- Tombol Tambah Mata Kuliah --}}
-            <a 
-                href="{{ route('matakuliah.create') }}" 
+            <button 
+                @click="$dispatch('open-add-matkul-modal')" 
                 class="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition">
                 <i class="fa-solid fa-plus mr-2"></i> Tambah Mata Kuliah
-            </a>
+            </button>
         </div>
     </div>
 
-    {{-- Statistik Ringkas --}}
+    {{-- Statistik ringkas --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl shadow-sm border border-green-200 hover:shadow-md transition">
             <div class="flex items-center justify-between">
@@ -165,16 +164,10 @@
 
                     {{-- Action Buttons --}}
                     <div class="flex gap-2 border-t border-gray-100 pt-3">
-                        <a 
-                            href="{{ route('matakuliah.show', $mk->id) }}" 
-                            class="flex-1 flex items-center justify-center px-3 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition">
-                            <i class="fa-solid fa-eye mr-1"></i> Detail
-                        </a>
-                        <a 
-                            href="{{ route('matakuliah.edit', $mk->id) }}" 
+                        <button 
                             class="flex-1 flex items-center justify-center px-3 py-2 text-xs font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition">
                             <i class="fa-solid fa-edit mr-1"></i> Edit
-                        </a>
+                        </button>
                         <form 
                             action="{{ route('matakuliah.destroy', $mk->id) }}" 
                             method="POST" 
@@ -201,16 +194,17 @@
             </div>
             <h3 class="text-xl font-bold text-gray-700 mb-2">Belum Ada Mata Kuliah</h3>
             <p class="text-gray-500 mb-6">Mulai tambahkan mata kuliah untuk mengelola kurikulum</p>
-            <a 
-                href="{{ route('matakuliah.create') }}" 
+            <button 
+                @click="$dispatch('open-add-matkul-modal')"
                 class="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition">
                 <i class="fa-solid fa-plus mr-2"></i> Tambah Mata Kuliah Pertama
-            </a>
+            </button>
         </div>
         @endforelse
     </section>
 
 </main>
+
 {{-- Include Modal Form Tambah Mata Kuliah --}}
 @include('components.tambah_matkul')
 @endsection
