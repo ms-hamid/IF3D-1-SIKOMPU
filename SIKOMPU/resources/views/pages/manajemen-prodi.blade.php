@@ -26,6 +26,26 @@
     @endif
 
     {{-- Alert Error --}}
+    @if(session('error'))
+    <div x-data="{ show: true }" 
+         x-show="show"
+         x-transition
+         class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <svg class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ session('error') }}</span>
+        </div>
+        <button @click="show = false" class="text-red-600 hover:text-red-800">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+    @endif
+
+    {{-- Validation Errors --}}
     @if($errors->any())
     <div x-data="{ show: true }" 
          x-show="show"
@@ -115,10 +135,10 @@
         <div class="p-4">
             <form method="GET" action="{{ route('prodi.index') }}" class="flex flex-col sm:flex-row gap-3 mb-4">
                 <input type="text" 
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Cari program studi..." 
-                    class="w-full sm:w-1/3 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                       name="search"
+                       value="{{ request('search') }}"
+                       placeholder="Cari program studi..." 
+                       class="w-full sm:w-1/3 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 <select name="jenjang"
                         onchange="this.form.submit()"
                         class="w-full sm:w-1/4 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
@@ -127,6 +147,7 @@
                     <option value="D4" {{ request('jenjang') == 'D4' ? 'selected' : '' }}>D4</option>
                     <option value="S1" {{ request('jenjang') == 'S1' ? 'selected' : '' }}>S1</option>
                     <option value="S2" {{ request('jenjang') == 'S2' ? 'selected' : '' }}>S2</option>
+                    <option value="S2 Terapan" {{ request('jenjang') == 'S2 Terapan' ? 'selected' : '' }}>S2 Terapan</option>
                 </select>
             </form>
 
@@ -158,6 +179,7 @@
                                     @elseif($prodi->jenjang == 'D4') bg-blue-100 text-blue-700
                                     @elseif($prodi->jenjang == 'S1') bg-green-100 text-green-700
                                     @elseif($prodi->jenjang == 'S2') bg-purple-100 text-purple-700
+                                    @elseif($prodi->jenjang == 'S2 Terapan') bg-pink-100 text-pink-700
                                     @endif">
                                     {{ $prodi->jenjang }}
                                 </span>
