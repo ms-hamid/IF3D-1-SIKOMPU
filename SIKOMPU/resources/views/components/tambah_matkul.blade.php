@@ -58,11 +58,10 @@
 
             <div>
                 <label class="text-sm text-gray-700">Semester</label>
-                <select name="semester" class="w-full border rounded-lg px-3 py-2 mt-1">
-                    <option value="">Ganjil / Genap</option>
-                    @for($i=1; $i<=8; $i++)
-                        <option value="{{ $i }}">Semester {{ $i }}</option>
-                    @endfor
+                <select name="semester" class="w-full border rounded-lg px-3 py-2 mt-1" required>
+                    <option value="">-- Pilih Semester --</option>
+                    <option value="Ganjil">Semester Ganjil</option>
+                    <option value="Genap">Semester Genap</option>
                 </select>
             </div>
 
