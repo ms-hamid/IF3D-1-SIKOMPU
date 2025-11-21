@@ -1,159 +1,100 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DosenController;
-use App\Http\Controllers\MatakuliahController;
+use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\ProdiController;
-use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\LaporanController;
-use App\Http\Controllers\DashboardStrukturalController;
-use App\Http\Controllers\ManajemenDosenController;
-use App\Http\Controllers\ManajemenMatakuliahController;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Web Routes - SiKomPu
 |--------------------------------------------------------------------------
-| File ini berisi semua route utama untuk sistem SiKomPu.
-| Fokus untuk dashboard dosen/laboran dan manajemen data.
-|--------------------------------------------------------------------------
+| Login menggunakan NIDN, redirect otomatis berdasarkan jabatan
 */
 
 // ============================
-// HALAMAN UTAMA (Welcome)
+// PUBLIC ROUTES (Guest Only)
 // ============================
-Route::get('/', function () {
-    return view('auth.login');
-})->name('home');
+Route::middleware('guest')->group(function () {
+    Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login']);
+});
 
 // ============================
-// DASHBOARD DOSEN / LABORAN
+// AUTHENTICATED ROUTES
 // ============================
-Route::get('/dashboard_dosen', function () {
-    return view('pages.dashboard_dosen');
-})->name('dashboard.dosen');
-
-// Alias agar route('dashboard') tidak error di sidebar
-Route::get('/dashboard', function () {
-    return redirect()->route('dashboard.dosen');
-})->name('dashboard');
-
-// Halaman Ganti Password (frontend dummy)
-Route::get('/ganti_password', function () {
-    return view('pages.ganti_password');
-})->name('ganti_password');
-
-// ============================
-// GENERATE HASIL 
-// ============================
-Route::get('/self-assessment', function () {
-    return view('pages.self-assessment');
-})->name('self-assessment.index');
-
-// ============================
-// Sertifikasi
-// ============================
-Route::get('/sertifikasi', function () {
-    return view('pages.sertifikasi');
-})->name('sertifikasi.index');
-
-// ============================
-// Penelitian
-// ============================
-Route::get('/penelitian', function () {
-    return view('pages.penelitian');
-})->name('penelitian.index');
-
-// Route::prefix('matakuliah')->name('matakuliah.')->group(function () {
-//     Route::get('/', [MatakuliahController::class, 'index'])->name('index');
-//     Route::get('/create', [MatakuliahController::class, 'create'])->name('create');
-//     Route::post('/', [MatakuliahController::class, 'store'])->name('store');
-// });
-// ============================
-// MANAJEMEN LAPORAN
-// ============================
-Route::get('/laporan-dosen', function () {
-    return view('pages.laporan-dosen'); // buat file ini nanti
-})->name('laporan-dosen');
-Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
-
-
-
-// ============================
-// MANAJEMEN PROGRAM STUDI
-// ============================
-Route::get('/manajemen-prodi', function () {
-    return view('pages.manajemen-prodi'); // buat file ini nanti
-})->name('manajemen.prodi');
-Route::resource('prodi', ProdiController::class);
-Route::get('/prodi/create', function () {
-    return view('components.prodi-create'); // ganti dengan nama file blade kamu
-})->name('prodi.create');
-
-// ============================
-// MANAJEMEN DOSEN
-// ============================
-Route::get('/manajemen-dosen', function () {
-    return view('pages.manajemen-dosen'); // buat file ini nanti
-})->name('manajemen.dosen');
-
-// ============================
-// MANAJEMEN MATAKULIAH
-// ============================
-Route::get('/manajemen-matkul', function () {
-    return view('pages.manajemen-matkul'); // buat file ini nanti
-})->name('manajemen.matkul');
-Route::get('tambah_matkul', function () {
-    return view('components.tambah_matkul'); // ganti dengan nama file blade kamu
-})->name('tambah.matkul');
-
-
-
-// ============================
-// HASIL REKOMENDASI
-// ============================
-Route::get('/hasil-rekomendasi', function () {
-    return view('pages.hasil-rekomendasi'); // buat file ini nanti
-})->name('hasil.rekomendasi');
-Route::resource('matakuliah', MatakuliahController::class);
-Route::get('/matakuliah/create', [MatakuliahController::class, 'create'])->name('matakuliah.create');
-
-// ============================
-// STRUKTURAL JURUSAN (Placeholder)
-// ============================
-Route::get('/dashboard_struktural', function () {
-    return view('pages.dashboard_struktural'); // buat file ini nanti
-})->name('dashboard.struktural');
-
-// ============================
-// LAPORAN PEFORMA AI
-// ============================
-Route::get('/peforma-ai', function () {
-    return view('pages.peforma-ai'); // buat file ini nanti
-})->name('peforma.ai');
-Route::get('/performa.ai', [LaporanController::class, 'index'])->name('laporan.index');
-
-// ============================
-// LAPORAN DOSEN
-// ============================
-Route::get('/laporan-dosen', function () {
-    return view('pages.laporan-dosen'); // buat file ini nanti
-})->name('laporan.dosen');
-
-
-// ============================
-// LAPORAN Struktural
-// ============================
-Route::get('/laporan-struktural', function () {
-    return view('pages.laporan-struktural'); // buat file ini nanti
-})->name('laporan.struktural');
-Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
-
-// ============================
-// LOGOUT
-// ============================
-Route::post('/logout', function () {
-    Auth::logout();
-    return redirect('/'); // arahkan ke halaman utama setelah logout
-})->name('logout');
+Route::middleware('auth')->group(function () {
+    
+    // Logout untuk semua user
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    
+    // Auto redirect ke dashboard yang sesuai
+    Route::get('/dashboard', function () {
+        return redirect(auth()->user()->getDashboardUrl());
+    })->name('dashboard');
+    
+    // Ganti Password (Semua User)
+    Route::get('/ganti-password', function () {
+        return view('pages.ganti_password');
+    })->name('ganti_password');
+    
+    // ============================
+    // DASHBOARD & FITUR DOSEN/LABORAN
+    // ============================
+    Route::middleware('role:Dosen,Laboran')->group(function () {
+        
+        Route::get('/dashboard-dosen', function () {
+            return view('pages.dashboard_dosen');
+        })->name('dashboard.dosen');
+        
+        Route::get('/self-assessment', function () {
+            return view('pages.self-assessment');
+        })->name('self-assessment.index');
+        
+        Route::get('/sertifikasi', function () {
+            return view('pages.sertifikasi');
+        })->name('sertifikasi.index');
+        
+        Route::get('/penelitian', function () {
+            return view('pages.penelitian');
+        })->name('penelitian.index');
+        
+        Route::get('/laporan', function () {
+            return view('pages.laporan');
+        })->name('laporan.index');
+    });
+    
+    // ============================
+    // DASHBOARD & FITUR STRUKTURAL
+    // ============================
+    Route::middleware('role:Kepala Jurusan,Sekretaris Jurusan,Kepala Program Studi')->group(function () {
+        
+        Route::get('/dashboard-struktural', function () {
+            return view('pages.dashboard_struktural');
+        })->name('dashboard.struktural');
+        
+        // Manajemen Dosen (CRUD lengkap)
+        Route::resource('dosen', DosenController::class);
+        Route::post('dosen/{dosen}/reset-password', [DosenController::class, 'resetPassword'])
+            ->name('dosen.reset-password');
+        
+        // Manajemen Program Studi
+        Route::resource('prodi', ProdiController::class);
+        
+        // Manajemen Matakuliah
+        Route::resource('matakuliah', MataKuliahController::class);
+        
+        // Hasil Rekomendasi
+        Route::get('/hasil-rekomendasi', function () {
+            return view('pages.hasil-rekomendasi');
+        })->name('hasil.rekomendasi');
+        
+        // Laporan Struktural
+        Route::get('/laporan-struktural', function () {
+            return view('pages.laporan-struktural');
+        })->name('laporan.struktural');
+    });
+});
