@@ -164,23 +164,24 @@
 
                     {{-- Action Buttons --}}
                     <div class="flex gap-2 border-t border-gray-100 pt-3">
-                        <button
-                            class="flex-1 flex items-center justify-center px-3 py-2 text-xs font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition">
-                            <i class="fa-solid fa-edit mr-1"></i> Edit
+                        <a 
+                        href="{{ route('matakuliah.edit', $mk->id) }}"
+                        class="flex-1 flex items-center justify-center px-3 py-2 text-xs font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition">
+                        <i class="fa-solid fa-edit mr-1"></i> Edit
+                    </a>
+
+                        <button 
+                            type="button"
+                            @click="$dispatch('open-delete-matkul-modal', {{ json_encode([
+                                'id' => $mk->id,
+                                'kode_mk' => $mk->kode_mk,
+                                'nama_mk' => $mk->nama_mk,
+                                'sks' => $mk->sks,
+                                'semester' => $mk->semester,
+                            ]) }})"
+                            class="flex-1 flex items-center justify-center px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition">
+                            <i class="fa-solid fa-trash mr-1"></i> Hapus
                         </button>
-                        <form 
-                            action="{{ route('matakuliah.destroy', $mk->id) }}" 
-                            method="POST" 
-                            onsubmit="return confirm('Yakin ingin menghapus mata kuliah {{ $mk->nama_mk }}?')"
-                            class="flex-1">
-                            @csrf
-                            @method('DELETE')
-                            <button 
-                                type="submit" 
-                                class="w-full flex items-center justify-center px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition">
-                                <i class="fa-solid fa-trash mr-1"></i> Hapus
-                            </button>
-                        </form>
                     </div>
                 </div>
                 @endforeach

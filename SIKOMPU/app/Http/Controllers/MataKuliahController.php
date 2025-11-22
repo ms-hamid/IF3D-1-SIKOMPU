@@ -4,13 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\MataKuliah;
 use Illuminate\Http\Request;
-use App\Http\Resources\MataKuliahResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class MataKuliahController extends Controller
 {
-
+    /**
+     * GET /matakuliah
+     * Menampilkan daftar mata kuliah
+     */
     public function index(Request $request)
     {
         $query = MataKuliah::with('prodi');
@@ -49,13 +51,6 @@ class MataKuliahController extends Controller
         ));
     }
 
-    public function create()
-    {
-        $prodiList = \App\Models\Prodi::orderBy('nama_prodi', 'asc')->get();
-        
-        return view('pages.manajemen-matkul', compact('prodiList'));
-    }
-
     public function store(Request $request)
     {
         try {
@@ -64,7 +59,7 @@ class MataKuliahController extends Controller
                 'nama_mk' => 'required|string|max:255',
                 'sks' => 'required|integer|min:1|max:6',
                 'sesi' => 'required|integer|min:1|max:20',
-                'semester' => 'required|integer|min:1|max:8',
+                'semester' => 'required|in:Ganjil,Genap',
                 'prodi_id' => 'required|integer|exists:prodi,id',
             ], [
                 'kode_mk.required' => 'Kode Mata Kuliah wajib diisi.',
@@ -102,37 +97,25 @@ class MataKuliahController extends Controller
         }
     }
 
-    public function show(MataKuliah $mataKuliah)
+    public function edit($id)
     {
-        $mataKuliah->load('prodi');
-        
-        // Hitung jumlah self assessment dan detail hasil rekomendasi
-        $jumlahSelfAssessment = $mataKuliah->selfAssessments()->count();
-        $jumlahRekomendasi = $mataKuliah->detailHasilRekomendasi()->count();
-        
-        return view('pages.manajemen-matkul', compact(
-            'mataKuliah',
-            'jumlahSelfAssessment',
-            'jumlahRekomendasi'
-        ));
-    }
-
-    public function edit(MataKuliah $mataKuliah)
-    {
+        $mataKuliah = MataKuliah::with('prodi')->findOrFail($id);
         $prodiList = \App\Models\Prodi::orderBy('nama_prodi', 'asc')->get();
-        
+    
         return view('pages.edit-matkul', compact('mataKuliah', 'prodiList'));
     }
 
-    public function update(Request $request, MataKuliah $mataKuliah)
+    public function update(Request $request, $id)
     {
+        $mataKuliah = MataKuliah::findOrFail($id);
+    
         try {
             $validated = $request->validate([
                 'kode_mk' => 'required|string|max:20|unique:mata_kuliah,kode_mk,' . $mataKuliah->id,
                 'nama_mk' => 'required|string|max:255',
                 'sks' => 'required|integer|min:1|max:6',
                 'sesi' => 'required|integer|min:1|max:20',
-                'semester' => 'required|integer|min:1|max:8',
+                'semester' => 'required|in:Ganjil,Genap',
                 'prodi_id' => 'required|integer|exists:prodi,id',
             ], [
                 'kode_mk.required' => 'Kode Mata Kuliah wajib diisi.',
@@ -166,21 +149,23 @@ class MataKuliahController extends Controller
             return redirect()
                 ->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
-                ->withInput();
+             ->withInput();
         }
     }
 
-    public function destroy(MataKuliah $mataKuliah)
+    public function destroy($id)
     {
         try {
+            $mataKuliah = MataKuliah::findOrFail($id);
+        
             // Cek apakah mata kuliah sedang digunakan
             $jumlahSelfAssessment = $mataKuliah->selfAssessments()->count();
             $jumlahRekomendasi = $mataKuliah->detailHasilRekomendasi()->count();
-            
-            if ($jumlahSelfAssessment > 0 || $jumlahRekomendasi > 0) {
-                return redirect()
-                    ->back()
-                    ->with('error', 'Mata Kuliah tidak dapat dihapus karena masih digunakan dalam Self Assessment atau Rekomendasi.');
+        
+            if ($jumlahSelfAssessment > 0 || $jumlahRekomendasi > 0) {           
+                return redirect()                
+                ->back()                
+                ->with('error', 'Mata Kuliah "' . $mataKuliah->nama_mk . '" tidak dapat dihapus karena masih digunakan dalam Self Assessment atau Rekomendasi.');       
             }
 
             $namaMK = $mataKuliah->nama_mk;
@@ -195,27 +180,5 @@ class MataKuliahController extends Controller
                 ->back()
                 ->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
         }
-    }
-
-    public function filter(Request $request)
-    {
-        $query = MataKuliah::with('prodi');
-
-        if ($request->has('prodi_id') && $request->prodi_id != '') {
-            $query->where('prodi_id', $request->prodi_id);
-        }
-
-        if ($request->has('semester') && $request->semester != '') {
-            $query->where('semester', $request->semester);
-        }
-
-        $mataKuliah = $query->orderBy('semester', 'asc')
-                            ->orderBy('nama_mk', 'asc')
-                            ->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => MataKuliahResource::collection($mataKuliah)
-        ]);
     }
 }
