@@ -6,6 +6,7 @@ use App\Http\Controllers\DosenController;
 use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\ProdiController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\SertifikatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,9 +55,14 @@ Route::middleware('auth')->group(function () {
             return view('pages.self-assessment');
         })->name('self-assessment.index');
         
-        Route::get('/sertifikasi', function () {
-            return view('pages.sertifikasi');
-        })->name('sertifikasi.index');
+        // Sertifikasi - CRUD lengkap
+        Route::get('sertifikasi', [SertifikatController::class, 'index'])->name('sertifikasi.index');
+        Route::post('sertifikasi', [SertifikatController::class, 'store'])->name('sertifikasi.store');
+        Route::get('sertifikasi/{id}', [SertifikatController::class, 'show'])->name('sertifikasi.show');
+        Route::put('sertifikasi/{id}', [SertifikatController::class, 'update'])->name('sertifikasi.update');
+        Route::delete('sertifikasi/{id}', [SertifikatController::class, 'destroy'])->name('sertifikasi.destroy');
+        Route::get('sertifikasi/{id}/download', [SertifikatController::class, 'download'])
+            ->name('sertifikasi.download');
         
         Route::get('/penelitian', function () {
             return view('pages.penelitian');
