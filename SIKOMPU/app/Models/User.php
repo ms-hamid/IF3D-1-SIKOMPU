@@ -46,7 +46,7 @@ class User extends Authenticatable
         return $this->hasMany(Sertifikat::class);
     }
 
-    public function penelitian()
+    public function penelitians()
     {
         return $this->hasMany(Penelitian::class);
     }

@@ -25,4 +25,19 @@ class Penelitian extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
+    // Accessor untuk memastikan link selalu lengkap
+    public function getLinkPublikasiAttribute($value)
+    {
+        if (empty($value)) {
+            return null;
+        }
+        
+        // Jika belum ada http/https, tambahkan
+        if (!preg_match("~^(?:f|ht)tps?://~i", $value)) {
+            return "https://" . $value;
+        }
+        
+        return $value;
+    }
 }

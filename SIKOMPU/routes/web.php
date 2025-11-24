@@ -7,6 +7,7 @@ use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\ProdiController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\SertifikatController;
+use App\Http\Controllers\PenelitianController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -64,9 +65,11 @@ Route::middleware('auth')->group(function () {
         Route::get('sertifikasi/{id}/download', [SertifikatController::class, 'download'])
             ->name('sertifikasi.download');
         
-        Route::get('/penelitian', function () {
-            return view('pages.penelitian');
-        })->name('penelitian.index');
+        // Penelitian - CRUD lengkap
+        Route::get('/penelitian', [PenelitianController::class, 'viewIndex'])->name('penelitian.index');
+        Route::post('/penelitian', [PenelitianController::class, 'store'])->name('penelitian.store');
+        Route::patch('/penelitian/{penelitian}', [PenelitianController::class, 'update'])->name('penelitian.update');
+        Route::delete('/penelitian/{penelitian}', [PenelitianController::class, 'destroy'])->name('penelitian.destroy');
         
         Route::get('/laporan', function () {
             return view('pages.laporan');

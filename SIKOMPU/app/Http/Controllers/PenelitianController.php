@@ -5,99 +5,110 @@ namespace App\Http\Controllers;
 use App\Models\Penelitian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Resources\PenelitianResource;
-use Illuminate\Validation\Rule;
 
 class PenelitianController extends Controller
 {
     /**
-     * Tampilkan daftar semua penelitian milik pengguna yang sedang login.
-     * Endpoint: GET /api/penelitians
+     * Tampilkan halaman view penelitian
      */
-    public function index()
+    public function viewIndex()
     {
-        // Ambil semua penelitian yang dimiliki oleh user yang sedang login
+        // Pastikan nama variabel sama dengan yang di compact()
         $penelitians = Auth::user()->penelitians()->get();
         
-        return PenelitianResource::collection($penelitians);
+        return view('pages.penelitian', compact('penelitians'));
     }
 
     /**
      * Simpan penelitian baru ke database.
-     * Endpoint: POST /api/penelitians
+     * Method: POST /penelitian
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'judul' => 'required|string|max:500',
-            'tahun' => 'required|integer|digits:4|max:' . date('Y'),
-            'bidang' => 'required|string|max:255',
-            // Contoh validasi untuk jenis luaran (sesuaikan dengan kebutuhan Anda)
-            'jenis_luaran' => ['required', 'string', Rule::in(['Jurnal', 'Prosiding', 'Buku', 'Paten', 'Lainnya'])], 
+            'judul_penelitian' => 'required|string|max:500',
+            'tahun' => 'required|integer|digits:4|min:2000|max:' . date('Y'),
+            'peran' => 'required|string|in:Ketua,Anggota', // Hapus Kontributor
+            'link_publikasi' => 'nullable|url|max:500',
+        ], [
+            'judul_penelitian.required' => 'Judul penelitian wajib diisi.',
+            'judul_penelitian.max' => 'Judul penelitian maksimal 500 karakter.',
+            'tahun.required' => 'Tahun publikasi wajib dipilih.',
+            'tahun.digits' => 'Tahun harus 4 digit.',
+            'tahun.min' => 'Tahun minimal adalah 2000.',
+            'tahun.max' => 'Tahun tidak boleh melebihi tahun sekarang.',
+            'peran.required' => 'Peran wajib dipilih.',
+            'peran.in' => 'Peran harus salah satu dari: Ketua atau Anggota.', // Update pesan
+            'link_publikasi.url' => 'Link publikasi harus berupa URL yang valid.',
         ]);
 
-        // Pastikan penelitian ini terkait dengan user yang sedang login
-        $penelitian = Auth::user()->penelitians()->create($validated);
+        // Buat penelitian baru dengan user_id dari user yang login
+        $penelitian = Auth::user()->penelitians()->create([
+            'judul_penelitian' => $validated['judul_penelitian'],
+            'tahun_publikasi' => $validated['tahun'],
+            'peran' => $validated['peran'],
+            'link_publikasi' => $validated['link_publikasi'] ?? '', // Ubah null jadi ''
+        ]);
 
-        return response()->json([
-            'message' => 'Data penelitian berhasil ditambahkan.',
-            'data' => new PenelitianResource($penelitian)
-        ], 201);
+        return redirect()->route('penelitian.index')
+            ->with('success', 'Data penelitian berhasil ditambahkan!');
     }
 
     /**
-     * Tampilkan detail penelitian tertentu.
-     * Endpoint: GET /api/penelitians/{penelitian}
-     */
-    public function show(Penelitian $penelitian)
-    {
-        // Policy Check: Pastikan user yang login adalah pemilik penelitian
-        if ($penelitian->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Anda tidak memiliki akses ke data penelitian ini.'], 403);
-        }
-
-        return new PenelitianResource($penelitian);
-    }
-
-    /**
-     * Perbarui data penelitian.
-     * Endpoint: PATCH /api/penelitians/{penelitian}
+     * Update penelitian
+     * Method: PATCH /penelitian/{id}
      */
     public function update(Request $request, Penelitian $penelitian)
     {
-        // Policy Check: Pastikan user yang login adalah pemilik penelitian
+        // Cek apakah penelitian ini milik user yang login
         if ($penelitian->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Anda tidak memiliki akses untuk mengubah data penelitian ini.'], 403);
+            return redirect()->route('penelitian.index')
+                ->with('error', 'Anda tidak memiliki akses untuk mengubah penelitian ini!');
         }
 
         $validated = $request->validate([
-            'judul' => 'sometimes|string|max:500',
-            'tahun' => 'sometimes|integer|digits:4|max:' . date('Y'),
-            'bidang' => 'sometimes|string|max:255',
-            'jenis_luaran' => ['sometimes', 'string', Rule::in(['Jurnal', 'Prosiding', 'Buku', 'Paten', 'Lainnya'])],
+            'judul_penelitian' => 'required|string|max:500',
+            'tahun' => 'required|integer|digits:4|min:2000|max:' . date('Y'),
+            'peran' => 'required|string|in:Ketua,Anggota,Kontributor',
+            'link_publikasi' => 'nullable|url|max:500',
+        ], [
+            'judul_penelitian.required' => 'Judul penelitian wajib diisi.',
+            'judul_penelitian.max' => 'Judul penelitian maksimal 500 karakter.',
+            'tahun.required' => 'Tahun publikasi wajib dipilih.',
+            'tahun.digits' => 'Tahun harus 4 digit.',
+            'tahun.min' => 'Tahun minimal adalah 2000.',
+            'tahun.max' => 'Tahun tidak boleh melebihi tahun sekarang.',
+            'peran.required' => 'Peran wajib dipilih.',
+            'peran.in' => 'Peran harus salah satu dari: Ketua, Anggota, atau Kontributor.',
+            'link_publikasi.url' => 'Link publikasi harus berupa URL yang valid.',
         ]);
-        
-        $penelitian->update($validated);
 
-        return response()->json([
-            'message' => 'Data penelitian berhasil diperbarui.',
-            'data' => new PenelitianResource($penelitian)
+        $penelitian->update([
+            'judul_penelitian' => $validated['judul_penelitian'],
+            'tahun_publikasi' => $validated['tahun'],
+            'peran' => $validated['peran'],
+            'link_publikasi' => $validated['link_publikasi'] ?? '',
         ]);
+
+        return redirect()->route('penelitian.index')
+            ->with('success', 'Data penelitian berhasil diperbarui!');
     }
 
     /**
-     * Hapus penelitian dari database.
-     * Endpoint: DELETE /api/penelitians/{penelitian}
+     * Hapus penelitian
+     * Method: DELETE /penelitian/{id}
      */
     public function destroy(Penelitian $penelitian)
     {
-        // Policy Check: Pastikan user yang login adalah pemilik penelitian
+        // Cek apakah penelitian ini milik user yang login
         if ($penelitian->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Anda tidak memiliki akses untuk menghapus data penelitian ini.'], 403);
+            return redirect()->route('penelitian.index')
+                ->with('error', 'Anda tidak memiliki akses untuk menghapus penelitian ini!');
         }
 
         $penelitian->delete();
 
-        return response()->json(['message' => 'Data penelitian berhasil dihapus.'], 204);
+        return redirect()->route('penelitian.index')
+            ->with('success', 'Data penelitian berhasil dihapus!');
     }
 }

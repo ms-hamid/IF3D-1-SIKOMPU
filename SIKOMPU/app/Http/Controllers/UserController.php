@@ -79,4 +79,6 @@ class UserController extends Controller
         $roles = \App\Models\Role::all(['id', 'name_peran']); // Asumsi nama kolom di tabel roles adalah name_peran
         return response()->json($roles);
     }
+
+    
 }
