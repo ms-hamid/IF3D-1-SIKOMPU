@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DashboardDosenController;
+use App\Http\Controllers\DashboardStrukturalController;
 use App\Http\Controllers\DosenController;
 use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\ProdiController;
@@ -46,11 +48,12 @@ Route::middleware('auth')->group(function () {
     // ============================
     // DASHBOARD & FITUR DOSEN/LABORAN
     // ============================
+    // UBAH dari middleware('role:...') jadi middleware('role:Dosen,Laboran')
     Route::middleware('role:Dosen,Laboran')->group(function () {
         
-        Route::get('/dashboard-dosen', function () {
-            return view('pages.dashboard_dosen');
-        })->name('dashboard.dosen');
+        // UBAH DARI CLOSURE JADI CONTROLLER
+        Route::get('/dashboard-dosen', [DashboardDosenController::class, 'index'])
+            ->name('dashboard.dosen');
         
         Route::get('/self-assessment', function () {
             return view('pages.self-assessment');
@@ -81,9 +84,8 @@ Route::middleware('auth')->group(function () {
     // ============================
     Route::middleware('role:Kepala Jurusan,Sekretaris Jurusan,Kepala Program Studi')->group(function () {
         
-        Route::get('/dashboard-struktural', function () {
-            return view('pages.dashboard_struktural');
-        })->name('dashboard.struktural');
+        Route::get('/dashboard-struktural', [DashboardStrukturalController::class, 'index'])
+            ->name('dashboard.struktural');
         
         // Manajemen Dosen (CRUD lengkap)
         Route::resource('dosen', DosenController::class);

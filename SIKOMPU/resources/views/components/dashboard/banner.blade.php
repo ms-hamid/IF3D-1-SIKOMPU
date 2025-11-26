@@ -4,9 +4,18 @@
     <p class="text-sm text-blue-100 mb-3">
       Kelola dan optimalkan distribusi beban mengajar dosen dengan algoritma cerdas
     </p>
-    <button class="bg-white text-blue-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50">
-      Generate Rekomendasi Semester Ini
-    </button>
+    
+    @if(Auth::user()->isStruktural())
+      {{-- Tombol untuk Struktural --}}
+      <a href="{{ route('hasil.rekomendasi') }}" class="inline-block bg-white text-blue-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50 transition">
+        Generate Rekomendasi Semester Ini
+      </a>
+    @else
+      {{-- Tombol untuk Dosen/Laboran --}}
+      <a href="{{ route('self-assessment.index') }}" class="inline-block bg-white text-blue-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50 transition">
+        Isi Self-Assessment
+      </a>
+    @endif
   </div>
 
   <!-- Gambar hanya tampil di tablet dan desktop -->

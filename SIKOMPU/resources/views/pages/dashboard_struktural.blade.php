@@ -17,11 +17,11 @@
       </div>
       <div>
         <h3 class="text-lg font-semibold text-gray-800">
-          Selamat Datang, Dr. Ahmad Wijaya
+          Selamat Datang, {{ $user->nama_lengkap }}
         </h3>
         <p class="text-gray-500 text-sm flex items-center mt-1">
           <i class="fa-regular fa-calendar text-gray-400 mr-1"></i>
-          Minggu, 28 September 2025
+          {{ \Carbon\Carbon::now()->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
         </p>
       </div>
     </div>
@@ -31,17 +31,17 @@
   <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6 mb-4">
     <div class="items-center p-6 bg-white rounded-xl shadow-sm border border-gray-100 text-left hover:bg-gray-100 transition">
       <p class="text-gray-500 text-sm font-medium">Total Pengguna Aktif</p>
-      <h3 class="text-3xl font-bold text-gray-800">{{ $totalPengguna ?? '48' }}</h3> 
+      <h3 class="text-3xl font-bold text-gray-800">{{ $totalPengguna }}</h3> 
       <p class="text-xs text-green-600">+2 dari semester lalu</p>
     </div>
     <div class="items-center p-6 bg-white rounded-xl shadow-sm border border-gray-100 text-left hover:bg-gray-100 transition">
       <p class="text-gray-500 text-sm font-medium">Total Dosen</p>
-      <h3 class="text-3xl font-bold text-gray-800">{{ $totalDosen ?? '128' }}</h3> 
+      <h3 class="text-3xl font-bold text-gray-800">{{ $totalDosen }}</h3> 
       <p class="text-xs text-gray-600">Dosen Terdaftar</p>
     </div>
     <div class="items-center p-6 bg-white rounded-xl shadow-sm border border-gray-100 text-left hover:bg-gray-100 transition">
       <p class="text-gray-500 text-sm font-medium">Total Mata Kuliah</p>
-      <h3 class="text-3xl font-bold text-gray-800">{{ $Total ?? '90' }}</h3> 
+      <h3 class="text-3xl font-bold text-gray-800">{{ $totalMataKuliah }}</h3> 
       <p class="text-xs text-gray-600">Mata Kuliah Terdaftar</p>
     </div>
   </div>
