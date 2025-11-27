@@ -9,7 +9,13 @@ use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\ProdiController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\SertifikatController;
-use App\Http\Controllers\PenelitianController; 
+use App\Http\Controllers\PenelitianController;
+use App\Http\Controllers\AIIntegrationController;
+
+
+
+Route::get('/cek-ai', [AIIntegrationController::class, 'checkConnection']);
+Route::get('/generate-hasil', [AIIntegrationController::class, 'generateRecommendation']);
 
 /*
 |--------------------------------------------------------------------------
