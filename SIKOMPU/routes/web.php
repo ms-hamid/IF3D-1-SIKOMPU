@@ -11,8 +11,7 @@ use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\SertifikatController;
 use App\Http\Controllers\PenelitianController;
 use App\Http\Controllers\AIIntegrationController;
-
-
+use App\Http\Controllers\ProfilController;  
 
 Route::get('/cek-ai', [AIIntegrationController::class, 'checkConnection']);
 Route::get('/generate-hasil', [AIIntegrationController::class, 'generateRecommendation']);
@@ -46,18 +45,16 @@ Route::middleware('auth')->group(function () {
         return redirect(auth()->user()->getDashboardUrl());
     })->name('dashboard');
     
-    // Ganti Password (Semua User)
-    Route::get('/ganti-password', function () {
-        return view('pages.ganti_password');
-    })->name('ganti_password');
+    // ⭐ PROFIL & GANTI PASSWORD (SEMUA USER BISA AKSES)
+    Route::get('/profil', [ProfilController::class, 'index'])->name('profil.index');
+    Route::put('/profil/update', [ProfilController::class, 'update'])->name('profil.update');
+    Route::post('/profil/ganti-password', [ProfilController::class, 'gantiPassword'])->name('ganti_password.update');
     
     // ============================
     // DASHBOARD & FITUR DOSEN/LABORAN
     // ============================
-    // UBAH dari middleware('role:...') jadi middleware('role:Dosen,Laboran')
     Route::middleware('role:Dosen,Laboran')->group(function () {
         
-        // UBAH DARI CLOSURE JADI CONTROLLER
         Route::get('/dashboard-dosen', [DashboardDosenController::class, 'index'])
             ->name('dashboard.dosen');
         
