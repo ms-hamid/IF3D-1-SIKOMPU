@@ -39,23 +39,61 @@ class AIIntegrationController extends Controller
         // A. Ambil Data Real dari Database Laravel (Contoh Dummy)
         // Nanti ganti dengan: $dosen = User::where('role', 'dosen')->get();
         $dataDosen = [
-            [
-                'id' => 1,
-                'nama' => 'Dr. Budi (S3)',
-                'c1_self_assessment' => 8, 
-                'c2_pendidikan' => 5,      // S3
-                'c3_sertifikat' => 2,
-                'c4_penelitian' => 5
-            ],
-            [
-                'id' => 2,
-                'nama' => 'Ani, M.Kom (S2)',
-                'c1_self_assessment' => 9,
-                'c2_pendidikan' => 3,      // S2
-                'c3_sertifikat' => 8,      // Sertifikat banyak
-                'c4_penelitian' => 2
-            ]
-        ];
+        [
+            'id' => 1,
+            'nama' => 'Dr. Budi (S3)',
+            'kode_matkul' => 'IF101',
+            'c1_self_assessment' => 8,
+            'c2_pendidikan' => 5,
+            'c3_sertifikat' => 2,
+            'c4_penelitian' => 5
+        ],
+        [
+            'id' => 2,
+            'nama' => 'Ani, M.Kom (S2)',
+            'kode_matkul' => 'IF101',
+            'c1_self_assessment' => 9,
+            'c2_pendidikan' => 3,
+            'c3_sertifikat' => 8,
+            'c4_penelitian' => 2
+        ],
+        [
+            'id' => 3,
+            'nama' => 'Rizal, M.T (S2)',
+            'kode_matkul' => 'IF101',
+            'c1_self_assessment' => 7,
+            'c2_pendidikan' => 3,
+            'c3_sertifikat' => 5,
+            'c4_penelitian' => 4
+        ],
+        [
+            'id' => 4,
+            'nama' => 'Prof. Sari (S3)',
+            'kode_matkul' => 'IF101',
+            'c1_self_assessment' => 9,
+            'c2_pendidikan' => 5,
+            'c3_sertifikat' => 3,
+            'c4_penelitian' => 7
+        ],
+        [
+            'id' => 5,
+            'nama' => 'Dewi, M.Kom (S2)',
+            'kode_matkul' => 'IF101',
+            'c1_self_assessment' => 8,
+            'c2_pendidikan' => 3,
+            'c3_sertifikat' => 6,
+            'c4_penelitian' => 3
+        ],
+        [
+            'id' => 6,
+            'nama' => 'Agus, M.T (S2)',
+            'kode_matkul' => 'IF101',
+            'c1_self_assessment' => 6,
+            'c2_pendidikan' => 3,
+            'c3_sertifikat' => 4,
+            'c4_penelitian' => 6
+        ]
+    ];
 
         // B. Kirim ke Flask
         try {
