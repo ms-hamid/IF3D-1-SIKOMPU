@@ -23,7 +23,7 @@
     @endif
 
     <!-- Form Login -->
-    <form action="/login" method="POST" class="w-full max-w-sm mx-auto space-y-4">
+    <form action="{{ route('login.post') }}" method="POST" class="w-full max-w-sm mx-auto space-y-4">
         @csrf
 
         <x-input 
