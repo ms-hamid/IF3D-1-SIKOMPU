@@ -36,6 +36,7 @@ Route::middleware('guest')->group(function () {
 // AUTHENTICATED ROUTES
 // ============================
 Route::middleware('auth')->group(function () {
+Route::post('/login', [App\Http\Controllers\AuthController::class, 'login'])->name('login.post');
     
     // Logout untuk semua user
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
