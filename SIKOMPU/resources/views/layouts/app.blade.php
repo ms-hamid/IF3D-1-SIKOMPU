@@ -10,20 +10,70 @@
     {{-- Font Awesome + Tailwind + Vite --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="//unpkg.com/alpinejs" defer></script>
 
     {{-- Bootstrap Icons --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    
+    {{-- Loading Screen Styles --}}
+    <style>
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.2s ease-out;
+        }
+        #loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #loading-screen[style*="display: none"] {
+            display: none !important;
+        }
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            width: 64px;
+            height: 64px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100 flex flex-col min-h-screen">
+{{-- ======================== LOADING SCREEN ======================== --}}
+<div id="loading-screen">
+    <div class="text-center">
+        <div class="spinner mx-auto mb-4"></div>
+        <p class="text-gray-600 font-medium text-lg">Memuat halaman...</p>
+    </div>
+</div>
 
     {{-- ======================== SIDEBAR ======================== --}}
-    <aside 
-        class="fixed inset-y-0 left-0 w-64 z-50 bg-white border-r border-gray-200 shadow-sm transform 
-                transition-transform duration-300 ease-in-out lg:translate-x-0"
-        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
-        @include('components.sidebar')
-    </aside>
+    @auth
+        @if(auth()->user()->jabatan == 'Dosen' || auth()->user()->jabatan == 'Laboran')
+            <x-sidebar-dosen />
+        @elseif(auth()->user()->jabatan == 'Struktural' || auth()->user()->jabatan == 'Admin' || auth()->user()->hasRole('admin') || auth()->user()->hasRole('Admin'))
+            <x-sidebar />
+        @else
+            <x-sidebar />
+        @endif
+    @else
+        <x-sidebar />
+    @endauth
 
     {{-- ======================== OVERLAY (Mobile) ======================== --}}
     <div 
@@ -33,12 +83,11 @@
         x-transition.opacity
     ></div>
 
-
     {{-- ======================== MAIN CONTENT WRAPPER ======================== --}}
     <div class="flex flex-1 flex-col lg:ml-64 relative z-0">
 
         {{-- ======================== TOPBAR ======================== --}}
-        <div class="sticky top-0 z-50 bg-white shadow-sm"> {{-- sticky + top-0 + z-50 --}}
+        <div class="sticky top-0 z-50 bg-white shadow-sm">
             @include('components.topbar')
         </div>
 
@@ -58,5 +107,51 @@
 
     {{-- Alpine.js --}}
     <script src="https://unpkg.com/alpinejs" defer></script>
+
+    {{-- Font Awesome Kit (optional) --}}
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    {{-- ======================== LOADING SCRIPT ======================== --}}
+    <script>
+        (function() {
+            const loader = document.getElementById('loading-screen');
+            if (!loader) return;
+
+            let isHidden = false;
+
+            // Hide loading screen when page is fully loaded - only once
+            function hideLoader() {
+                if (isHidden) return;
+                isHidden = true;
+                
+                loader.classList.add('hidden');
+                setTimeout(function() {
+                    loader.style.display = 'none';
+                }, 200);
+            }
+
+            // Check if page is already loaded
+            if (document.readyState === 'complete') {
+                hideLoader();
+            } else {
+                // Hide when DOM is ready (faster)
+                if (document.readyState === 'interactive') {
+                    setTimeout(hideLoader, 100);
+                }
+                // Also hide when everything is loaded
+                window.addEventListener('load', hideLoader, { once: true });
+            }
+
+            // Show loading on form submissions only
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (form.tagName === 'FORM' && !form.classList.contains('no-loading')) {
+                    loader.classList.remove('hidden');
+                    loader.style.display = 'flex';
+                }
+            });
+        })();
+    </script>
+
 </body>
 </html>
