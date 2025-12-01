@@ -30,8 +30,12 @@
                 class="flex items-center space-x-3 focus:outline-none hover:bg-gray-50 rounded-lg px-3 py-2 transition">
                 
                 {{-- Avatar --}}
-                <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">
-                    {{ strtoupper(substr(Auth::user()->nama_lengkap, 0, 1)) }}
+                <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+                    @if(Auth::user()->foto)
+                        <img src="{{ Storage::url(Auth::user()->foto) }}" alt="Foto Profil" class="w-full h-full object-cover">
+                    @else
+                        {{ strtoupper(substr(Auth::user()->nama_lengkap, 0, 1)) }}
+                    @endif
                 </div>
 
                 {{-- Name & Role --}}
@@ -57,14 +61,10 @@
                     <p class="text-xs text-gray-500">{{ Auth::user()->nidn }}</p>
                 </div>
 
-                <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                {{-- Link Profil (Gabungan Profil + Ganti Password) --}}
+                <a href="{{ route('profil.index') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     <i class="fa-solid fa-user mr-3 text-gray-400"></i>
                     Profil Saya
-                </a>
-
-                <a href="{{ route('ganti_password') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    <i class="fa-solid fa-key mr-3 text-gray-400"></i>
-                    Ganti Password
                 </a>
 
                 <hr class="my-2">

@@ -51,7 +51,7 @@ class ProdiController extends Controller
     public function edit($id)
     {
         $prodi = Prodi::findOrFail($id);
-        return view('pages.edit-prodi', compact('prodi')); // ✅ Sesuai nama file Anda
+        return view('pages.edit-prodi', compact('prodi'));
     }
 
     public function update(Request $request, $id)
