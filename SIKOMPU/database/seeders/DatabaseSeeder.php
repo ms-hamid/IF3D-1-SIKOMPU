@@ -2,24 +2,36 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
-class DatabaseSeeder extends Seeder
+class DummyUserSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // Panggil DosenSeeder untuk populate data users
-        $this->call([
-            DosenSeeder::class,
+        User::create([
+            'nama' => 'Dosen',
+            'nidn' => '00000001',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('dosen123'),
+            'jabatan' => 'Dosen',
         ]);
 
-        // Tambahkan seeder lain di sini jika ada
-        // $this->call([
-        //     ProdiSeeder::class,
-        //     MatakuliahSeeder::class,
-        // ]);
+        User::create([
+            'nama' => 'Laboran',
+            'nidn' => '00000002',
+            'email' => 'laboran@example.com',
+            'password' => Hash::make('laboran123'),
+            'jabatan' => 'Laboran',
+        ]);
+
+        User::create([
+            'nama' => 'Struktural',
+            'nidn' => '00000003',
+            'email' => 'struktur@example.com',
+            'password' => Hash::make('struktur123'),
+            'jabatan' => 'Struktural',
+        ]);
     }
 }
