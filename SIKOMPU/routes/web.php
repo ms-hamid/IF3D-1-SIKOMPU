@@ -26,17 +26,21 @@ Route::get('/generate-hasil', [AIIntegrationController::class, 'generateRecommen
 // ============================
 // PUBLIC ROUTES (Guest Only)
 // ============================
+
 Route::middleware('guest')->group(function () {
     Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
+    Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 });
+
+
+
 
 // ============================
 // AUTHENTICATED ROUTES
 // ============================
+
 Route::middleware('auth')->group(function () {
-Route::post('/login', [App\Http\Controllers\AuthController::class, 'login'])->name('login.post');
     
     // Logout untuk semua user
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

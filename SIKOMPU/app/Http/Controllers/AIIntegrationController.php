@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-// use App\Models\User; // Uncomment jika pakai Model User
+use App\Models\User;
 
 class AIIntegrationController extends Controller
 {
@@ -40,125 +40,112 @@ class AIIntegrationController extends Controller
         // Nanti ganti dengan: $dosen = User::where('role', 'dosen')->get();
 
         // Ambil data dari database
-        // $dosenMatkul = \DB::table('dosen')
-        //     ->select(
-        //         'id',
-        //         'nama',
-        //         'kode_matkul',
-        //         'self_assessment',
-        //         'pendidikan',
-        //         'sertifikat',
-        //         'penelitian'
-        //     )
-        //     ->get();
+        $dosen = User::where('jabatan', 'Dosen')
+            ->with(['selfAssessments', 'penelitians', 'sertifikat', 'pendidikans'])
+            ->get();
 
-        // if ($dosenMatkul->isEmpty()) {
-        //     return response()->json(['error' => 'Database kosong'], 400);
-        // }
+        $dataDosen = $dosen->map(function($d) {
+            return [
+                'id' => $d->id,
+                'nama' => $d->nama_lengkap,
 
-        // Format data untuk API Flask
-        // $dataDosen = $dosenMatkul->map(function($d) {
-        //     return [
-        //         'id' => $d->id,
-        //         'nama' => $d->nama,
-        //         'kode_matkul' => $d->kode_matkul,
-        //         'c1_self_assessment' => $d->self_assessment ?? 0,
-        //         'c2_pendidikan' => $d->pendidikan,
-        //         'c3_sertifikat' => $d->sertifikat,
-        //         'c4_penelitian' => $d->penelitian,
-        //     ];
-        // })->toArray();
+                'c1_self_assessment' => optional($d->selfAssessments->last())->nilai ?? 1,
+                'c2_pendidikan'      => optional($d->pendidikans->last())->tingkat ?? 1,
+                'c3_sertifikat'      => $d->sertifikat->count() ?: 1,
+                'c4_penelitian'      => $d->penelitians->count() ?: 1,
+            ];
+        })->values()->toArray();
 
 
         // Data Dummy
-        $dataDosen = [
-            // ======================== Dr. Budi (S3) ========================
-            [
-                'id' => 1,
-                'nama' => 'Dr. Budi (S3)',
-                'kode_matkul' => 'IF101',
-                'c1_self_assessment' => 5,
-                'c2_pendidikan' => 5,
-                'c3_sertifikat' => 4,
-                'c4_penelitian' => 1
-            ],
-            [
-                'id' => 2,
-                'nama' => 'Dr. Budi (S3)',
-                'kode_matkul' => 'IF202',
-                'c1_self_assessment' => 8,
-                'c2_pendidikan' => 5,
-                'c3_sertifikat' => 5,
-                'c4_penelitian' => 8
-            ],
-            [
-                'id' => 3,
-                'nama' => 'Dr. Budi (S3)',
-                'kode_matkul' => 'IF303',
-                'c1_self_assessment' => 1,
-                'c2_pendidikan' => 3,
-                'c3_sertifikat' => 5,
-                'c4_penelitian' => 1
-            ],
+        // $dataDosen = [
+        //     // ======================== Dr. Budi (S3) ========================
+        //     [
+        //         'id' => 1,
+        //         'nama' => 'Dr. Budi (S3)',
+        //         'kode_matkul' => 'IF101',
+        //         'c1_self_assessment' => 5,
+        //         'c2_pendidikan' => 5,
+        //         'c3_sertifikat' => 4,
+        //         'c4_penelitian' => 1
+        //     ],
+        //     [
+        //         'id' => 2,
+        //         'nama' => 'Dr. Budi (S3)',
+        //         'kode_matkul' => 'IF202',
+        //         'c1_self_assessment' => 8,
+        //         'c2_pendidikan' => 5,
+        //         'c3_sertifikat' => 5,
+        //         'c4_penelitian' => 8
+        //     ],
+        //     [
+        //         'id' => 3,
+        //         'nama' => 'Dr. Budi (S3)',
+        //         'kode_matkul' => 'IF303',
+        //         'c1_self_assessment' => 1,
+        //         'c2_pendidikan' => 3,
+        //         'c3_sertifikat' => 5,
+        //         'c4_penelitian' => 1
+        //     ],
 
-            // ======================== Ani, M.Kom (S2) ========================
-            [
-                'id' => 4,
-                'nama' => 'Ani, M.Kom (S2)',
-                'kode_matkul' => 'IF101',
-                'c1_self_assessment' => 8,
-                'c2_pendidikan' => 5,
-                'c3_sertifikat' => 7,
-                'c4_penelitian' => 4
-            ],
-            [
-                'id' => 5,
-                'nama' => 'Ani, M.Kom (S2)',
-                'kode_matkul' => 'IF202',
-                'c1_self_assessment' => 7,
-                'c2_pendidikan' => 3,
-                'c3_sertifikat' => 6,
-                'c4_penelitian' => 5
-            ],
-            [
-                'id' => 3,
-                'nama' => 'Ani, M.Kom (S3)',
-                'kode_matkul' => 'IF303',
-                'c1_self_assessment' => 4,
-                'c2_pendidikan' => 5,
-                'c3_sertifikat' => 1,
-                'c4_penelitian' => 1
-            ],
+        //     // ======================== Ani, M.Kom (S2) ========================
+        //     [
+        //         'id' => 4,
+        //         'nama' => 'Ani, M.Kom (S2)',
+        //         'kode_matkul' => 'IF101',
+        //         'c1_self_assessment' => 8,
+        //         'c2_pendidikan' => 5,
+        //         'c3_sertifikat' => 7,
+        //         'c4_penelitian' => 4
+        //     ],
+        //     [
+        //         'id' => 5,
+        //         'nama' => 'Ani, M.Kom (S2)',
+        //         'kode_matkul' => 'IF202',
+        //         'c1_self_assessment' => 7,
+        //         'c2_pendidikan' => 3,
+        //         'c3_sertifikat' => 6,
+        //         'c4_penelitian' => 5
+        //     ],
+        //     [
+        //         'id' => 3,
+        //         'nama' => 'Ani, M.Kom (S3)',
+        //         'kode_matkul' => 'IF303',
+        //         'c1_self_assessment' => 4,
+        //         'c2_pendidikan' => 5,
+        //         'c3_sertifikat' => 1,
+        //         'c4_penelitian' => 1
+        //     ],
 
-            // ======================== Rizal, M.T (S2) ========================
-            [
-                'id' => 7,
-                'nama' => 'Rizal, M.T (S2)',
-                'kode_matkul' => 'IF101',
-                'c1_self_assessment' => 7,
-                'c2_pendidikan' => 3,
-                'c3_sertifikat' => 5,
-                'c4_penelitian' => 6
-            ],
-            [
-                'id' => 8,
-                'nama' => 'Rizal, M.T (S2)',
-                'kode_matkul' => 'IF202',
-                'c1_self_assessment' => 6,
-                'c2_pendidikan' => 3,
-                'c3_sertifikat' => 4,
-                'c4_penelitian' => 7
-            ],
-            [
-                'id' => 9,
-                'nama' => 'Rizal, M.T (S2)',
-                'kode_matkul' => 'IF303',
-                'c1_self_assessment' => 8,
-                'c2_pendidikan' => 3,
-                'c3_sertifikat' => 5,
-                'c4_penelitian' => 4
-            ],
-        ];
+        //     // ======================== Rizal, M.T (S2) ========================
+        //     [
+        //         'id' => 7,
+        //         'nama' => 'Rizal, M.T (S2)',
+        //         'kode_matkul' => 'IF101',
+        //         'c1_self_assessment' => 7,
+        //         'c2_pendidikan' => 3,
+        //         'c3_sertifikat' => 5,
+        //         'c4_penelitian' => 6
+        //     ],
+        //     [
+        //         'id' => 8,
+        //         'nama' => 'Rizal, M.T (S2)',
+        //         'kode_matkul' => 'IF202',
+        //         'c1_self_assessment' => 6,
+        //         'c2_pendidikan' => 3,
+        //         'c3_sertifikat' => 4,
+        //         'c4_penelitian' => 7
+        //     ],
+        //     [
+        //         'id' => 9,
+        //         'nama' => 'Rizal, M.T (S2)',
+        //         'kode_matkul' => 'IF303',
+        //         'c1_self_assessment' => 8,
+        //         'c2_pendidikan' => 3,
+        //         'c3_sertifikat' => 5,
+        //         'c4_penelitian' => 4
+        //     ],
+        // ];
 
 
         // B. Kirim ke Flask
