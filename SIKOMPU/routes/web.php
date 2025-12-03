@@ -110,10 +110,18 @@ Route::middleware('auth')->group(function () {
         Route::get('/hasil-rekomendasi', function () {
             return view('pages.hasil-rekomendasi');
         })->name('hasil.rekomendasi');
-        
+
+        //peforma Ai
+         Route::get('/peforma-ai', function () {
+            return view('pages.admin.peforma-ai'); // buat file ini nanti
+        })->name('peforma.ai');
+        Route::get('/performa.ai', [LaporanController::class, 'index'])->name('laporan.index')
+            
         // Laporan Struktural
         Route::get('/laporan-struktural', function () {
             return view('pages.laporan-struktural');
         })->name('laporan.struktural');
+
+        
     });
 });
