@@ -111,17 +111,24 @@ Route::middleware('auth')->group(function () {
             return view('pages.hasil-rekomendasi');
         })->name('hasil.rekomendasi');
 
-        //peforma Ai
-         Route::get('/peforma-ai', function () {
-            return view('pages.admin.peforma-ai'); // buat file ini nanti
+      
+        //peforma AI
+        Route::get('/peforma-ai', function () {
+            return view('pages.peforma-ai'); 
         })->name('peforma.ai');
-        Route::get('/performa.ai', [LaporanController::class, 'index'])->name('laporan.index')
-            
-        // Laporan Struktural
-        Route::get('/laporan-struktural', function () {
-            return view('pages.laporan-struktural');
-        })->name('laporan.struktural');
-
         
+       // SELF ASSESEMENT ADMIN
+        Route::get('/self-Assesment', [App\Http\Controllers\MataKuliahController::class, 'indexAdmin'])->name('self.Assesment');
+
+       // Penelitian Admin
+        Route::get('/penelitian2', fn() => view('pages.penelitian2'))->name('penelitian2');
+
+       // Sertifikat Admin
+        Route::get('/sertifikat', fn() => view('pages.sertifikat'))->name('sertifikat');
+
+      // Laporan Struktural
+        Route::get('/laporan-struktural', fn() => view('pages.laporan-struktural'))
+          ->name('laporan.struktural');
     });
 });
+
