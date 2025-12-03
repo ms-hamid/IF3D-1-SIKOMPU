@@ -96,6 +96,8 @@ Route::middleware('auth')->group(function () {
             ->name('dashboard.struktural');
         
         // Manajemen Dosen (CRUD lengkap)
+        Route::get('/manajemen/dosen', [DosenController::class, 'index'])
+        ->name('manajemen.dosen');
         Route::resource('dosen', DosenController::class);
         Route::post('dosen/{dosen}/reset-password', [DosenController::class, 'resetPassword'])
             ->name('dosen.reset-password');
