@@ -65,9 +65,9 @@
     {{-- ======================== SIDEBAR ======================== --}}
     @auth
         @if(auth()->user()->jabatan == 'Dosen' || auth()->user()->jabatan == 'Laboran')
-            <x-sidebar-dosen />
+            <x-sidebardosen />
         @elseif(auth()->user()->jabatan == 'Struktural' || auth()->user()->jabatan == 'Admin' || auth()->user()->hasRole('admin') || auth()->user()->hasRole('Admin'))
-            <x-sidebar />
+            <x-sidebaradmin />
         @else
             <x-sidebar />
         @endif
