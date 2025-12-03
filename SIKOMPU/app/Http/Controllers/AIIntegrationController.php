@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\User;
+use App\Models\Matakuliah;
+
 
 class AIIntegrationController extends Controller
 {
@@ -40,22 +42,24 @@ class AIIntegrationController extends Controller
         // Nanti ganti dengan: $dosen = User::where('role', 'dosen')->get();
 
         // Ambil data dari database
-        $dosen = User::where('jabatan', 'Dosen')
-            ->with(['selfAssessments', 'penelitians', 'sertifikat', 'pendidikans'])
-            ->get();
+        $users = User::with(['selfAssessments', 'penelitians', 'sertifikat', 'pendidikans'])->get();
 
-        $dataDosen = $dosen->map(function($d) {
-            return [
-                'id' => $d->id,
-                'nama' => $d->nama_lengkap,
+        $dataDosen = [];
+            $matkuls = Matakuliah::all();
 
-                'c1_self_assessment' => optional($d->selfAssessments->last())->nilai ?? 1,
-                'c2_pendidikan'      => optional($d->pendidikans->last())->tingkat ?? 1,
-                'c3_sertifikat'      => $d->sertifikat->count() ?: 1,
-                'c4_penelitian'      => $d->penelitians->count() ?: 1,
-            ];
-        })->values()->toArray();
-
+        foreach ($users as $user) {
+            foreach ($matkuls as $mk) {
+                $dataDosen[] = [
+                    'id' => $user->id,
+                    'nama' => $user->nama_lengkap,
+                    'kode_matkul' => $mk->kode_mk,
+                    'c1_self_assessment' => optional($user->selfAssessments->last())->nilai ?? 1,
+                    'c2_pendidikan' => optional($user->pendidikans->last())->jenjang ?? 1,
+                    'c3_sertifikat' => $user->sertifikat->count() ?: 1,
+                    'c4_penelitian' => $user->penelitians->count() ?: 1,
+                ];
+            }
+        }
 
         // Data Dummy
         // $dataDosen = [
@@ -168,4 +172,8 @@ class AIIntegrationController extends Controller
             return response()->json(['error' => 'Koneksi Error', 'msg' => $e->getMessage()], 500);
         }
     }
+
+    
 }
+
+

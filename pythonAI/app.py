@@ -123,7 +123,7 @@ def predict():
         # pastikan groupby pakai kolom yang benar
         if 'kode_matkul' not in df.columns:
             return jsonify({"status": "error", "message": "Kolom kode_matkul tidak ditemukan"}), 400
-
+        
         for mk, group in df.groupby("kode_matkul"):
             if len(group) == 0:
                 continue  # skip dataset kosong

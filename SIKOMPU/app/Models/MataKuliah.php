@@ -36,4 +36,5 @@ class MataKuliah extends Model
     {
         return $this->hasMany(DetailHasilRekomendasi::class, 'matakuliah_id');
     }
+
 }
