@@ -56,11 +56,11 @@
           // ---------------------------
           if ($role === 'dosen') {
               $menus = [
-                  ['route' => 'dashboard.dosen', 'icon' => 'fa-solid fa-chart-line', 'label' => 'Dashboard'],
-                  ['route' => 'self.assesment', 'icon' => 'fa-solid fa-clipboard-check', 'label' => 'Self-assesment'],
-                  ['route' => 'sertifikat', 'icon' => 'fa-solid fa-medal', 'label' => 'Sertifikat'],
-                  ['route' => 'penelitian', 'icon' => 'fa-solid fa-flask', 'label' => 'Penelitian'],
-                  ['route' => 'laporan.index', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Laporan'],
+                 ['route' => 'dashboard.dosen', 'icon' => 'fa-solid fa-chart-line', 'label' => 'Dashboard'],
+                 ['route' => 'self-assessment.index', 'icon' => 'fa-solid fa-clipboard-check', 'label' => 'Self Assessment'],
+                 ['route' => 'sertifikasi.index', 'icon' => 'fa-solid fa-medal', 'label' => 'Sertifikat'],
+                 ['route' => 'penelitian.index', 'icon' => 'fa-solid fa-flask', 'label' => 'Penelitian'],
+                 ['route' => 'laporan.index', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Laporan'],
               ];
           }
 
@@ -69,16 +69,16 @@
           // ---------------------------
           if ($role === 'struktural') {
               $menus = [
-                 ['route' => 'dashboard.struktural', 'icon' => 'fa-solid fa-chart-line', 'label' => 'Dashboard'],
-                 ['route' => 'manajemen.dosen', 'icon' => 'fa-solid fa-users', 'label' => 'Manajemen Dosen'],
-                 ['route' => 'manajemen.matkul', 'icon' => 'fa-solid fa-book-open', 'label' => 'Manajemen Matkul'],
-                 ['route' => 'manajemen.prodi', 'icon' => 'fa-solid fa-building-columns', 'label' => 'Manajemen Prodi'],
-                 ['route' => 'hasil.rekomendasi', 'icon' => 'fa-solid fa-star', 'label' => 'Hasil Rekomendasi'],
-                 ['route' => 'self.Assesment', 'icon' => 'fa-solid fa-clipboard-check', 'label' => 'Self-Assesment'],
-                 ['route' => 'sertifikat', 'icon' => 'fa-solid fa-medal', 'label' => 'Sertifikat'],
-                 ['route' => 'penelitian2', 'icon' => 'fa-solid fa-flask', 'label' => 'Penelitian'],
-                 ['route' => 'peforma.ai', 'icon' => 'fa-solid fa-bolt', 'label' => 'Peforma AI'],
-                 ['route' => 'laporan.index', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Laporan'],
+                  ['route' => 'dashboard.struktural', 'icon' => 'fa-solid fa-chart-line', 'label' => 'Dashboard'],
+                  ['route' => 'dosen.index', 'icon' => 'fa-solid fa-users', 'label' => 'Manajemen Dosen'],
+                  ['route' => 'matakuliah.index', 'icon' => 'fa-solid fa-book-open', 'label' => 'Manajemen Matakuliah'],
+                  ['route' => 'prodi.index', 'icon' => 'fa-solid fa-building-columns', 'label' => 'Manajemen Prodi'],
+                  ['route' => 'hasil.rekomendasi', 'icon' => 'fa-solid fa-star', 'label' => 'Hasil Rekomendasi'],
+                  ['route' => 'self.Assesment', 'icon' => 'fa-solid fa-clipboard-check', 'label' => 'Self Assessment'],
+                  ['route' => 'sertifikat', 'icon' => 'fa-solid fa-medal', 'label' => 'Sertifikat'],
+                  ['route' => 'penelitian2', 'icon' => 'fa-solid fa-flask', 'label' => 'Penelitian'],
+                  ['route' => 'peforma.ai', 'icon' => 'fa-solid fa-bolt', 'label' => 'Peforma AI'],
+                  ['route' => 'laporan.struktural', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Laporan'],
               ];
           }
       @endphp
