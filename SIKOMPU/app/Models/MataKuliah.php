@@ -37,4 +37,12 @@ class MataKuliah extends Model
         return $this->hasMany(DetailHasilRekomendasi::class, 'matakuliah_id');
     }
 
+    public function kategori()
+    {
+    return $this->belongsToMany(Kategori::class, 'mk_kategori')
+        ->withPivot('bobot')
+        ->withTimestamps();
+    }
+
+
 }

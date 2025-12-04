@@ -17,9 +17,18 @@ class Penelitian extends Model
         'tahun_publikasi',
         'peran',
         'link_publikasi',
+        'kategori_id'
     ];
 
+
+
     public $timestamps = false;
+
+    public function kategori()
+    {
+    return $this->belongsTo(Kategori::class);
+    }
+
 
     public function user()
     {

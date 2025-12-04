@@ -18,7 +18,14 @@ class Sertifikat extends Model
         'tahun_diperoleh',
         'file_path',
         'status_verifikasi',
+        'kategori_id',
     ];
+
+    public function kategori()
+    {   
+    return $this->belongsTo(Kategori::class);
+    }
+
 
     public $timestamps = false;
 
