@@ -16,30 +16,18 @@ use App\Http\Controllers\ProfilController;
 Route::get('/cek-ai', [AIIntegrationController::class, 'checkConnection']);
 Route::get('/generate-hasil', [AIIntegrationController::class, 'generateRecommendation']);
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes - SiKomPu
-|--------------------------------------------------------------------------
-| Login menggunakan NIDN, redirect otomatis berdasarkan jabatan
-*/
-
 // ============================
 // PUBLIC ROUTES (Guest Only)
 // ============================
-
 Route::middleware('guest')->group(function () {
     Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 });
 
-
-
-
 // ============================
 // AUTHENTICATED ROUTES
 // ============================
-
 Route::middleware('auth')->group(function () {
     
     // Logout untuk semua user
@@ -50,10 +38,26 @@ Route::middleware('auth')->group(function () {
         return redirect(auth()->user()->getDashboardUrl());
     })->name('dashboard');
     
-    // ⭐ PROFIL & GANTI PASSWORD (SEMUA USER BISA AKSES)
+    // PROFIL & GANTI PASSWORD (SEMUA USER BISA AKSES)
     Route::get('/profil', [ProfilController::class, 'index'])->name('profil.index');
     Route::put('/profil/update', [ProfilController::class, 'update'])->name('profil.update');
     Route::post('/profil/ganti-password', [ProfilController::class, 'gantiPassword'])->name('ganti_password.update');
+    
+    // SERTIFIKASI - BISA DIAKSES DOSEN & STRUKTURAL
+    Route::middleware('role:Dosen,Laboran,Kepala Jurusan,Sekretaris Jurusan,Kepala Program Studi')->group(function () {
+        Route::get('sertifikasi', [SertifikatController::class, 'index'])->name('sertifikasi.index');
+        Route::post('sertifikasi', [SertifikatController::class, 'store'])->name('sertifikasi.store');
+        Route::get('sertifikasi/{id}', [SertifikatController::class, 'show'])->name('sertifikasi.show');
+        Route::put('sertifikasi/{id}', [SertifikatController::class, 'update'])->name('sertifikasi.update');
+        Route::delete('sertifikasi/{id}', [SertifikatController::class, 'destroy'])->name('sertifikasi.destroy');
+        Route::get('sertifikasi/{id}/download', [SertifikatController::class, 'download'])->name('sertifikasi.download');
+        
+        // PENELITIAN - BISA DIAKSES DOSEN & STRUKTURAL (sama seperti sertifikasi!)
+        Route::get('/penelitian', [PenelitianController::class, 'viewIndex'])->name('penelitian.index');
+        Route::post('/penelitian', [PenelitianController::class, 'store'])->name('penelitian.store');
+        Route::patch('/penelitian/{penelitian}', [PenelitianController::class, 'update'])->name('penelitian.update');
+        Route::delete('/penelitian/{penelitian}', [PenelitianController::class, 'destroy'])->name('penelitian.destroy');
+    });
     
     // ============================
     // DASHBOARD & FITUR DOSEN/LABORAN
@@ -66,21 +70,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/self-assessment', function () {
             return view('pages.self-assessment');
         })->name('self-assessment.index');
-        
-        // Sertifikasi - CRUD lengkap
-        Route::get('sertifikasi', [SertifikatController::class, 'index'])->name('sertifikasi.index');
-        Route::post('sertifikasi', [SertifikatController::class, 'store'])->name('sertifikasi.store');
-        Route::get('sertifikasi/{id}', [SertifikatController::class, 'show'])->name('sertifikasi.show');
-        Route::put('sertifikasi/{id}', [SertifikatController::class, 'update'])->name('sertifikasi.update');
-        Route::delete('sertifikasi/{id}', [SertifikatController::class, 'destroy'])->name('sertifikasi.destroy');
-        Route::get('sertifikasi/{id}/download', [SertifikatController::class, 'download'])
-            ->name('sertifikasi.download');
-        
-        // Penelitian - CRUD lengkap
-        Route::get('/penelitian', [PenelitianController::class, 'viewIndex'])->name('penelitian.index');
-        Route::post('/penelitian', [PenelitianController::class, 'store'])->name('penelitian.store');
-        Route::patch('/penelitian/{penelitian}', [PenelitianController::class, 'update'])->name('penelitian.update');
-        Route::delete('/penelitian/{penelitian}', [PenelitianController::class, 'destroy'])->name('penelitian.destroy');
         
         Route::get('/laporan', function () {
             return view('pages.laporan');
@@ -97,7 +86,7 @@ Route::middleware('auth')->group(function () {
         
         // Manajemen Dosen (CRUD lengkap)
         Route::get('/manajemen/dosen', [DosenController::class, 'index'])
-        ->name('manajemen.dosen');
+            ->name('manajemen.dosen');
         Route::resource('dosen', DosenController::class);
         Route::post('dosen/{dosen}/reset-password', [DosenController::class, 'resetPassword'])
             ->name('dosen.reset-password');
@@ -112,24 +101,20 @@ Route::middleware('auth')->group(function () {
         Route::get('/hasil-rekomendasi', function () {
             return view('pages.hasil-rekomendasi');
         })->name('hasil.rekomendasi');
-
       
-        //peforma AI
+        // Peforma AI
         Route::get('/peforma-ai', function () {
             return view('pages.peforma-ai'); 
         })->name('peforma.ai');
         
-       // SELF ASSESEMENT ADMIN
-        Route::get('/self-Assesment', [App\Http\Controllers\MataKuliahController::class, 'indexAdmin'])->name('self.Assesment');
+        // Self Assessment Admin
+        Route::get('/self-Assesment', function () {
+            return view('pages.self-assessment');
+        })->name('self.Assesment');
 
-       // Penelitian Admin
-        Route::get('/penelitian2', fn() => view('pages.penelitian2'))->name('penelitian2');
-
-       // Sertifikat Admin
-        Route::get('/sertifikat', fn() => view('pages.sertifikat'))->name('sertifikat');
-
-      // Laporan Struktural
-        Route::get('/laporan-struktural', fn() => view('pages.laporan-struktural'))
-          ->name('laporan.struktural');
+        // Laporan Struktural
+        Route::get('/laporan-struktural', function () {
+            return view('pages.laporan-struktural');
+        })->name('laporan.struktural');
     });
 });

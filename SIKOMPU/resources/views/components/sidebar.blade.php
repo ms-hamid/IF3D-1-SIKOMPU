@@ -75,8 +75,8 @@
                   ['route' => 'prodi.index', 'icon' => 'fa-solid fa-building-columns', 'label' => 'Manajemen Prodi'],
                   ['route' => 'hasil.rekomendasi', 'icon' => 'fa-solid fa-star', 'label' => 'Hasil Rekomendasi'],
                   ['route' => 'self.Assesment', 'icon' => 'fa-solid fa-clipboard-check', 'label' => 'Self Assessment'],
-                  ['route' => 'sertifikat', 'icon' => 'fa-solid fa-medal', 'label' => 'Sertifikat'],
-                  ['route' => 'penelitian2', 'icon' => 'fa-solid fa-flask', 'label' => 'Penelitian'],
+                  ['route' => 'sertifikasi.index', 'icon' => 'fa-solid fa-medal', 'label' => 'Sertifikat'],
+                  ['route' => 'penelitian.index', 'icon' => 'fa-solid fa-flask', 'label' => 'Penelitian'],
                   ['route' => 'peforma.ai', 'icon' => 'fa-solid fa-bolt', 'label' => 'Peforma AI'],
                   ['route' => 'laporan.struktural', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Laporan'],
               ];

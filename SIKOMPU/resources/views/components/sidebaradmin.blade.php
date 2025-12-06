@@ -64,17 +64,17 @@
          : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700' }}">
      <i class="fa-solid fa-clipboard-check mr-3"></i> Self-Assesment
    </a>
-   <a href="{{ route('sertifikat') }}" 
+   <a href="{{ route('sertifikasi.index') }}" 
       class="flex items-center px-4 py-2.5 rounded-md font-medium text-sm transition duration-200
-      {{ request()->routeIs('sertifikat*') 
+      {{ request()->routeIs('sertifikasi*') 
          ? 'bg-blue-800 text-white' 
          : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700' }}">
      <i class="fa-solid fa-medal mr-3"></i> Sertifikat
    </a>
 
-   <a href="{{ route('penelitian2') }}" 
+   <a href="{{ route('penelitian.index') }}" 
       class="flex items-center px-4 py-2.5 rounded-md font-medium text-sm transition duration-200
-      {{ request()->routeIs('penelitian2*') 
+      {{ request()->routeIs('penelitian*') 
          ? 'bg-blue-800 text-white' 
          : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700' }}">
      <i class="fa-solid fa-flask mr-3"></i> Penelitian

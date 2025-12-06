@@ -18,6 +18,11 @@ class SertifikatController extends Controller
             ->orderBy('tahun_diperoleh', 'desc')
             ->get();
         
+        // ✅ Detect role & return view yang sesuai
+        if (auth()->user()->hasRole(['Kepala Jurusan', 'Sekretaris Jurusan', 'Kepala Program Studi'])) {
+            return view('pages.sertifikasi-struktural', compact('sertifikats'));
+        }
+    
         return view('pages.sertifikasi', compact('sertifikats'));
     }
 
