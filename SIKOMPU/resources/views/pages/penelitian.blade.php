@@ -4,13 +4,20 @@
 @section('page_title', 'Penelitian')
 
 @section('content')
-<main class="flex-1 p-4 sm:p-6 space-y-6" x-data="{ 
-    openModal: false, 
-    openEditModal: false,
-    editData: {},
-    deleteData: {},
-    openDeleteModal: false
-}">
+<main 
+    class="flex-1 p-4 sm:p-6 space-y-6" 
+    x-data="{ 
+        openModal: false, 
+        openEditModal: false, 
+        openDeleteModal: false,
+        editData: null,
+        deleteData: null
+    }" 
+    x-effect="(openModal || openEditModal || openDeleteModal) 
+        ? document.body.classList.add('overflow-hidden') 
+        : document.body.classList.remove('overflow-hidden')"
+    @close-modal.window="openModal = false; openEditModal = false; openDeleteModal = false"
+>
 
     {{-- Notifikasi Success & Error --}}
     @if(session('success'))
@@ -27,7 +34,7 @@
     </div>
     @endif
 
-    {{-- Header actions --}}
+    {{-- Header --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
         <h1 class="text-lg sm:text-xl font-semibold text-gray-700">Daftar Penelitian</h1>
         <div class="flex flex-wrap gap-3">
@@ -42,62 +49,81 @@
         </div>
     </div>
 
-    {{-- Modal Tambah Penelitian --}}
-    <div
+    {{-- ======================== --}}
+    {{-- 🔥 MODAL TAMBAH PENELITIAN --}}
+    {{-- ======================== --}}
+    <div 
         x-cloak
         x-show="openModal"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-        class="fixed inset-0 flex items-start justify-center sm:items-center bg-black/60 z-50 p-4 overflow-y-auto"
+        class="fixed inset-0 z-50 flex items-center justify-center"
         style="display: none;"
     >
+
+        {{-- Overlay FULL sehingga sidebar tidak terlihat --}}
         <div 
-            @click.away="openModal = false" 
-            class="bg-white rounded-lg shadow-lg p-5 sm:p-6 w-full max-w-md my-8"
+            class="fixed inset-0 bg-black/70"
+            @click="openModal = false"
+        ></div>
+
+        {{-- Modal + animasi slide down --}}
+        <div 
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 -translate-y-6 scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+            x-transition:leave-end="opacity-0 -translate-y-6 scale-95"
+            class="relative w-full max-w-lg mx-auto overflow-y-auto max-h-[90vh]
+                   bg-white shadow-xl p-6 sm:p-8"
         >
-            <x-tambah-penelitian />
+            <x-tambah-penelitian :kategori="$kategori" />
         </div>
     </div>
 
-    {{-- Modal Edit Penelitian --}}
+    {{-- ======================== --}}
+    {{-- 🔥 MODAL EDIT PENELITIAN --}}
+    {{-- ======================== --}}
     <div
         x-cloak
         x-show="openEditModal"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-        class="fixed inset-0 flex items-start justify-center sm:items-center bg-black/60 z-50 p-4 overflow-y-auto"
+        class="fixed inset-0 z-50 flex items-center justify-center"
         style="display: none;"
     >
+
+        <!-- Overlay -->
         <div 
+            class="fixed inset-0 bg-black/70"
+            @click="openEditModal = false"
+        ></div>
+
+        <!-- Modal -->
+        <div 
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 -translate-y-6"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 -translate-y-6"
             @click.away="openEditModal = false" 
-            class="bg-white rounded-lg shadow-lg p-5 sm:p-6 w-full max-w-md my-8"
+            class="relative bg-white rounded-lg shadow-lg p-5 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
         >
             <x-edit-penelitian />
         </div>
     </div>
 
-    {{-- Modal Hapus Penelitian --}}
+    {{-- ======================== --}}
+    {{-- 🔥 MODAL HAPUS PENELITIAN --}}
+    {{-- ======================== --}}
     <div
         x-cloak
         x-show="openDeleteModal"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
         class="fixed inset-0 flex items-center justify-center bg-black/60 z-50 p-4"
         style="display: none;"
     >
         <div 
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 -translate-y-6"
+            x-transition:enter-end="opacity-100 translate-y-0"
             @click.away="openDeleteModal = false" 
             class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md"
         >
@@ -105,7 +131,7 @@
         </div>
     </div>
 
-    {{-- Statistik ringkas --}}
+    {{-- Statistik --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
         <div class="bg-blue-100 p-4 rounded border border-blue-300 text-center">
             <h3 class="text-xs sm:text-sm text-gray-500">Total Penelitian</h3>
@@ -178,23 +204,27 @@
             </div>
 
             <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-gray-200">
-                <button @click="editData = {
-                            id: {{ $p->id }},
-                            judul_penelitian: '{{ addslashes($p->judul_penelitian) }}',
-                            tahun_publikasi: {{ $p->tahun_publikasi }},
-                            peran: '{{ $p->peran }}',
-                            link_publikasi: '{{ $p->link_publikasi ?? '' }}'
-                        }; openEditModal = true"
-                        class="px-3 py-1 text-xs sm:text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-md transition-colors">
+                <button 
+                    @click="editData = {
+                        id: {{ $p->id }},
+                        judul_penelitian: '{{ addslashes($p->judul_penelitian) }}',
+                        tahun_publikasi: {{ $p->tahun_publikasi }},
+                        peran: '{{ $p->peran }}',
+                        link_publikasi: '{{ $p->link_publikasi ?? '' }}'
+                    }; openEditModal = true"
+                    class="px-3 py-1 text-xs sm:text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-md transition-colors"
+                >
                     <i class="fa-solid fa-edit"></i> Edit
                 </button>
-                <button @click="deleteData = {
-                            id: {{ $p->id }},
-                            judul: '{{ addslashes($p->judul_penelitian) }}',
-                            tahun: {{ $p->tahun_publikasi }},
-                            peran: '{{ $p->peran }}'
-                        }; openDeleteModal = true"
-                        class="px-3 py-1 text-xs sm:text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors">
+                <button 
+                    @click="deleteData = {
+                        id: {{ $p->id }},
+                        judul: '{{ addslashes($p->judul_penelitian) }}',
+                        tahun: {{ $p->tahun_publikasi }},
+                        peran: '{{ $p->peran }}'
+                    }; openDeleteModal = true"
+                    class="px-3 py-1 text-xs sm:text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors"
+                >
                     <i class="fa-solid fa-trash"></i> Hapus
                 </button>
             </div>
@@ -204,5 +234,4 @@
     @endif
 
 </main>
-
 @endsection

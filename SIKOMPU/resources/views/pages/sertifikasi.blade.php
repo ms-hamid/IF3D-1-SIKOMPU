@@ -101,55 +101,77 @@
     
     <hr class="border-gray-200">
 
-    {{-- Modal Form Upload Sertifikasi --}}
-    <div
+    {{-- ======================== --}}
+    {{-- 🔥 MODAL TAMBAH PENELITIAN --}}
+    {{-- ======================== --}}
+    <div 
         x-cloak
         x-show="openModal"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-        class="fixed inset-0 flex items-center justify-center bg-black/60 z-50 p-4"
+        class="fixed inset-0 z-50 flex items-center justify-center"
         style="display: none;"
     >
+
+        {{-- Overlay FULL sehingga sidebar tidak terlihat --}}
         <div 
-            @click.away="openModal = false" 
-            class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto"
+            class="fixed inset-0 bg-black/70"
+            @click="openModal = false"
+        ></div>
+
+        {{-- Modal + animasi slide down --}}
+        <div 
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 -translate-y-6 scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+            x-transition:leave-end="opacity-0 -translate-y-6 scale-95"
+            class="relative w-full max-w-lg mx-auto overflow-y-auto max-h-[90vh]
+                   bg-white shadow-xl p-6 sm:p-8"
         >
-            @include('components.tambah-sertifikat')
+            <x-tambah-sertifikat :kategori="$kategori" />
         </div>
     </div>
+
 
     {{-- Modal Edit Sertifikat --}}
     <div
         x-cloak
         x-show="openEditModal"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-        class="fixed inset-0 flex items-center justify-center bg-black/60 z-50 p-4"
+        class="fixed inset-0 z-50 flex items-center justify-center"
         style="display: none;"
     >
+
+        <!-- Overlay -->
         <div 
-            @click.away="openEditModal = false" 
-            class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto"
-        >
-            <template x-if="editId">
-                <div>
-                    @foreach($sertifikats as $sertifikat)
-                        <div x-show="editId == {{ $sertifikat->id }}">
-                            @include('components.edit-sertifikat', ['sertifikat' => $sertifikat])
-                        </div>
-                    @endforeach
-                </div>
-            </template>
-        </div>
+            class="fixed inset-0 bg-black/70"
+            @click="openEditModal = false"
+        ></div>
+
+        <!-- Model -->
+        <div 
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 -translate-y-6"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 -translate-y-6"
+                @click.away="openEditModal = false" 
+                class="relative bg-white shadow-lg p-5 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
+            >
+
+        <template x-if="editId">
+            <div>
+                @foreach($sertifikats as $sertifikat)
+                    <div x-show="editId == {{ $sertifikat->id }}">
+                        @include('components.edit-sertifikat', ['sertifikat' => $sertifikat])
+                    </div>
+                @endforeach
+            </div>
+        </template>
+
     </div>
+</div>
+
 
     {{-- Modal Konfirmasi Hapus --}}
     @include('components.hapus-sertifikat')
