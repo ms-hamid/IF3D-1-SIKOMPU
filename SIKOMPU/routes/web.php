@@ -12,6 +12,10 @@ use App\Http\Controllers\SertifikatController;
 use App\Http\Controllers\PenelitianController;
 use App\Http\Controllers\AIIntegrationController;
 use App\Http\Controllers\ProfilController;  
+use App\Http\Controllers\HasilRekomendasiController;
+use App\Http\Controllers\HasilRekomendasiPageController;
+
+
 
 Route::get('/cek-ai', [AIIntegrationController::class, 'checkConnection']);
 Route::get('/generate-hasil', [AIIntegrationController::class, 'generateRecommendation']);
@@ -75,7 +79,8 @@ Route::middleware('auth')->group(function () {
             return view('pages.laporan');
         })->name('laporan.index');
     });
-    
+
+
     // ============================
     // DASHBOARD & FITUR STRUKTURAL
     // ============================
@@ -97,11 +102,24 @@ Route::middleware('auth')->group(function () {
         // Manajemen Matakuliah
         Route::resource('matakuliah', MataKuliahController::class);
         
-        // Hasil Rekomendasi
-        Route::get('/hasil-rekomendasi', function () {
-            return view('pages.hasil-rekomendasi');
-        })->name('hasil.rekomendasi');
-      
+        // ======================================
+        // HASIL REKOMENDASI (PERBAIKAN)
+        // ======================================
+        Route::get('/hasil-rekomendasi', 
+            [HasilRekomendasiPageController::class, 'index']
+        )->name('hasil.rekomendasi');
+
+
+        // GENERATE REKOMENDASI
+        Route::post('/rekomendasi', 
+            [HasilRekomendasiController::class, 'generate']
+        )->name('rekomendasi.generate');
+
+        // DETAIL HASIL REKOMENDASI
+        Route::get('/rekomendasi/{id}', 
+            [HasilRekomendasiController::class, 'viewDetail']
+        )->name('rekomendasi.detail');
+
         // Peforma AI
         Route::get('/peforma-ai', function () {
             return view('pages.peforma-ai'); 
@@ -117,4 +135,50 @@ Route::middleware('auth')->group(function () {
             return view('pages.laporan-struktural');
         })->name('laporan.struktural');
     });
-});
+
+ });
+
+    
+//     // ============================
+//     // DASHBOARD & FITUR STRUKTURAL
+//     // ============================
+//     Route::middleware('role:Kepala Jurusan,Sekretaris Jurusan,Kepala Program Studi')->group(function () {
+        
+//         Route::get('/dashboard-struktural', [DashboardStrukturalController::class, 'index'])
+//             ->name('dashboard.struktural');
+        
+//         // Manajemen Dosen (CRUD lengkap)
+//         Route::get('/manajemen/dosen', [DosenController::class, 'index'])
+//             ->name('manajemen.dosen');
+//         Route::resource('dosen', DosenController::class);
+//         Route::post('dosen/{dosen}/reset-password', [DosenController::class, 'resetPassword'])
+//             ->name('dosen.reset-password');
+        
+//         // Manajemen Program Studi
+//         Route::resource('prodi', ProdiController::class);
+        
+//         // Manajemen Matakuliah
+//         Route::resource('matakuliah', MataKuliahController::class);
+        
+//         // Hasil Rekomendasi
+//         Route::get('/hasil-rekomendasi', [HasilRekomendasiController::class, 'list'])
+//         ->name('hasil.rekomendasi');
+
+      
+//         // Peforma AI
+//         Route::get('/peforma-ai', function () {
+//             return view('pages.peforma-ai'); 
+//         })->name('peforma.ai');
+        
+//         // Self Assessment Admin
+//         Route::get('/self-Assesment', function () {
+//             return view('pages.self-assessment');
+//         })->name('self.Assesment');
+
+//         // Laporan Struktural
+//         Route::get('/laporan-struktural', function () {
+//             return view('pages.laporan-struktural');
+//         })->name('laporan.struktural');
+//     });
+// });
+

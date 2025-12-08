@@ -36,6 +36,43 @@ $cards = [
 ];
 @endphp
 
+{{-- RINGKASAN DATA (REAL)
+@php
+$cards = [
+   [
+      'title' => 'Total Mata Kuliah',
+      'value' => $totalMk,
+      'icon_bg' => 'bg-blue-100',
+      'icon_text' => 'text-blue-600',
+      'icon_svg' => '<path d="M19 11H5m14 0a2 2 ..."></path>'
+   ],
+   [
+      'title' => 'Koordinator Ditetapkan',
+      'value' => $totalKoordinator,
+      'icon_bg' => 'bg-green-100',
+      'icon_text' => 'text-green-600',
+      'icon_svg' => '<path d="M9 12l2 2 ..."></path>'
+   ],
+   [
+      'title' => 'Pengampu Ditetapkan',
+      'value' => $totalPengampu,
+      'icon_bg' => 'bg-purple-100',
+      'icon_text' => 'text-purple-600',
+      'icon_svg' => '<path d="M17 20h5v-2 ..."></path>'
+   ],
+   [
+      'title' => 'Skor Rata-rata',
+      'value' => number_format($avgSkor ?? 0, 1),
+      'icon_bg' => 'bg-yellow-100',
+      'icon_text' => 'text-yellow-700',
+      'icon_svg' => '<path d="M9.049 2.927 ..."></path>'
+   ],
+];
+@endphp
+--}}
+
+
+
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 @foreach ($cards as $card)
 <div class="bg-white p-5 rounded-xl shadow-lg flex items-center justify-between border border-gray-100">
@@ -95,97 +132,95 @@ $cards = [
    </button>
 </div>
 </div>
-    {{-- 4.Tabel Data Rekomendasi --}}
-    <div class="bg-white p-6 shadow-lg rounded-lg border border-gray-100">
-        <h4 class="text-xl font-bold text-gray-800 mb-4">Rekomendasi Koordinator & Pengampu</h4>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Kode MK
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Mata Kuliah
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Koordinator
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Pengampu
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Skor
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @php
-                        $recommendations = [
-                            ['kode' => 'TIF101', 'mk' => 'Algoritma dan Pemrograman', 'sks' => '3 SKS • Semester 1', 'koordinator' => 'Dr. Retno Sari', 'koor_skor' => '9.2', 'koor_initial' => 'DR', 'pengampu' => ['Abdul Rahman, M.Kom', 'Siti Maryam, S.Kom'], 'skor' => '8.9', 'pengampu_initials' => ['AR', 'SM']],
-                            ['kode' => 'TIF102', 'mk' => 'Matematika Diskrit', 'sks' => '3 SKS • Semester 1', 'koordinator' => 'Prof. Ahmad Hasan', 'koor_skor' => '9.5', 'koor_initial' => 'AH', 'pengampu' => ['Linda Nurhasanah, M.T', 'Riko Kurniawan, S.Kom'], 'skor' => '9.1', 'pengampu_initials' => ['LN', 'RK']],
-                            ['kode' => 'TIF201', 'mk' => 'Struktur Data', 'sks' => '3 SKS • Semester 3', 'koordinator' => 'Dr. Dian Pratiwi', 'koor_skor' => '8.8', 'koor_initial' => 'DP', 'pengampu' => ['Farid Hidayat, M.Kom', 'Andi Nugroho, S.T'], 'skor' => '8.3', 'pengampu_initials' => ['FH', 'AN']],
-                            ['kode' => 'TIF301', 'mk' => 'Basis Data', 'sks' => '3 SKS • Semester 3', 'koordinator' => 'Muhammad Wijaya, Ph.D', 'koor_skor' => '9.0', 'koor_initial' => 'MW', 'pengampu' => ['Eka Sari, M.T', 'Budi Purnomo, S.Kom'], 'skor' => '8.7', 'pengampu_initials' => ['ES', 'BP']],
-                            ['kode' => 'TIF401', 'mk' => 'Rekayasa Perangkat Lunak', 'sks' => '3 SKS • Semester 5', 'koordinator' => 'Dr. Sari Ayu', 'koor_skor' => '9.3', 'koor_initial' => 'SA', 'pengampu' => ['Taufik Hidayat, M.Kom', 'Nita Fitriani, S.T'], 'skor' => '9.0', 'pengampu_initials' => ['TH', 'NF']],
-                        ];
-                    @endphp
+   {{-- 4. Tabel Data Rekomendasi --}}
+<div class="bg-white p-6 shadow-lg rounded-lg border border-gray-100">
+    <h4 class="text-xl font-bold text-gray-800 mb-4">Rekomendasi Koordinator & Pengampu</h4>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode MK</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mata Kuliah</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Koordinator</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengampu</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skor</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                </tr>
+            </thead>
 
-                    @foreach ($recommendations as $data)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $data['kode'] }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <p class="text-sm font-medium text-gray-900">{{ $data['mk'] }}</p>
-                            <p class="text-xs text-gray-500">{{ $data['sks'] }}</p>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold mr-3">
-                                    {{ $data['koor_initial'] }}
+            <tbody class="bg-white divide-y divide-gray-200">
+
+                @foreach ($hasilRekomendasi as $hasil)
+                    @foreach ($hasil->detailHasilRekomendasi as $detail)
+                        <tr>
+                            {{-- Kode Mata Kuliah --}}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ $detail->mataKuliah->kode_mk ?? '-' }}
+                            </td>
+
+                            {{-- Nama Mata Kuliah + SKS/Semester --}}
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <p class="text-sm font-medium text-gray-900">
+                                    {{ $detail->mataKuliah->nama_mk ?? '-' }}
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    {{ $detail->mataKuliah->sks ?? 0 }} SKS • Semester {{ $detail->mataKuliah->semester ?? '-' }}
+                                </p>
+                            </td>
+
+                            {{-- Koordinator --}}
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @php
+                                    $koor = $detail->koordinator;
+                                @endphp
+
+                                @if ($koor)
+                                <div class="flex items-center">
+                                    <div class="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold mr-3">
+                                        {{ strtoupper(substr($koor->name, 0, 2)) }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">{{ $koor->name }}</p>
+                                        <p class="text-xs text-gray-500">Skor: {{ $detail->skor_koordinator ?? '-' }}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ $data['koordinator'] }}</p>
-                                    <p class="text-xs text-gray-500">Skor: {{ $data['koor_skor'] }}</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-500">
-                            @foreach ($data['pengampu'] as $p_index => $pengampu)
+                                @else
+                                    <span class="text-gray-500 text-sm">Belum ditentukan</span>
+                                @endif
+                            </td>
+
+                            {{-- Pengampu --}}
+                            <td class="px-6 py-4 text-sm text-gray-500">
+                                @forelse ($detail->pengampu as $p)
                                 <div class="flex items-center mb-1 last:mb-0">
                                     <div class="h-8 w-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold mr-3">
-                                        {{ $data['pengampu_initials'][$p_index] }}
+                                        {{ strtoupper(substr($p->name, 0, 2)) }}
                                     </div>
-                                    <span class="text-sm font-medium text-gray-900">{{ $pengampu }}</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ $p->name }}</span>
                                 </div>
-                            @endforeach
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-lg bg-green-100 text-green-800">
-                                {{ $data['skor'] }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <a href="#" class="text-blue-700 hover:text-blue-900">Detail</a>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                                @empty
+                                    <span class="text-gray-500 text-sm">Belum ada pengampu</span>
+                                @endforelse
+                            </td>
 
-        {{-- Paginasi --}}
-        <div class="mt-4 flex justify-between items-center text-sm text-gray-600">
-            <span>Menampilkan 1-5 dari 48 mata kuliah</span>
-            <div class="flex space-x-1">
-                <button class="px-3 py-1 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-100 text-xs">Previous</button>
-                <button class="px-3 py-1 border border-blue-700 bg-blue-700 text-white rounded-md font-semibold text-xs">1</button>
-                <button class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100 text-xs">2</button>
-                <button class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100 text-xs">3</button>
-                <button class="px-3 py-1 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-100 text-xs">Next</button>
-            </div>
-        </div>
+                            {{-- Skor --}}
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-lg bg-green-100 text-green-800">
+                                    {{ $detail->skor_total ?? '-' }}
+                                </span>
+                            </td>
+
+                            {{-- Aksi --}}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="{{ route('hasil.show', $hasil->id) }}" class="text-blue-700 hover:text-blue-900">Detail</a>
+                            </td>
+                        </tr>
+                    @endforeach
+                @endforeach
+
+            </tbody>
+        </table>
     </div>
 </div>
+
 @endsection

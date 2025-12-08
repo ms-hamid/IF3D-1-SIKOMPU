@@ -4,60 +4,66 @@ namespace App\Http\Controllers;
 
 use App\Models\HasilRekomendasi;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+// use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\HasilRekomendasiResource;
 
 class HasilRekomendasiController extends Controller
 {
     /**
-     * Tampilkan semua hasil rekomendasi (untuk Admin).
-     * Endpoint: GET /api/hasil-rekomendasis
+     * GET /api/hasil-rekomendasis
+     * Menampilkan list hasil rekomendasi
      */
     public function index()
     {
-        // Admin bisa melihat semua, Dosen bisa melihat yang terkait dengan Prodi/dirinya.
-        $hasilRekomendasis = HasilRekomendasi::with(['mataKuliah', 'koordinatorRekomendasi', 'pengampuRekomendasi'])->get();
-        
-        return HasilRekomendasiResource::collection($hasilRekomendasis);
+        // Tampilkan hasil_rekomendasi + jumlah detail
+        $hasil = HasilRekomendasi::withCount('detailHasilRekomendasi')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $hasil
+        ]);
     }
 
     /**
-     * Tampilkan detail hasil rekomendasi.
-     * Endpoint: GET /api/hasil-rekomendasis/{hasilRekomendasi}
+     * GET /api/hasil-rekomendasis/{id}
+     * Menampilkan detail lengkap 1 hasil rekomendasi
      */
     public function show(HasilRekomendasi $hasilRekomendasi)
     {
-        // Muat semua relasi penting
-        $hasilRekomendasi->load(['mataKuliah', 'koordinatorRekomendasi', 'pengampuRekomendasi', 'details']);
+        $hasilRekomendasi->load([
+            'detailHasilRekomendasi.mataKuliah',
+            'detailHasilRekomendasi.user'
+            // 'mataKuliah', 'koordinatorRekomendasi', 'pengampuRekomendasi', 'details'
+        ]);
 
-        return new HasilRekomendasiResource($hasilRekomendasi);
+
+        return response()->json([
+            'success' => true,
+            'data' => $hasilRekomendasi
+        ]);
     }
 
     /**
-     * Penetapan Rekomendasi (Hanya Admin).
-     * Endpoint: PATCH /api/hasil-rekomendasis/{hasilRekomendasi}/finalize
+     * PATCH /api/hasil-rekomendasis/{id}/finalize
+     * Penetapan hasil (opsional)
      */
     public function finalize(Request $request, HasilRekomendasi $hasilRekomendasi)
     {
-        // Otorisasi sudah diproteksi oleh middleware check.role:admin pada rute.
-        
         $validated = $request->validate([
             'status' => 'required|in:Finalized,Rejected',
-            // Di sini Anda bisa menambahkan validasi untuk user_id koordinator/pengampu final
         ]);
 
         $hasilRekomendasi->update([
             'status' => $validated['status'],
-            'ditetapkan_oleh' => Auth::id(),
-            'tanggal_penetapan' => now(),
         ]);
 
         return response()->json([
+            'success' => true,
             'message' => 'Hasil rekomendasi berhasil ditetapkan.',
-            'data' => new HasilRekomendasiResource($hasilRekomendasi->load(['koordinatorRekomendasi', 'pengampuRekomendasi']))
+            'data' => $hasilRekomendasi
         ]);
     }
-
-    // Metode untuk CREATE (store) dan DELETE (destroy) dihilangkan
-    // karena hasil rekomendasi biasanya dibuat/dihapus oleh sistem, bukan oleh API CRUD.
 }
+
+
+
