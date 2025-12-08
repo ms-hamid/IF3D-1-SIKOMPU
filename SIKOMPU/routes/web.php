@@ -12,6 +12,7 @@ use App\Http\Controllers\SertifikatController;
 use App\Http\Controllers\PenelitianController;
 use App\Http\Controllers\AIIntegrationController;
 use App\Http\Controllers\ProfilController;  
+use App\Http\Controllers\SelfAssessmentController;
 
 Route::get('/cek-ai', [AIIntegrationController::class, 'checkConnection']);
 Route::get('/generate-hasil', [AIIntegrationController::class, 'generateRecommendation']);
@@ -57,6 +58,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/penelitian', [PenelitianController::class, 'store'])->name('penelitian.store');
         Route::patch('/penelitian/{penelitian}', [PenelitianController::class, 'update'])->name('penelitian.update');
         Route::delete('/penelitian/{penelitian}', [PenelitianController::class, 'destroy'])->name('penelitian.destroy');
+
+        // Self-Assessment
+        Route::get('/self-assessment', [SelfAssessmentController::class, 'index'])
+            ->name('self-assessment.index');
+        Route::post('/self-assessment', [SelfAssessmentController::class, 'store'])
+            ->name('self-assessment.store');
     });
     
     // ============================
@@ -66,10 +73,6 @@ Route::middleware('auth')->group(function () {
         
         Route::get('/dashboard-dosen', [DashboardDosenController::class, 'index'])
             ->name('dashboard.dosen');
-        
-        Route::get('/self-assessment', function () {
-            return view('pages.self-assessment');
-        })->name('self-assessment.index');
         
         Route::get('/laporan', function () {
             return view('pages.laporan');
@@ -107,10 +110,11 @@ Route::middleware('auth')->group(function () {
             return view('pages.peforma-ai'); 
         })->name('peforma.ai');
         
-        // Self Assessment Admin
-        Route::get('/self-Assesment', function () {
-            return view('pages.self-assessment');
-        })->name('self.Assesment');
+        // Self Assessment Struktural
+        Route::get('/self-assessment/import', [SelfAssessmentController::class, 'importForm'])
+            ->name('self-assessment.import.form');
+        Route::post('/self-assessment/import', [SelfAssessmentController::class, 'import'])
+            ->name('self-assessment.import');
 
         // Laporan Struktural
         Route::get('/laporan-struktural', function () {
