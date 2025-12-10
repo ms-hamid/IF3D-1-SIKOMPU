@@ -15,6 +15,23 @@
   </div>
   @endif
 
+  {{-- Alert Error --}}
+  @if($errors->any())
+  <div class="bg-red-50 border border-red-300 rounded-md p-4">
+    <div class="flex items-start gap-2">
+      <i class="fa-solid fa-triangle-exclamation text-red-600"></i>
+      <div>
+        <p class="text-red-700 text-sm font-medium mb-2">Terjadi kesalahan:</p>
+        <ul class="list-disc list-inside text-red-600 text-sm space-y-1">
+          @foreach($errors->all() as $error)
+          <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    </div>
+  </div>
+  @endif
+  
   {{-- Filter dan Tombol --}}
   <form method="GET" action="{{ route('self-assessment.index') }}">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -34,11 +51,12 @@
         <a href="{{ route('self-assessment.index') }}" class="flex items-center gap-1 border border-gray-300 px-3 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition whitespace-nowrap">
           <i class="fa-solid fa-rotate-right"></i> Refresh
         </a>
-        @can('admin') {{-- Hanya admin yang bisa import --}}
-        <a href="{{ route('self-assessment.import.form') }}" class="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-md hover:bg-green-700 transition text-sm whitespace-nowrap">
-          <i class="fa-solid fa-file-import"></i> Import
-        </a>
-        @endcan
+        @if(in_array(auth()->user()->jabatan, ['Kepala Jurusan', 'Sekretaris Jurusan', 'Kepala Program Studi']))
+          <a href="{{ route('self-assessment.import.form') }}" 
+            class="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-md hover:bg-green-700 transition text-sm whitespace-nowrap">
+            <i class="fa-solid fa-file-import"></i> Import
+          </a>
+        @endif
         <button class="flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700 transition text-sm whitespace-nowrap">
           <i class="fa-solid fa-file-export"></i> Ekspor
         </button>
@@ -152,13 +170,97 @@
       @endforelse
     </div>
       
-    {{-- Pagination --}}
-    <div class="flex justify-center mt-8">
-      {{ $mataKuliahs->links() }}
+    {{-- Custom Pagination (DIPERBAIKI) --}}
+    @if($mataKuliahs->hasPages())
+    <div class="mt-8 pt-6 border-t border-gray-200">
+        <div class="flex flex-col items-center gap-4">
+            {{-- Info Text di Atas --}}
+            <div class="text-sm text-gray-600">
+                Menampilkan 
+                <span class="font-semibold text-gray-800">{{ $mataKuliahs->firstItem() }}</span>
+                sampai 
+                <span class="font-semibold text-gray-800">{{ $mataKuliahs->lastItem() }}</span>
+                dari 
+                <span class="font-semibold text-gray-800">{{ $mataKuliahs->total() }}</span>
+                mata kuliah
+            </div>
+
+            {{-- Tombol Pagination di Bawah --}}
+            <div class="flex items-center gap-1">
+                {{-- Previous Button --}}
+                @if ($mataKuliahs->onFirstPage())
+                    <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 rounded-md cursor-not-allowed">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </span>
+                @else
+                    <a href="{{ $mataKuliahs->previousPageUrl() }}" 
+                       class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
+                @endif
+
+                {{-- Page Numbers --}}
+                @php
+                    $currentPage = $mataKuliahs->currentPage();
+                    $lastPage = $mataKuliahs->lastPage();
+                    $startPage = max(1, $currentPage - 2);
+                    $endPage = min($lastPage, $currentPage + 2);
+                @endphp
+
+                {{-- First Page --}}
+                @if($startPage > 1)
+                    <a href="{{ $mataKuliahs->url(1) }}" 
+                       class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition">
+                        1
+                    </a>
+                    @if($startPage > 2)
+                        <span class="px-3 py-2 text-sm text-gray-500">...</span>
+                    @endif
+                @endif
+
+                {{-- Page Range --}}
+                @for($page = $startPage; $page <= $endPage; $page++)
+                    @if ($page == $currentPage)
+                        <span class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-md">
+                            {{ $page }}
+                        </span>
+                    @else
+                        <a href="{{ $mataKuliahs->url($page) }}" 
+                           class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition">
+                            {{ $page }}
+                        </a>
+                    @endif
+                @endfor
+
+                {{-- Last Page --}}
+                @if($endPage < $lastPage)
+                    @if($endPage < $lastPage - 1)
+                        <span class="px-3 py-2 text-sm text-gray-500">...</span>
+                    @endif
+                    <a href="{{ $mataKuliahs->url($lastPage) }}" 
+                       class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition">
+                        {{ $lastPage }}
+                    </a>
+                @endif
+
+                {{-- Next Button --}}
+                @if ($mataKuliahs->hasMorePages())
+                    <a href="{{ $mataKuliahs->nextPageUrl() }}" 
+                       class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                @else
+                    <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 rounded-md cursor-not-allowed">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </span>
+                @endif
+            </div>
+        </div>
     </div>
+    @endif
       
     {{-- Tombol Submit --}}
-    <div class="mt-4 flex justify-end">
+    <div class="mt-6 flex justify-end">
       <button type="submit" class="bg-red-600 text-white hover:bg-red-700 text-sm px-4 py-2 rounded-lg font-medium transition shadow-md">
         <i class="fa-solid fa-save mr-2"></i> Simpan Penilaian
       </button>

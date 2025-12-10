@@ -98,13 +98,13 @@ class SelfAssessmentController extends Controller
             'assessments.*.nilai' => 'required|integer|min:0|max:8',
             'assessments.*.catatan' => 'nullable|string|max:1000',
         ]);
-        
+    
         foreach ($request->assessments as $assessment) {
             // Skip jika nilai 0 (belum diisi)
             if ($assessment['nilai'] == 0) {
                 continue;
             }
-            
+        
             SelfAssessment::updateOrCreate(
                 [
                     'user_id' => Auth::id(),
@@ -112,11 +112,11 @@ class SelfAssessmentController extends Controller
                 ],
                 [
                     'nilai' => $assessment['nilai'],
-                    'catatan' => $assessment['catatan'] ?? null,
+                    'catatan' => $assessment['catatan'] ?? '', // ✅ Default empty string kalau null
                 ]
             );
         }
-        
+    
         return redirect()->back()->with('success', 'Penilaian berhasil disimpan!');
     }
 }

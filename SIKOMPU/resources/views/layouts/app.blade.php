@@ -7,16 +7,22 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    {{-- Font Awesome + Tailwind + Vite --}}
+    {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="//unpkg.com/alpinejs" defer></script>
-
+    
     {{-- Bootstrap Icons --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     
+    {{-- Tailwind + Vite --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    {{-- Alpine.js - HANYA SATU KALI DI SINI --}}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
     {{-- Loading Screen Styles --}}
     <style>
+        [x-cloak] { display: none !important; }
+        
         #loading-screen {
             position: fixed;
             top: 0;
@@ -54,13 +60,13 @@
 </head>
 
 <body class="bg-gray-100 flex flex-col min-h-screen">
-{{-- ======================== LOADING SCREEN ======================== --}}
-<div id="loading-screen">
-    <div class="text-center">
-        <div class="spinner mx-auto mb-4"></div>
-        <p class="text-gray-600 font-medium text-lg">Memuat halaman...</p>
+    {{-- ======================== LOADING SCREEN ======================== --}}
+    <div id="loading-screen">
+        <div class="text-center">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-gray-600 font-medium text-lg">Memuat halaman...</p>
+        </div>
     </div>
-</div>
 
     {{-- ======================== SIDEBAR ======================== --}}
     @auth
@@ -104,12 +110,6 @@
             </div>
         </footer>
     </div>
-
-    {{-- Alpine.js --}}
-    <script src="https://unpkg.com/alpinejs" defer></script>
-
-    {{-- Font Awesome Kit (optional) --}}
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
     {{-- ======================== LOADING SCRIPT ======================== --}}
     <script>
