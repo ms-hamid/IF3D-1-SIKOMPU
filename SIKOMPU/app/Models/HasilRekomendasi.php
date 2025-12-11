@@ -14,6 +14,7 @@ class HasilRekomendasi extends Model
     protected $fillable = [
         'semester',
         'tahun_ajaran',
+        'status',
     ];
 
     public function detailHasilRekomendasi()

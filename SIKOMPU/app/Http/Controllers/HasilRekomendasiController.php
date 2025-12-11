@@ -6,6 +6,8 @@ use App\Models\HasilRekomendasi;
 use Illuminate\Http\Request;
 // use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\HasilRekomendasiResource;
+use App\Models\DetailHasilRekomendasi;
+
 
 class HasilRekomendasiController extends Controller
 {
@@ -63,6 +65,55 @@ class HasilRekomendasiController extends Controller
             'data' => $hasilRekomendasi
         ]);
     }
+
+    public function storeAIRecommendation(Request $request)
+{
+    $data = $request->validate([
+        'semester' => 'required|string',
+        'rekomendasi' => 'required|array',
+    ]);
+
+    // 1. Simpan header hasil rekomendasi
+$parts = explode(" ", $data['semester']);
+
+$tahunAjaran = $parts[count($parts) - 1] ?? null; 
+
+
+$hasil = HasilRekomendasi::create([
+    'semester' => $data['semester'],
+    'tahun_ajaran' => $tahunAjaran,
+    'status' => 'Pending',
+]);
+
+    // 2. Simpan detail per matakuliah
+    foreach ($data['rekomendasi'] as $item) {
+        // Koordinator
+        DetailHasilRekomendasi::create([
+            'hasil_id' => $hasil->id,
+            'matakuliah_id' => $item['matakuliah_id'],
+            'user_id' => $item['koordinator_id'],
+            'peran_penugasan' => 'koordinator',
+            'skor_dosen_di_mk' => $item['skor']
+        ]);
+
+        // Pengampu
+        foreach ($item['pengampu_ids'] as $pengampuId) {
+            DetailHasilRekomendasi::create([
+                'hasil_id' => $hasil->id,
+                'matakuliah_id' => $item['matakuliah_id'],
+                'user_id' => $pengampuId,
+                'peran_penugasan' => 'pengampu',
+                'skor_dosen_di_mk' => $item['skor'] // bisa pakai skor sama atau berbeda
+            ]);
+        }
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Hasil rekomendasi AI berhasil disimpan',
+        'data' => $hasil->load('detailHasilRekomendasi.user','detailHasilRekomendasi.mataKuliah')
+    ]);
+}
 }
 
 

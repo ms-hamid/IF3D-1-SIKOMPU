@@ -1,4 +1,74 @@
-@extends('layouts.app')
+@foreach ($hasilRekomendasi as $hasil)
+    @php
+        $mataKuliahs = $hasil->detailHasilRekomendasi->groupBy('matakuliah_id');
+    @endphp
+
+    @foreach ($mataKuliahs as $mkId => $details)
+        @php
+            $koor = $details->firstWhere('peran_penugasan', 'koordinator');
+            $pengampu = $details->where('peran_penugasan', 'pengampu');
+            $skor_total = $details->sum('skor_dosen_di_mk'); // atau bisa rata-rata
+        @endphp
+        <tr>
+            <td>{{ $details->first()->mataKuliah->kode_mk ?? '-' }}</td>
+            <td>
+                <p class="text-sm font-medium">{{ $details->first()->mataKuliah->nama_mk ?? '-' }}</p>
+                <p class="text-xs text-gray-500">{{ $details->first()->mataKuliah->sks ?? 0 }} SKS • Semester {{ $details->first()->mataKuliah->semester ?? '-' }}</p>
+            </td>
+
+            {{-- Koordinator --}}
+            <td>
+                @if($koor && $koor->user)
+                    <div class="flex items-center">
+                        <div class="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold mr-3">
+                            {{ strtoupper(substr($koor->user->name, 0, 2)) }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">{{ $koor->user->name }}</p>
+                            <p class="text-xs text-gray-500">Skor: {{ $koor->skor_dosen_di_mk }}</p>
+                        </div>
+                    </div>
+                @else
+                    <span class="text-gray-500 text-sm">Belum ditentukan</span>
+                @endif
+            </td>
+
+            {{-- Pengampu --}}
+            <td>
+                @forelse ($pengampu as $p)
+                    @if($p->user)
+                        <div class="flex items-center mb-1 last:mb-0">
+                            <div class="h-8 w-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold mr-3">
+                                {{ strtoupper(substr($p->user->name, 0, 2)) }}
+                            </div>
+                            <span class="text-sm font-medium">{{ $p->user->name }}</span>
+                        </div>
+                    @endif
+                @empty
+                    <span class="text-gray-500 text-sm">Belum ada pengampu</span>
+                @endforelse
+            </td>
+
+            {{-- Skor Total --}}
+            <td>
+                <span class="px-3 py-1 inline-flex text-sm font-semibold rounded-lg bg-green-100 text-green-800">
+                    {{ $skor_total }}
+                </span>
+            </td>
+
+            {{-- Aksi --}}
+            <td>
+                <a href="{{ route('hasil.show', $hasil->id) }}" class="text-blue-700 hover:text-blue-900">Detail</a>
+            </td>
+        </tr>
+    @endforeach
+@endforeach
+
+
+
+<!-- @extends('layouts.app')
+
+
 
 @section('title', 'Hasil Rekomendasi')
 @section('page_title', 'Hasil Rekomendasi')
@@ -223,4 +293,4 @@ $cards = [
     </div>
 </div>
 
-@endsection
+@endsection -->

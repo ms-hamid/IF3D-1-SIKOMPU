@@ -2,19 +2,14 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use App\Models\Kategori;
 use App\Models\MataKuliah;
 use App\Observers\KategoriObserver;
 use App\Observers\MataKuliahObserver;
 
-class AppServiceProvider extends ServiceProvider
+class EventServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-        //
-    }
-
     public function boot(): void
     {
         Kategori::observe(KategoriObserver::class);
