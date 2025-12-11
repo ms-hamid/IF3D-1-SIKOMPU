@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MataKuliah;
+use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -15,10 +16,10 @@ class MataKuliahController extends Controller
      */
     public function index(Request $request)
     {
-        $query = MataKuliah::with('prodi');
+        $query = MataKuliah::with(['prodi', 'kategori']);
 
         // Filter opsional berdasarkan prodi_id
-        if ($request->has('prodi_id') && is_numeric($request->prodi_id)) {
+        if ($request->has('prodi_id') && $request->prodi_id != '') {
             $query->where('prodi_id', $request->prodi_id);
         }
 
@@ -30,23 +31,32 @@ class MataKuliahController extends Controller
         // Sorting berdasarkan semester, lalu nama_mk
         $mataKuliah = $query->orderBy('semester', 'asc')
                             ->orderBy('nama_mk', 'asc')
-                            ->get();
+                            ->paginate(15); // Pagination 15 per halaman
         
         // Group by semester untuk view
         $mataKuliahBySemester = $mataKuliah->groupBy('semester');
         
-        // Hitung statistik
-        $totalMataKuliah = $mataKuliah->count();
-        $totalSKS = $mataKuliah->sum('sks');
-        $totalSemester = $mataKuliah->pluck('semester')->unique()->count();
+        // Hitung statistik dari semua data (tanpa pagination)
+        $allMataKuliah = MataKuliah::query();
+        if ($request->has('prodi_id') && $request->prodi_id != '') {
+            $allMataKuliah->where('prodi_id', $request->prodi_id);
+        }
+        $allData = $allMataKuliah->get();
+        
+        $totalMataKuliah = $allData->count();
+        $totalSKS = $allData->sum('sks');
+        $totalSemester = $allData->pluck('semester')->unique()->count();
+        $totalKategori = Kategori::count();
 
         $prodiList = \App\Models\Prodi::orderBy('nama_prodi', 'asc')->get();
 
         return view('pages.manajemen-matkul', compact(
             'mataKuliahBySemester',
+            'mataKuliah', // Untuk pagination links
             'totalMataKuliah',
             'totalSKS',
             'totalSemester',
+            'totalKategori',
             'prodiList' 
         ));
     }
@@ -59,7 +69,7 @@ class MataKuliahController extends Controller
                 'nama_mk' => 'required|string|max:255',
                 'sks' => 'required|integer|min:1|max:6',
                 'sesi' => 'required|integer|min:1|max:20',
-                'semester' => 'required|in:Ganjil,Genap',
+                'semester' => 'required|integer|min:1|max:8',
                 'prodi_id' => 'required|integer|exists:prodi,id',
             ], [
                 'kode_mk.required' => 'Kode Mata Kuliah wajib diisi.',
@@ -97,14 +107,6 @@ class MataKuliahController extends Controller
         }
     }
 
-    public function edit($id)
-    {
-        $mataKuliah = MataKuliah::with('prodi')->findOrFail($id);
-        $prodiList = \App\Models\Prodi::orderBy('nama_prodi', 'asc')->get();
-    
-        return view('pages.edit-matkul', compact('mataKuliah', 'prodiList'));
-    }
-
     public function update(Request $request, $id)
     {
         $mataKuliah = MataKuliah::findOrFail($id);
@@ -115,7 +117,7 @@ class MataKuliahController extends Controller
                 'nama_mk' => 'required|string|max:255',
                 'sks' => 'required|integer|min:1|max:6',
                 'sesi' => 'required|integer|min:1|max:20',
-                'semester' => 'required|in:Ganjil,Genap',
+                'semester' => 'required|integer|min:1|max:8',
                 'prodi_id' => 'required|integer|exists:prodi,id',
             ], [
                 'kode_mk.required' => 'Kode Mata Kuliah wajib diisi.',
@@ -149,7 +151,7 @@ class MataKuliahController extends Controller
             return redirect()
                 ->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
-             ->withInput();
+                ->withInput();
         }
     }
 

@@ -3,84 +3,120 @@
 namespace App\Http\Controllers;
 
 use App\Models\SelfAssessment;
+use App\Models\MataKuliah;
+use App\Models\Prodi;
+use App\Imports\MataKuliahImport;
 use Illuminate\Http\Request;
-use App\Http\Resources\SelfAssessmentResource;
 use Illuminate\Support\Facades\Auth;
 
 class SelfAssessmentController extends Controller
 {
     /**
-     * POST /api/self-assessments
-     * Menerima input data self-assessment baru.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function store(Request $request)
-    {
-        // 1. Validasi input
-        $request->validate([
-            // mata_kuliah_id harus ada, harus integer, dan harus ada di tabel mata_kuliah
-            'mata_kuliah_id' => 'required|integer|exists:mata_kuliah,id',
-            // nilai adalah teks (asumsi kualitatif atau deskriptif)
-            'nilai' => 'required|string|max:1000',
-        ], [
-            'mata_kuliah_id.required' => 'Mata Kuliah wajib dipilih.',
-            'mata_kuliah_id.exists' => 'Mata Kuliah tidak terdaftar.',
-            'nilai.required' => 'Nilai atau deskripsi assessment wajib diisi.',
-        ]);
-
-        // 2. Buat entri Self Assessment
-        $assessment = SelfAssessment::create([
-            'user_id' => Auth::id(), // Otomatis dihubungkan ke user yang sedang login
-            'mata_kuliah_id' => $request->mata_kuliah_id,
-            'nilai' => $request->nilai,
-        ]);
-
-        // 3. Kembalikan respons sukses
-        return response()->json([
-            'message' => 'Self Assessment berhasil disimpan.',
-            // Menggunakan Resource untuk menampilkan data yang baru dibuat
-            'data' => new SelfAssessmentResource($assessment->load('mataKuliah')) 
-        ], 201); // 201 Created
-    }
-
-    /**
-     * GET /api/self-assessments
-     * Mendapatkan riwayat self-assessment yang pernah diisi oleh pengguna saat ini.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     * Tampilkan halaman self assessment untuk dosen
      */
     public function index(Request $request)
     {
-        // 1. Ambil data assessment hanya untuk user yang sedang login
-        $assessments = SelfAssessment::where('user_id', Auth::id())
-                        ->with('mataKuliah') // Eager load relasi mata_kuliah untuk Resource
-                        ->latest() // Urutkan dari yang terbaru
-                        ->paginate(10);
-
-        // 2. Kembalikan koleksi Resource
-        return SelfAssessmentResource::collection($assessments);
+        $user = Auth::user();
+        
+        // Ambil semua prodi untuk filter
+        $prodis = Prodi::all();
+        
+        // Query matakuliah
+        $query = MataKuliah::with('prodi');
+        
+        // Filter by prodi jika ada
+        if ($request->has('prodi_id') && $request->prodi_id != '') {
+            $query->where('prodi_id', $request->prodi_id);
+        }
+        
+        // Paginate
+        $mataKuliahs = $query->paginate(15);
+        
+        // Ambil self assessment yang sudah diisi user ini
+        $assessments = SelfAssessment::where('user_id', $user->id)
+                                      ->pluck('catatan', 'matakuliah_id')
+                                      ->toArray();
+        
+        $ratings = SelfAssessment::where('user_id', $user->id)
+                                  ->pluck('nilai', 'matakuliah_id')
+                                  ->toArray();
+        
+        // Hitung progress
+        $totalMatakuliah = MataKuliah::count();
+        $selesai = SelfAssessment::where('user_id', $user->id)
+                                 ->where('nilai', '>', 0)
+                                 ->count();
+        $progress = $totalMatakuliah > 0 ? round(($selesai / $totalMatakuliah) * 100) : 0;
+        
+        return view('pages.self-assessment', compact('mataKuliahs', 'prodis', 'ratings', 'assessments', 'selesai', 'totalMatakuliah', 'progress'));
     }
     
     /**
-     * DELETE /api/self-assessments/{id}
-     * Menghapus entri self-assessment tertentu.
-     * Hanya boleh dilakukan oleh pemilik data.
-     *
-     * @param  \App\Models\SelfAssessment  $selfAssessment
-     * @return \Illuminate\Http\JsonResponse
+     * Tampilkan form import (untuk struktural/admin)
      */
-    public function destroy(SelfAssessment $selfAssessment)
+    public function importForm()
     {
-        // Otorisasi: Pastikan user yang login adalah pemilik data
-        if ($selfAssessment->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized. Data ini bukan milik Anda.'], 403);
+        return view('components.import');
+    }
+    
+    /**
+     * Proses import Excel (untuk struktural/admin)
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls|max:10240',
+        ], [
+            'file.required' => 'File Excel wajib diupload.',
+            'file.mimes' => 'File harus berformat Excel (.xlsx atau .xls).',
+            'file.max' => 'Ukuran file maksimal 10MB.',
+        ]);
+        
+        try {
+            $file = $request->file('file');
+            $filePath = $file->getRealPath();
+            
+            // Import menggunakan PhpSpreadsheet
+            $importer = new MataKuliahImport();
+            $importer->import($filePath);
+            
+            return redirect()->back()->with('success', 'Data matakuliah berhasil diimport!');
+            
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal import: ' . $e->getMessage());
         }
+    }
+    
+    /**
+     * Simpan self assessment dosen
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'assessments' => 'required|array',
+            'assessments.*.matakuliah_id' => 'required|exists:mata_kuliah,id',
+            'assessments.*.nilai' => 'required|integer|min:0|max:8',
+            'assessments.*.catatan' => 'nullable|string|max:1000',
+        ]);
+    
+        foreach ($request->assessments as $assessment) {
+            // Skip jika nilai 0 (belum diisi)
+            if ($assessment['nilai'] == 0) {
+                continue;
+            }
         
-        $selfAssessment->delete();
-        
-        return response()->json(['message' => 'Self Assessment berhasil dihapus.'], 200);
+            SelfAssessment::updateOrCreate(
+                [
+                    'user_id' => Auth::id(),
+                    'matakuliah_id' => $assessment['matakuliah_id'],
+                ],
+                [
+                    'nilai' => $assessment['nilai'],
+                    'catatan' => $assessment['catatan'] ?? '', // ✅ Default empty string kalau null
+                ]
+            );
+        }
+    
+        return redirect()->back()->with('success', 'Penilaian berhasil disimpan!');
     }
 }
