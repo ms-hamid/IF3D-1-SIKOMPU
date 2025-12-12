@@ -235,4 +235,7 @@ maintainAspectRatio: false
 });
 </script>
 </main>
+
+{{-- Modal Pemberitahuan Profil --}}
+<x-notification-modal :show="$showModal" />
 @endsection

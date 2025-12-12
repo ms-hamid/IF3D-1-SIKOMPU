@@ -85,15 +85,16 @@
     <div 
         x-show="sidebarOpen"
         @click="sidebarOpen = false"
-        class="fixed inset-0 bg-black/50 lg:hidden z-40 transition-opacity duration-300 ease-in-out pointer-events-auto"
+        class="fixed inset-0 bg-black/50 lg:hidden z-30 transition-opacity duration-300 ease-in-out pointer-events-auto"
         x-transition.opacity
     ></div>
+    
 
     {{-- ======================== MAIN CONTENT WRAPPER ======================== --}}
-    <div class="flex flex-1 flex-col lg:ml-64 relative z-0">
+    <div class="flex flex-1 flex-col lg:ml-64 relative ">
 
         {{-- ======================== TOPBAR ======================== --}}
-        <div class="sticky top-0 z-50 bg-white shadow-sm">
+        <div class="sticky top-0  bg-white shadow-sm">
             @include('components.topbar')
         </div>
 

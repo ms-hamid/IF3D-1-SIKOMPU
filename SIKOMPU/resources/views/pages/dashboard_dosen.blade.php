@@ -2,8 +2,10 @@
 
 @section('title', 'Dashboard Dosen')
 
+@section('page_title', 'Dashboard Dosen')
+
 @section('content')
-<main class="flex-1 px-3 sm:px-6 py-4 space-y-6">
+<main class="flex-1 p-4 sm:p-6 space-y-6" x-data="{ openModal: false }" @close-modal.window="openModal = false">
 
   {{-- Banner --}}
   <x-dashboard.banner />
@@ -171,4 +173,7 @@
     </div>
   </section>
 </main>
+
+{{-- Modal Pemberitahuan Profil --}}
+<x-notification-modal :show="$showModal" />
 @endsection

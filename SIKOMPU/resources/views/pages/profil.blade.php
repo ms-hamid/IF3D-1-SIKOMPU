@@ -62,95 +62,164 @@
         {{-- Tab Content --}}
         <div class="p-6">
             
-            {{-- TAB 1: Edit Profil --}}
-            <div x-show="activeTab === 'profil'" x-transition>
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Informasi Profil</h3>
-                
-                <form action="{{ route('profil.update') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
+{{-- TAB 1: Edit Profil --}}
+<div x-show="activeTab === 'profil'" x-transition>
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Informasi Profil</h3>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        
-                        {{-- Nama Lengkap --}}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
-                            <input 
-                                type="text" 
-                                name="nama_lengkap" 
-                                value="{{ old('nama_lengkap', $user->nama_lengkap) }}"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_lengkap') border-red-500 @enderror"
-                                required>
-                            @error('nama_lengkap')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+    <form action="{{ route('profil.update') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        @method('PUT')
 
-                        {{-- NIDN --}}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">NIDN</label>
-                            <input 
-                                type="text" 
-                                name="nidn" 
-                                value="{{ old('nidn', $user->nidn) }}"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nidn') border-red-500 @enderror"
-                                required>
-                            @error('nidn')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                        {{-- Jabatan (Read Only) --}}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Jabatan</label>
-                            <input 
-                                type="text" 
-                                value="{{ $user->jabatan }}"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                                readonly>
-                            <p class="text-xs text-gray-500 mt-1">Tidak dapat diubah</p>
-                        </div>
-
-                        {{-- Prodi --}}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Program Studi</label>
-                            <input 
-                                type="text" 
-                                name="prodi" 
-                                value="{{ old('prodi', $user->prodi) }}"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('prodi') border-red-500 @enderror">
-                            @error('prodi')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                    </div>
-
-                    {{-- Foto Profil --}}
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Foto Profil</label>
-                        <input 
-                            type="file" 
-                            name="foto" 
-                            accept="image/*"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('foto') border-red-500 @enderror">
-                        <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG. Maksimal 2MB.</p>
-                        @error('foto')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    {{-- Button Submit --}}
-                    <div class="mt-6">
-                        <button 
-                            type="submit"
-                            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
-                            <i class="fa-solid fa-save mr-2"></i>
-                            Simpan Perubahan
-                        </button>
-                    </div>
-                </form>
+            {{-- Nama Lengkap --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
+                <input 
+                    type="text" 
+                    name="nama_lengkap" 
+                    value="{{ old('nama_lengkap', $user->nama_lengkap) }}"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_lengkap') border-red-500 @enderror"
+                    required>
+                @error('nama_lengkap')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
+
+            {{-- NIDN --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">NIDN</label>
+                <input 
+                    type="text" 
+                    name="nidn" 
+                    value="{{ old('nidn', $user->nidn) }}"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nidn') border-red-500 @enderror"
+                    required>
+                @error('nidn')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Jabatan (Read Only) --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Jabatan</label>
+                <input 
+                    type="text" 
+                    value="{{ $user->jabatan }}"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                    readonly>
+                <p class="text-xs text-gray-500 mt-1">Tidak dapat diubah</p>
+            </div>
+
+            {{-- Prodi --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Program Studi</label>
+                <input 
+                    type="text" 
+                    name="prodi" 
+                    value="{{ old('prodi', $user->prodi) }}"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('prodi') border-red-500 @enderror">
+                @error('prodi')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Foto Profil --}}
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Foto Profil</label>
+                <input 
+                    type="file" 
+                    name="foto" 
+                    accept="image/*"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('foto') border-red-500 @enderror">
+                <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG. Maksimal 2MB.</p>
+                @error('foto')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- ------------------------------ --}}
+            {{-- FORM INPUT PENDIDIKAN TAMBAHAN --}}
+            {{-- ------------------------------ --}}
+
+            @php
+                // Ambil pendidikan terakhir jika ada
+                $pendidikanTerakhir = $pendidikanTerakhir ?? null;
+            @endphp
+
+            {{-- Jenjang --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Jenjang</label>
+                <input 
+                    type="text" 
+                    name="jenjang" 
+                    value="{{ old('jenjang', optional($pendidikanTerakhir)->jenjang) }}"
+                    placeholder="Contoh: S1, S2"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('jenjang') border-red-500 @enderror">
+                @error('jenjang')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Jurusan --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Jurusan</label>
+                <input 
+                    type="text" 
+                    name="jurusan" 
+                    value="{{ old('jurusan', optional($pendidikanTerakhir)->jurusan) }}"
+                    placeholder="Contoh: Teknik Informatika"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('jurusan') border-red-500 @enderror">
+                @error('jurusan')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Universitas --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Universitas</label>
+                <input 
+                    type="text" 
+                    name="universitas" 
+                    value="{{ old('universitas', optional($pendidikanTerakhir)->universitas) }}"
+                    placeholder="Contoh: Universitas Indonesia"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('universitas') border-red-500 @enderror">
+                @error('universitas')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Tahun Lulus --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tahun Lulus</label>
+                <input 
+                    type="number" 
+                    name="tahun_lulus" 
+                    value="{{ old('tahun_lulus', optional($pendidikanTerakhir)->tahun_lulus) }}"
+                    placeholder="Contoh: 2022"
+                    min="1900"
+                    max="{{ date('Y') }}"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('tahun_lulus') border-red-500 @enderror">
+                @error('tahun_lulus')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+        </div>
+
+        {{-- Tombol Submit --}}
+        <div class="mt-6 md:col-span-2">
+            <button 
+                type="submit"
+                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
+                <i class="fa-solid fa-save mr-2"></i>
+                Simpan Perubahan
+            </button>
+        </div>
+    </form>
+</div>
+
+
 
             {{-- TAB 2: Ganti Password --}}
             <div x-show="activeTab === 'password'" x-transition>
