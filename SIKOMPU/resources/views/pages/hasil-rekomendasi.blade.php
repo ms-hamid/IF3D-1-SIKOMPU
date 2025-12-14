@@ -7,7 +7,7 @@
         @php
             $koor = $details->firstWhere('peran_penugasan', 'koordinator');
             $pengampu = $details->where('peran_penugasan', 'pengampu');
-            $skor_total = $details->sum('skor_dosen_di_mk'); // atau bisa rata-rata
+            $skor_total = $koor?->skor_dosen_di_mk ?? 0;
         @endphp
         <tr>
             <td>{{ $details->first()->mataKuliah->kode_mk ?? '-' }}</td>

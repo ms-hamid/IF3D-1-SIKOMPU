@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\HasilRekomendasi;
-use Illuminate\Http\Request;
-// use Illuminate\Support\Facades\Auth;
-use App\Http\Resources\HasilRekomendasiResource;
 use App\Models\DetailHasilRekomendasi;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class HasilRekomendasiController extends Controller
 {
@@ -17,7 +15,6 @@ class HasilRekomendasiController extends Controller
      */
     public function index()
     {
-        // Tampilkan hasil_rekomendasi + jumlah detail
         $hasil = HasilRekomendasi::withCount('detailHasilRekomendasi')->get();
 
         return response()->json([
@@ -34,10 +31,8 @@ class HasilRekomendasiController extends Controller
     {
         $hasilRekomendasi->load([
             'detailHasilRekomendasi.mataKuliah',
-            'detailHasilRekomendasi.user'
-            // 'mataKuliah', 'koordinatorRekomendasi', 'pengampuRekomendasi', 'details'
+            'detailHasilRekomendasi.user',
         ]);
-
 
         return response()->json([
             'success' => true,
@@ -47,7 +42,7 @@ class HasilRekomendasiController extends Controller
 
     /**
      * PATCH /api/hasil-rekomendasis/{id}/finalize
-     * Penetapan hasil (opsional)
+     * Penetapan hasil (Finalized / Rejected)
      */
     public function finalize(Request $request, HasilRekomendasi $hasilRekomendasi)
     {
@@ -66,55 +61,89 @@ class HasilRekomendasiController extends Controller
         ]);
     }
 
+    /**
+     * POST /api/hasil-rekomendasis
+     * Simpan hasil rekomendasi dari AI
+     */
     public function storeAIRecommendation(Request $request)
-{
-    $data = $request->validate([
-        'semester' => 'required|string',
-        'rekomendasi' => 'required|array',
-    ]);
+    {
+        $data = $request->validate([
+            'semester' => 'required|string',
+            'rekomendasi' => 'required|array|min:1',
 
-    // 1. Simpan header hasil rekomendasi
-$parts = explode(" ", $data['semester']);
+            'rekomendasi.*.matakuliah_id' => 'required|exists:mata_kuliahs,id',
+            'rekomendasi.*.dosens' => 'required|array|min:1',
 
-$tahunAjaran = $parts[count($parts) - 1] ?? null; 
-
-
-$hasil = HasilRekomendasi::create([
-    'semester' => $data['semester'],
-    'tahun_ajaran' => $tahunAjaran,
-    'status' => 'Pending',
-]);
-
-    // 2. Simpan detail per matakuliah
-    foreach ($data['rekomendasi'] as $item) {
-        // Koordinator
-        DetailHasilRekomendasi::create([
-            'hasil_id' => $hasil->id,
-            'matakuliah_id' => $item['matakuliah_id'],
-            'user_id' => $item['koordinator_id'],
-            'peran_penugasan' => 'koordinator',
-            'skor_dosen_di_mk' => $item['skor']
+            'rekomendasi.*.dosens.*.user_id' => 'required|exists:users,id',
+            'rekomendasi.*.dosens.*.skor' => 'required|numeric',
         ]);
 
-        // Pengampu
-        foreach ($item['pengampu_ids'] as $pengampuId) {
-            DetailHasilRekomendasi::create([
-                'hasil_id' => $hasil->id,
-                'matakuliah_id' => $item['matakuliah_id'],
-                'user_id' => $pengampuId,
-                'peran_penugasan' => 'pengampu',
-                'skor_dosen_di_mk' => $item['skor'] // bisa pakai skor sama atau berbeda
+        // Ambil tahun ajaran dari string semester
+        $parts = explode(' ', $data['semester']);
+        $tahunAjaran = end($parts) ?: null;
+
+        DB::beginTransaction();
+
+        try {
+            /**
+             * 1. Simpan header hasil rekomendasi
+             */
+            $hasil = HasilRekomendasi::create([
+                'semester' => $data['semester'],
+                'tahun_ajaran' => $tahunAjaran,
+                'status' => 'Pending',
             ]);
+
+            /**
+             * 2. Simpan detail rekomendasi per matakuliah
+             */
+            foreach ($data['rekomendasi'] as $item) {
+
+                if (empty($item['dosens'])) {
+                    throw new \Exception(
+                        'Tidak ada dosen untuk matakuliah ID ' . $item['matakuliah_id']
+                    );
+                }
+
+                // Urutkan dosen berdasarkan skor tertinggi
+                // Jika skor sama → user_id terkecil jadi koordinator (deterministik)
+                $sortedDosens = collect($item['dosens'])
+                    ->sortByDesc(fn ($d) => [
+                        $d['skor'],
+                        -$d['user_id'],
+                    ])
+                    ->values();
+
+                foreach ($sortedDosens as $index => $dosen) {
+                    DetailHasilRekomendasi::create([
+                        'hasil_id' => $hasil->id,
+                        'matakuliah_id' => $item['matakuliah_id'],
+                        'user_id' => $dosen['user_id'],
+                        'peran_penugasan' => $index === 0 ? 'koordinator' : 'pengampu',
+                        'skor_dosen_di_mk' => $dosen['skor'],
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Hasil rekomendasi AI berhasil disimpan.',
+                'data' => $hasil->load(
+                    'detailHasilRekomendasi.user',
+                    'detailHasilRekomendasi.mataKuliah'
+                )
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan hasil rekomendasi.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Hasil rekomendasi AI berhasil disimpan',
-        'data' => $hasil->load('detailHasilRekomendasi.user','detailHasilRekomendasi.mataKuliah')
-    ]);
 }
-}
-
-
-

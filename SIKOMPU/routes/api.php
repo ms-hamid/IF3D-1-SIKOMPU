@@ -1,7 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\HasilRekomendasiController;
+use App\Http\Controllers\AIIntegrationController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\SelfAssessmentController;
+use App\Http\Controllers\SertifikatController;
+use App\Http\Controllers\PenelitianController;
+use App\Http\Controllers\ProdiController;
+use App\Http\Controllers\MataKuliahController;
+use App\Http\Controllers\DetailRekomendasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -9,33 +18,50 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Rute Publik (Tanpa Otentikasi)
-// --------------------------------------------------------------------------
-Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
+/*
+|--------------------------------------------------------------------------
+| Public Routes (Tidak Memerlukan Auth)
+|--------------------------------------------------------------------------
+*/
 
 
-// Rute yang Dilindungi (Memerlukan Otentikasi Sanctum)
-// --------------------------------------------------------------------------
+// AI endpoint untuk menyimpan hasil rekomendasi
+Route::post('/ai/hasil-rekomendasi', [AIIntegrationController::class, 'generateRecommendation']);
+
+// Login (public)
+Route::post('/login', [AuthController::class, 'login']);
+
+/*
+|--------------------------------------------------------------------------
+| Protected Routes (Memerlukan Auth Sanctum)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Authenticated routes
-    Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout']);
-    Route::get('/user', [App\Http\Controllers\UserController::class, 'getAuthenticatedUser']);
-    Route::patch('/user', [App\Http\Controllers\UserController::class, 'updateProfile']);
+    // Logout & user
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [UserController::class, 'getAuthenticatedUser']);
+    Route::patch('/user', [UserController::class, 'updateProfile']);
 
-    Route::resource('self-assessments', App\Http\Controllers\SelfAssessmentController::class);
-    Route::resource('sertifikats', App\Http\Controllers\SertifikatController::class);
-    Route::resource('penelitians', App\Http\Controllers\PenelitianController::class);
+    // Self Assessment, Sertifikat, Penelitian
+    Route::resource('self-assessments', SelfAssessmentController::class);
+    Route::resource('sertifikats', SertifikatController::class);
+    Route::resource('penelitians', PenelitianController::class);
 
-    Route::resource('prodis', App\Http\Controllers\ProdiController::class)->middleware('check.role:admin');
-    Route::resource('mata-kuliahs', App\Http\Controllers\MataKuliahController::class)->middleware('check.role:admin');
+    // Prodi & Mata Kuliah (admin only)
+    Route::resource('prodis', ProdiController::class)->middleware('check.role:admin');
+    Route::resource('mata-kuliahs', MataKuliahController::class)->middleware('check.role:admin');
 
-    Route::resource('hasil-rekomendasis', App\Http\Controllers\HasilRekomendasiController::class)->only(['index','show']);
-    Route::patch('hasil-rekomendasis/{hasilRekomendasi}/finalize', 
-        [App\Http\Controllers\HasilRekomendasiController::class, 'finalize']
+    // Hasil rekomendasi untuk admin (lihat & finalize)
+    Route::resource('hasil-rekomendasis', HasilRekomendasiController::class)->only(['index','show']);
+    Route::patch(
+        'hasil-rekomendasis/{hasilRekomendasi}/finalize',
+        [HasilRekomendasiController::class, 'finalize']
     )->middleware('check.role:admin');
 
-    Route::get('hasil-rekomendasis/{hasilRekomendasi}/details', 
-        [App\Http\Controllers\DetailRekomendasiController::class, 'index']
+    // Detail rekomendasi
+    Route::get(
+        'hasil-rekomendasis/{hasilRekomendasi}/details',
+        [DetailRekomendasiController::class, 'index']
     );
 });

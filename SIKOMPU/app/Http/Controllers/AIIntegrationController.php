@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Matakuliah;
+use App\Http\Controllers\HasilRekomendasiController;
 
 class AIIntegrationController extends Controller
 {
@@ -38,7 +39,10 @@ class AIIntegrationController extends Controller
      */
     public function generateRecommendation()
     {
+
+        // ======================
         // A. Ambil data lengkap
+        // ======================
         $users = User::with(['selfAssessments', 'penelitians', 'sertifikat', 'pendidikans'])->get();
         $matkuls = Matakuliah::all();
 
@@ -128,25 +132,22 @@ class AIIntegrationController extends Controller
             ];
         }
 
-        // tulis file debug (storage/logs/debug_features.json)
         file_put_contents(
             storage_path("logs/debug_features.json"),
             json_encode($debug_for_python, JSON_PRETTY_PRINT)
         );
 
-        // Log payload (untuk pengecekan cepat di laravel.log)
         \Log::info("DATA_YANG_DIKIRIM_KE_AI", [
             'total' => count($dataDosen),
             'sample_10' => array_slice($dataDosen, 0, 10),
         ]);
 
         // ======================
-        // B. Kirim ke Flask (HANYA SATU REQUEST)
+        // B. Kirim ke Flask
         // ======================
         try {
             $payload = ['dosen' => $dataDosen];
 
-            // Log payload lengkap sebelum dikirim
             \Log::info("PAYLOAD_YANG_DIKIRIM_KE_AI", $payload);
 
             $response = Http::asJson()->post($this->flaskUrl . '/api/predict', $payload);
@@ -154,22 +155,67 @@ class AIIntegrationController extends Controller
             if ($response->successful()) {
                 $hasil = $response->json();
 
-                // (Opsional) Simpan Hasil ke Database Laravel di sini
+                // ======================
+                // Mapping hasil AI → format DB
+                // ======================
+                $rekomendasi = [];
+                foreach ($hasil as $kodeMk => $listDosen) {
+                    $mk = Matakuliah::where('kode_mk', $kodeMk)->first();
+                    if (!$mk) continue;
 
-                // Kembalikan hasil + sample debug kecil
+                    $dosens = [];
+                    foreach ($listDosen as $d) {
+                        $dosens[] = [
+                            'user_id' => $d['dosen_id'],
+                            'skor' => $d['skor']
+                        ];
+                    }
+
+                    if (!empty($dosens)) {
+                        $rekomendasi[] = [
+                            'matakuliah_id' => $mk->id,
+                            'dosens' => $dosens
+                        ];
+                    }
+                }
+
+                // ======================
+                // Simpan ke DB melalui controller lain
+                // ======================
+                if (!empty($rekomendasi)) {
+                    $requestDB = new Request([
+                        'semester' => 'Ganjil 2024/2025',
+                        'rekomendasi' => $rekomendasi
+                    ]);
+
+                    $hasilController = new HasilRekomendasiController();
+                    $dbResponse = $hasilController->storeAIRecommendation($requestDB);
+                } else {
+                    $dbResponse = ['success' => false, 'message' => 'Tidak ada data rekomendasi untuk disimpan'];
+                }
+
                 return response()->json([
                     'status' => 'success',
                     'hasil_ai' => $hasil,
-                    'debug_sample' => array_slice($dataDosen, 0, 10)
+                    'debug_sample' => array_slice($dataDosen, 0, 10),
+                    'db_response' => $dbResponse instanceof \Illuminate\Http\JsonResponse
+                    ? $dbResponse->getData(true) // ambil data sebagai array
+                    : $dbResponse
+
                 ]);
+
             } else {
-                return response()->json(['error' => 'Gagal hitung di AI', 'detail' => $response->body()], 400);
+                return response()->json([
+                    'error' => 'Gagal hitung di AI',
+                    'detail' => $response->body()
+                ], 400);
             }
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Koneksi Error', 'msg' => $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Koneksi Error',
+                'msg' => $e->getMessage()
+            ], 500);
         }
     }
 }
-
-
