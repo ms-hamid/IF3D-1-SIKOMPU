@@ -1,7 +1,7 @@
 {{-- Modal Tambah Mata Kuliah (Vanilla JS) --}}
-<div id="tambahMatkulModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+<div id="tambahMatkulModal" class="hidden fixed inset-0 z-[9999] overflow-y-auto">
     {{-- Backdrop --}}
-    <div class="fixed inset-0 bg-white/10 backdrop-blur-[1px]" onclick="closeTambahModal()"></div>
+    <div class="fixed inset-0 bg-black/40" onclick="closeTambahModal()"></div>
 
     {{-- Modal Content --}}
     <div class="flex min-h-full items-center justify-center p-4">

@@ -60,7 +60,7 @@
                  ['route' => 'self-assessment.index', 'icon' => 'fa-solid fa-clipboard-check', 'label' => 'Self Assessment'],
                  ['route' => 'sertifikasi.index', 'icon' => 'fa-solid fa-medal', 'label' => 'Sertifikat'],
                  ['route' => 'penelitian.index', 'icon' => 'fa-solid fa-flask', 'label' => 'Penelitian'],
-                 ['route' => 'laporan.index', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Laporan'],
+                 ['route' => 'laporan.dosen', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Laporan'],
               ];
           }
 
@@ -77,7 +77,7 @@
                   ['route' => 'self-assessment.index', 'icon' => 'fa-solid fa-clipboard-check', 'label' => 'Self Assessment'],
                   ['route' => 'sertifikasi.index', 'icon' => 'fa-solid fa-medal', 'label' => 'Sertifikat'],
                   ['route' => 'penelitian.index', 'icon' => 'fa-solid fa-flask', 'label' => 'Penelitian'],
-                  ['route' => 'peforma.ai', 'icon' => 'fa-solid fa-bolt', 'label' => 'Peforma AI'],
+                  ['route' => 'ai.performa', 'icon' => 'fa-solid fa-bolt', 'label' => 'Peforma AI'],
                   ['route' => 'laporan.struktural', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Laporan'],
               ];
           }

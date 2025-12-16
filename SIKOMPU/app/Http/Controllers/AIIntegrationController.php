@@ -7,11 +7,11 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Matakuliah;
+use App\Models\AiPrediction; // ← TAMBAHAN BARU
 use App\Http\Controllers\HasilRekomendasiController;
 
 class AIIntegrationController extends Controller
 {
-    // URL Service Flask (Lokal)
     protected $flaskUrl = 'http://127.0.0.1:5000';
 
     /**
@@ -39,14 +39,9 @@ class AIIntegrationController extends Controller
      */
     public function generateRecommendation()
     {
-
-        // ======================
-        // A. Ambil data lengkap
-        // ======================
         $users = User::with(['selfAssessments', 'penelitians', 'sertifikat', 'pendidikans'])->get();
         $matkuls = Matakuliah::all();
 
-        // Pivot mk_kategori — indexing: matkulID-kategoriID
         $mkKategori = DB::table('mk_kategori')->get()->keyBy(function($item) {
             return $item->mata_kuliah_id . '-' . $item->kategori_id;
         });
@@ -55,10 +50,6 @@ class AIIntegrationController extends Controller
 
         foreach ($users as $user) {
             foreach ($matkuls as $mk) {
-
-                // ======================
-                // C1: SELF ASSESSMENT
-                // ======================
                 $c1_self = optional(
                     $user->selfAssessments()
                         ->where('matakuliah_id', $mk->id)
@@ -66,9 +57,6 @@ class AIIntegrationController extends Controller
                         ->first()
                 )->nilai ?? 0;
 
-                // ======================
-                // C2: PENDIDIKAN (MAPPING WAJIB)
-                // ======================
                 $pendidikan = optional($user->pendidikans->last())->jenjang;
 
                 $c2_pendidikan = match ($pendidikan) {
@@ -78,9 +66,6 @@ class AIIntegrationController extends Controller
                     default => 0,
                 };
 
-                // ======================
-                // C3: BOBOT SERTIFIKAT (RELEVANSI)
-                // ======================
                 $c3_total = 0;
                 foreach ($user->sertifikat as $sertif) {
                     $key = $mk->id . '-' . $sertif->kategori_id;
@@ -89,9 +74,6 @@ class AIIntegrationController extends Controller
                     }
                 }
 
-                // ======================
-                // C4: BOBOT PENELITIAN (RELEVANSI)
-                // ======================
                 $c4_total = 0;
                 foreach ($user->penelitians as $penelitian) {
                     $key = $mk->id . '-' . $penelitian->kategori_id;
@@ -100,9 +82,6 @@ class AIIntegrationController extends Controller
                     }
                 }
 
-                // ======================
-                // MASUKKAN KE ARRAY
-                // ======================
                 $dataDosen[] = [
                     'id' => $user->id,
                     'nama' => $user->nama_lengkap,
@@ -115,9 +94,6 @@ class AIIntegrationController extends Controller
             }
         }
 
-        // ======================
-        // DEBUG: simpan fitur yg dikirim ke Python (sekali)
-        // ======================
         $debug_for_python = [];
         foreach ($dataDosen as $row) {
             $debug_for_python[] = [
@@ -142,9 +118,6 @@ class AIIntegrationController extends Controller
             'sample_10' => array_slice($dataDosen, 0, 10),
         ]);
 
-        // ======================
-        // B. Kirim ke Flask
-        // ======================
         try {
             $payload = ['dosen' => $dataDosen];
 
@@ -186,17 +159,20 @@ class AIIntegrationController extends Controller
                     ];
                 }
 
-                if (!empty($dosens)) {
-                    $rekomendasi[] = [
-                        'matakuliah_id' => $mk->id,
-                        'dosens' => $dosens,
-                    ];
+                    if (!empty($dosens)) {
+                        $rekomendasi[] = [
+                            'matakuliah_id' => $mk->id,
+                            'dosens' => $dosens,
+                        ];
+                    }
                 }
-            }
 
-                // ======================
-                // Simpan ke DB melalui controller lain
-                // ======================
+                // ========================================
+                // 🆕 TAMBAHAN BARU: SIMPAN KE AI PREDICTIONS
+                // ========================================
+                $this->saveAIPredictions($hasil, $dataDosen);
+                // ========================================
+
                 if (!empty($rekomendasi)) {
 
                 // PAKAI LARAVEL CONTAINER (WAJIB)
@@ -223,9 +199,8 @@ class AIIntegrationController extends Controller
                     'hasil_ai' => $hasil,
                     'debug_sample' => array_slice($dataDosen, 0, 10),
                     'db_response' => $dbResponse instanceof \Illuminate\Http\JsonResponse
-                    ? $dbResponse->getData(true) // ambil data sebagai array
+                    ? $dbResponse->getData(true)
                     : $dbResponse
-
                 ]);
 
             } else {
@@ -240,6 +215,41 @@ class AIIntegrationController extends Controller
                 'error' => 'Koneksi Error',
                 'msg' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    // ========================================
+    // 🆕 METHOD BARU: Simpan AI Predictions
+    // ========================================
+    private function saveAIPredictions($hasilAI, $dataDosen)
+    {
+        try {
+            foreach ($hasilAI as $kodeMk => $listDosen) {
+                // Ambil top 3 rekomendasi (dianggap "diterima" oleh AI)
+                foreach ($listDosen as $index => $dosen) {
+                    // Cek apakah dosen ini masuk top 3
+                    $isPredictedAccepted = $index < 3;
+                    
+                    // Untuk saat ini, kita set actual_status = pending
+                    // Nanti diupdate manual oleh admin setelah seleksi selesai
+                    AiPrediction::create([
+                        'dosen_id' => $dosen['dosen_id'],
+                        'predicted_status' => $isPredictedAccepted ? 'diterima' : 'ditolak',
+                        'actual_status' => 'pending', // Default pending
+                        'confidence_score' => $dosen['skor'],
+                        'features_used' => json_encode([
+                            'kode_matkul' => $kodeMk,
+                            'ranking' => $index + 1,
+                        ]),
+                        'predicted_at' => now(),
+                    ]);
+                }
+            }
+            
+            \Log::info("✅ AI Predictions saved successfully for metrics tracking");
+        } catch (\Exception $e) {
+            // Kalau error, tidak masalah, rekomendasi tetap jalan
+            \Log::error("❌ Failed to save AI predictions: " . $e->getMessage());
         }
     }
 }

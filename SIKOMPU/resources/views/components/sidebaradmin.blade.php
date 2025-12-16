@@ -88,7 +88,7 @@
      <i class="fa-solid fa-bolt mr-3"></i> Peforma AI
    </a>
   
-      <a href="{{ route('laporan.index') }}" 
+      <a href="{{ route('laporan.struktural') }}" 
          class="flex items-center px-4 py-2.5 rounded-md font-medium text-sm transition duration-200
          {{ request()->routeIs('laporan.*') 
             ? 'bg-blue-800 text-white' 
