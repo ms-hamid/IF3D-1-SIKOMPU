@@ -103,7 +103,7 @@ Route::middleware('auth')->group(function () {
         
         // Hasil Rekomendasi
         Route::get('/hasil-rekomendasi', [HasilRekomendasiPageController::class, 'index'])->name('hasil.rekomendasi');
-        Route::post('/rekomendasi', [HasilRekomendasiController::class, 'generate'])->name('rekomendasi.generate');
+        // Route::post('/rekomendasi', [HasilRekomendasiController::class, 'generate'])->name('rekomendasi.generate');
         Route::get('/rekomendasi/{id}', [HasilRekomendasiController::class, 'viewDetail'])->name('rekomendasi.detail');
 
         // Peforma AI

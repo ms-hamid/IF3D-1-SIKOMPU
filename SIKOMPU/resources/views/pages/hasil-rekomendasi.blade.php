@@ -1,296 +1,303 @@
-@foreach ($hasilRekomendasi as $hasil)
-    @php
-        $mataKuliahs = $hasil->detailHasilRekomendasi->groupBy('matakuliah_id');
-    @endphp
-
-    @foreach ($mataKuliahs as $mkId => $details)
-        @php
-            $koor = $details->firstWhere('peran_penugasan', 'koordinator');
-            $pengampu = $details->where('peran_penugasan', 'pengampu');
-            $skor_total = $koor?->skor_dosen_di_mk ?? 0;
-        @endphp
-        <tr>
-            <td>{{ $details->first()->mataKuliah->kode_mk ?? '-' }}</td>
-            <td>
-                <p class="text-sm font-medium">{{ $details->first()->mataKuliah->nama_mk ?? '-' }}</p>
-                <p class="text-xs text-gray-500">{{ $details->first()->mataKuliah->sks ?? 0 }} SKS • Semester {{ $details->first()->mataKuliah->semester ?? '-' }}</p>
-            </td>
-
-            {{-- Koordinator --}}
-            <td>
-                @if($koor && $koor->user)
-                    <div class="flex items-center">
-                        <div class="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold mr-3">
-                            {{ strtoupper(substr($koor->user->name, 0, 2)) }}
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium">{{ $koor->user->name }}</p>
-                            <p class="text-xs text-gray-500">Skor: {{ $koor->skor_dosen_di_mk }}</p>
-                        </div>
-                    </div>
-                @else
-                    <span class="text-gray-500 text-sm">Belum ditentukan</span>
-                @endif
-            </td>
-
-            {{-- Pengampu --}}
-            <td>
-                @forelse ($pengampu as $p)
-                    @if($p->user)
-                        <div class="flex items-center mb-1 last:mb-0">
-                            <div class="h-8 w-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold mr-3">
-                                {{ strtoupper(substr($p->user->name, 0, 2)) }}
-                            </div>
-                            <span class="text-sm font-medium">{{ $p->user->name }}</span>
-                        </div>
-                    @endif
-                @empty
-                    <span class="text-gray-500 text-sm">Belum ada pengampu</span>
-                @endforelse
-            </td>
-
-            {{-- Skor Total --}}
-            <td>
-                <span class="px-3 py-1 inline-flex text-sm font-semibold rounded-lg bg-green-100 text-green-800">
-                    {{ $skor_total }}
-                </span>
-            </td>
-
-            {{-- Aksi --}}
-            <td>
-                <a href="{{ route('hasil.show', $hasil->id) }}" class="text-blue-700 hover:text-blue-900">Detail</a>
-            </td>
-        </tr>
-    @endforeach
-@endforeach
-
-
-
-<!-- @extends('layouts.app')
-
-
+@extends('layouts.app')
 
 @section('title', 'Hasil Rekomendasi')
 @section('page_title', 'Hasil Rekomendasi')
 
 @section('content')
-<main class="flex-1 p-4 sm:p-6 space-y-6" x-data="{ openModal: false }" @close-modal.window="openModal = false">
+    <main class="flex-1 p-4 sm:p-6 space-y-6">
 
-{{-- 1. HEADER JUDUL & TOMBOL EKSPOR --}}
-<div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-gray-200 pb-4 mb-4">
-    <div>
-        <h2 class="text-2xl font-bold text-gray-800">Hasil Rekomendasi</h2>
-        <p class="text-sm font-normal text-gray-500 mt-1">Semester Ganjil 2025/2026 - Politeknik Negeri Batam</p>
-    </div>
-    
-    {{-- Tombol Aksi Ekspor (Diposisikan di kanan atas) --}}
-    <div class="flex space-x-3 mt-4 sm:mt-0">
-        <button class="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600  border-red-600 rounded-lg hover:bg-red-700 transition duration-150 shadow-md">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            Ekspor PDF
-        </button>
-        <button class="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-150 shadow-md">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            Ekspor Excel
-        </button>
-    </div>
-</div>
+        {{-- ========================================================= --}}
+        {{-- 1. HEADER JUDUL + TOMBOL EKSPOR --}}
+        {{-- ========================================================= --}}
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-gray-200 pb-4">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Hasil Rekomendasi</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    Semester Ganjil 2025/2026 - Politeknik Negeri Batam
+                </p>
+            </div>
 
-{{-- 2. RINGKASAN DATA (CARDS) --}}
-@php
-$cards = [
-   ['title' => 'Total Mata Kuliah', 'value' => 48, 'icon_bg' => 'bg-blue-100', 'icon_text' => 'text-blue-600', 'icon_svg' => '<path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>'],
-   ['title' => 'Koordinator Ditetapkan', 'value' => 48, 'icon_bg' => 'bg-green-100', 'icon_text' => 'text-green-600', 'icon_svg' => '<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>'],
-   ['title' => 'Pengampu Ditetapkan', 'value' => 156, 'icon_bg' => 'bg-purple-100', 'icon_text' => 'text-purple-600', 'icon_svg' => '<path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>'],
-   ['title' => 'Skor Rata-rata', 'value' => '8.7', 'icon_bg' => 'bg-yellow-100', 'icon_text' => 'text-yellow-700', 'icon_svg' => '<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.817 2.05a1 1 0 00-.363 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.817-2.05a1 1 0 00-1.175 0l-2.817 2.05c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" fill="currentColor"></path>'],
-];
-@endphp
+            <div class="flex space-x-3 mt-4 sm:mt-0">
+                <button class="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 shadow">
+                    Ekspor PDF
+                </button>
+                <button class="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 shadow">
+                    Ekspor Excel
+                </button>
+            </div>
+        </div>
 
-{{-- RINGKASAN DATA (REAL)
-@php
-$cards = [
-   [
-      'title' => 'Total Mata Kuliah',
-      'value' => $totalMk,
-      'icon_bg' => 'bg-blue-100',
-      'icon_text' => 'text-blue-600',
-      'icon_svg' => '<path d="M19 11H5m14 0a2 2 ..."></path>'
-   ],
-   [
-      'title' => 'Koordinator Ditetapkan',
-      'value' => $totalKoordinator,
-      'icon_bg' => 'bg-green-100',
-      'icon_text' => 'text-green-600',
-      'icon_svg' => '<path d="M9 12l2 2 ..."></path>'
-   ],
-   [
-      'title' => 'Pengampu Ditetapkan',
-      'value' => $totalPengampu,
-      'icon_bg' => 'bg-purple-100',
-      'icon_text' => 'text-purple-600',
-      'icon_svg' => '<path d="M17 20h5v-2 ..."></path>'
-   ],
-   [
-      'title' => 'Skor Rata-rata',
-      'value' => number_format($avgSkor ?? 0, 1),
-      'icon_bg' => 'bg-yellow-100',
-      'icon_text' => 'text-yellow-700',
-      'icon_svg' => '<path d="M9.049 2.927 ..."></path>'
-   ],
-];
-@endphp
---}}
+        {{-- ========================= --}}
+        {{-- 2. RINGKASAN DATA (CARDS) --}}
+        {{-- ========================= --}}
+        @php
+        $cards = [
+        [
+            'title' => 'Total Mata Kuliah',
+            'value' => $totalMk ?? 0,
+            'icon_bg' => 'bg-blue-100',
+            'icon_text' => 'text-blue-600',
+            'icon_svg' => '
+                <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2
+                        m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2
+                        m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                </path>'
+        ],
+        [
+            'title' => 'Koordinator Ditetapkan',
+            'value' => $totalKoordinator ?? 0,
+            'icon_bg' => 'bg-green-100',
+            'icon_text' => 'text-green-600',
+            'icon_svg' => '
+                <path d="M9 12l2 2 4-4m6 2
+                        a9 9 0 11-18 0
+                        a9 9 0 0118 0z"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                </path>'
+        ],
+        [
+            'title' => 'Pengampu Ditetapkan',
+            'value' => $totalPengampu ?? 0,
+            'icon_bg' => 'bg-purple-100',
+            'icon_text' => 'text-purple-600',
+            'icon_svg' => '
+                <path d="M17 20h5v-2a3 3 0 00-5.356-1.857
+                        M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857
+                        M7 20H2v-2a3 3 0 015.356-1.857
+                        M7 20v-2c0-.656.126-1.283.356-1.857
+                        m0 0a5.002 5.002 0 019.288 0
+                        M15 7a3 3 0 11-6 0 3 3 0 016 0
+                        m6 3a2 2 0 11-4 0 2 2 0 014 0
+                        M7 10a2 2 0 11-4 0 2 2 0 014 0"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                </path>'
+        ],
+        [
+            'title' => 'Skor Rata-rata',
+            'value' => number_format($avgSkor ?? 0, 2),
+            'icon_bg' => 'bg-yellow-100',
+            'icon_text' => 'text-yellow-700',
+            'icon_svg' => '
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0
+                        l1.07 3.292a1 1 0 00.95.69h3.462
+                        c.969 0 1.371 1.24.588 1.81
+                        l-2.817 2.05a1 1 0 00-.363 1.118
+                        l1.07 3.292c.3.921-.755 1.688-1.54 1.118
+                        l-2.817-2.05a1 1 0 00-1.175 0
+                        l-2.817 2.05c-.784.57-1.838-.197-1.539-1.118
+                        l1.07-3.292a1 1 0 00-.364-1.118
+                        L2.98 8.72c-.783-.57-.38-1.81.588-1.81
+                        h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                    fill="currentColor">
+                </path>'
+        ],
+        ];
+        @endphp
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        @foreach ($cards as $card)
+        <div class="bg-white p-5 rounded-xl shadow-lg flex items-center justify-between border border-gray-100">
+            <div>
+                <p class="text-sm font-medium text-gray-500">{{ $card['title'] }}</p>
+                <p class="text-3xl font-bold text-gray-900 mt-1">
+                    {{ $card['value'] }}
+                </p>
+            </div>
+
+            <div class="p-3 rounded-xl {{ $card['icon_bg'] }} {{ $card['icon_text'] }}">
+                <svg class="w-6 h-6"
+                    fill="{{ $card['icon_bg'] == 'bg-yellow-100' ? 'currentColor' : 'none' }}"
+                    stroke="{{ $card['icon_bg'] == 'bg-yellow-100' ? 'none' : 'currentColor' }}"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+
+                    @if ($card['icon_bg'] != 'bg-yellow-100')
+                    <g stroke="currentColor">
+                    @endif
+
+                    {!! $card['icon_svg'] !!}
+
+                    @if ($card['icon_bg'] != 'bg-yellow-100')
+                    </g>
+                    @endif
+                </svg>
+            </div>
+        </div>
+        @endforeach
+        </div>
 
 
+        {{-- ========================================================= --}}
+        {{-- 3. FILTER & PENCARIAN --}}
+        {{-- ========================================================= --}}
+        <x-filter-rekomendas />
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-@foreach ($cards as $card)
-<div class="bg-white p-5 rounded-xl shadow-lg flex items-center justify-between border border-gray-100">
-   <div>
-       <p class="text-sm font-medium text-gray-500">{{ $card['title'] }}</p>
-       <p class="text-3xl font-bold text-gray-900 mt-1">{{ $card['value'] }}</p>
-   </div>
-   <div class="p-3 rounded-xl {{ $card['icon_bg'] }} {{ $card['icon_text'] }}"> {{-- Ganti rounded-full jadi rounded-xl (lebih kotak) --}}
-       <svg class="w-6 h-6" fill="{{ $card['icon_bg'] == 'bg-yellow-100' ? 'currentColor' : 'none' }}" stroke="{{ $card['icon_bg'] == 'bg-yellow-100' ? 'none' : 'currentColor' }}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            @if ($card['icon_bg'] != 'bg-yellow-100') <g stroke="currentColor"> @endif
-            {!! $card['icon_svg'] !!}
-            @if ($card['icon_bg'] != 'bg-yellow-100') </g> @endif
-       </svg>
-   </div>
-</div>
-@endforeach
-</div>
+        {{-- TABLE --}}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
 
-{{-- --- Section: Filter dan Tabel Data --- --}}
+                {{-- TABLE HEADER --}}
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Kode MK</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Mata Kuliah</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Koordinator</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Pengampu</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Skor</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Aksi</th>
+                    </tr>
+                </thead>
 
-{{-- 3. FILTER & PENCARIAN --}}
-<div class="bg-white p-6 shadow-lg rounded-xl border border-gray-100 mt-6">
-<h4 class="text-xl font-bold text-gray-800 mb-4">Filter & Pencarian</h4>
-<div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
-   {{-- Input Pencarian --}}
-   <div class="md:col-span-2 relative w-full">
-       <input type="text" placeholder="Cari mata kuliah atau koordinator..." class="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-   </div>
+                {{-- TABLE BODY --}}
+                <tbody class="bg-white divide-y divide-gray-200">
 
-   {{-- Dropdown Program Studi --}}
-   <select class="w-full border border-gray-300 rounded-lg py-2 px-4 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
-    <option value="" disabled selected>Semua Program Studi</option>
-    <option>Teknik Informatika</option>
-    <option>Teknik Geomatika</option>
-    <option>Teknik Rekayasa Multimedia</option>
-    <option>Animasi</option>
-    <option>Rekayasa Keamanan Siber</option>
-    <option>Teknik Rekayasa Perangkat Lunak</option>
-    <option>Teknologi Permainan</option>
-    <option>S2 Magister Terapan Teknik Komputer</option>
+                @forelse ($hasilRekomendasi as $hasil)
 
+                    @php
+                        $groupedMk = $hasil->detailHasilRekomendasi->groupBy('matakuliah_id');
+                        $isFiltered = request()->has('prodi');
+                    @endphp
 
-    {{-- ... Opsi lainnya ... --}}
-   </select>
+                    @foreach ($groupedMk as $details)
 
-   {{-- Dropdown Semester --}}
-   <select class="w-full border border-gray-300 rounded-lg py-2 px-4 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
-       <option>Semua Semester</option>
-       <option>Ganjil 2025/2026</option>
-       <option>Genap 2024/2025</option>
-   </select>
+                        @php
+                            $mk = optional($details->first())->mataKuliah;
 
-   {{-- Tombol Terapkan Filter --}}
-   <button class="w-full flex items-center justify-center px-4 py-2 text-white bg-blue-700 rounded-lg hover:bg-blue-800 transition duration-150 whitespace-nowrap shadow-md">
-       <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-       Terapkan Filter
-   </button>
-</div>
-</div>
-   {{-- 4. Tabel Data Rekomendasi --}}
-<div class="bg-white p-6 shadow-lg rounded-lg border border-gray-100">
-    <h4 class="text-xl font-bold text-gray-800 mb-4">Rekomendasi Koordinator & Pengampu</h4>
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode MK</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mata Kuliah</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Koordinator</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengampu</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skor</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                </tr>
-            </thead>
+                            $koor = $details->firstWhere('peran_penugasan_lower', 'koordinator');
+                            $pengampu = $details->where('peran_penugasan_lower', 'pengampu');
 
-            <tbody class="bg-white divide-y divide-gray-200">
+                            $skor = $koor?->skor_dosen_di_mk ?? 0;
+                        @endphp
 
-                @foreach ($hasilRekomendasi as $hasil)
-                    @foreach ($hasil->detailHasilRekomendasi as $detail)
                         <tr>
-                            {{-- Kode Mata Kuliah --}}
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ $detail->mataKuliah->kode_mk ?? '-' }}
+                            {{-- KODE MK --}}
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                {{ $mk?->kode_mk ?? '-' }}
                             </td>
 
-                            {{-- Nama Mata Kuliah + SKS/Semester --}}
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            {{-- NAMA MK --}}
+                            <td class="px-6 py-4">
                                 <p class="text-sm font-medium text-gray-900">
-                                    {{ $detail->mataKuliah->nama_mk ?? '-' }}
+                                    {{ $mk?->nama_mk ?? '-' }}
                                 </p>
                                 <p class="text-xs text-gray-500">
-                                    {{ $detail->mataKuliah->sks ?? 0 }} SKS • Semester {{ $detail->mataKuliah->semester ?? '-' }}
+                                    {{ $mk?->sks ?? 0 }} SKS • Semester {{ $mk?->semester ?? '-' }}
                                 </p>
                             </td>
 
-                            {{-- Koordinator --}}
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @php
-                                    $koor = $detail->koordinator;
-                                @endphp
-
-                                @if ($koor)
-                                <div class="flex items-center">
-                                    <div class="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold mr-3">
-                                        {{ strtoupper(substr($koor->name, 0, 2)) }}
+                            {{-- KOORDINATOR --}}
+                            <td class="px-6 py-4">
+                                @if($koor && $koor->user)
+                                    <div class="flex items-center">
+                                        <div class="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold mr-3">
+                                            {{ strtoupper(substr($koor->user->name, 0, 2)) }}
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">
+                                                {{ $koor->user->name }}
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                Skor: {{ number_format($koor->skor_dosen_di_mk, 3) }}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">{{ $koor->name }}</p>
-                                        <p class="text-xs text-gray-500">Skor: {{ $detail->skor_koordinator ?? '-' }}</p>
-                                    </div>
-                                </div>
                                 @else
                                     <span class="text-gray-500 text-sm">Belum ditentukan</span>
                                 @endif
                             </td>
 
-                            {{-- Pengampu --}}
-                            <td class="px-6 py-4 text-sm text-gray-500">
-                                @forelse ($detail->pengampu as $p)
-                                <div class="flex items-center mb-1 last:mb-0">
-                                    <div class="h-8 w-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold mr-3">
-                                        {{ strtoupper(substr($p->name, 0, 2)) }}
-                                    </div>
-                                    <span class="text-sm font-medium text-gray-900">{{ $p->name }}</span>
-                                </div>
-                                @empty
-                                    <span class="text-gray-500 text-sm">Belum ada pengampu</span>
-                                @endforelse
+                            {{-- PENGAMPU --}}
+                            <td class="px-6 py-4">
+
+                                {{-- JIKA FILTER → TAMPILKAN SEMUA --}}
+                                @if($isFiltered)
+
+                                    @forelse ($pengampu as $p)
+                                        @if($p->user)
+                                            <div class="flex items-center mb-1 last:mb-0">
+                                                <div class="h-8 w-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold mr-3">
+                                                    {{ strtoupper(substr($p->user->name, 0, 2)) }}
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-900">
+                                                        {{ $p->user->name }}
+                                                    </p>
+                                                    <p class="text-xs text-gray-500">
+                                                        Skor: {{ number_format($p->skor_dosen_di_mk, 3) }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    @empty
+                                        <span class="text-gray-500 text-sm">Belum ada pengampu</span>
+                                    @endforelse
+
+                                {{-- DEFAULT → HANYA 1 --}}
+                                @else
+                                    @php
+                                        $pengampuUtama = $pengampu->first();
+                                    @endphp
+
+                                    @if($pengampuUtama && $pengampuUtama->user)
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold mr-3">
+                                                {{ strtoupper(substr($pengampuUtama->user->name, 0, 2)) }}
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">
+                                                    {{ $pengampuUtama->user->name }}
+                                                </p>
+
+                                                @if($pengampu->count() > 1)
+                                                    <p class="text-xs text-gray-500">
+                                                        +{{ $pengampu->count() - 1 }} pengampu lain
+                                                    </p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="text-gray-500 text-sm">Belum ada pengampu</span>
+                                    @endif
+                                @endif
                             </td>
 
-                            {{-- Skor --}}
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-lg bg-green-100 text-green-800">
-                                    {{ $detail->skor_total ?? '-' }}
+                            {{-- SKOR --}}
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 rounded-lg bg-green-100 text-green-800 text-sm font-semibold">
+                                    {{ number_format($skor, 3) }}
                                 </span>
                             </td>
 
-                            {{-- Aksi --}}
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('hasil.show', $hasil->id) }}" class="text-blue-700 hover:text-blue-900">Detail</a>
+                            {{-- AKSI --}}
+                            <td class="px-6 py-4 text-sm font-medium">
+                                @if(Route::has('hasil.show'))
+                                    <a href="{{ route('hasil.show', $hasil->id) }}"
+                                       class="text-blue-700 hover:text-blue-900">
+                                        Detail
+                                    </a>
+                                @else
+                                    <span class="text-gray-400">Detail</span>
+                                @endif
                             </td>
                         </tr>
-                    @endforeach
-                @endforeach
 
-            </tbody>
-        </table>
+                    @endforeach
+
+                @empty
+                    <tr>
+                        <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                            Data rekomendasi belum tersedia
+                        </td>
+                    </tr>
+                @endforelse
+
+                </tbody>
+            </table>
+        </div>
+
     </div>
 </div>
+@endsection
 
-@endsection -->
+

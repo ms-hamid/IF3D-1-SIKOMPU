@@ -68,15 +68,16 @@ class HasilRekomendasiController extends Controller
     public function storeAIRecommendation(Request $request)
     {
         $data = $request->validate([
-            'semester' => 'required|string',
-            'rekomendasi' => 'required|array|min:1',
+        'semester' => 'required|string',
+        'rekomendasi' => 'required|array|min:1',
 
-            'rekomendasi.*.matakuliah_id' => 'required|exists:mata_kuliahs,id',
-            'rekomendasi.*.dosens' => 'required|array|min:1',
+        'rekomendasi.*.matakuliah_id' => 'required|exists:mata_kuliah,id',
+        'rekomendasi.*.dosens' => 'required|array|min:1',
 
-            'rekomendasi.*.dosens.*.user_id' => 'required|exists:users,id',
-            'rekomendasi.*.dosens.*.skor' => 'required|numeric',
-        ]);
+        'rekomendasi.*.dosens.*.user_id' => 'required|exists:users,id',
+        'rekomendasi.*.dosens.*.skor' => 'required|numeric',
+    ]);
+
 
         // Ambil tahun ajaran dari string semester
         $parts = explode(' ', $data['semester']);
@@ -145,5 +146,19 @@ class HasilRekomendasiController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function saveFromAI(string $semester, array $rekomendasi)
+    {
+        $request = Request::create(
+            '/api/hasil-rekomendasis',
+            'POST',
+            [
+                'semester' => $semester,
+                'rekomendasi' => $rekomendasi,
+            ]
+        );
+
+        return $this->storeAIRecommendation($request);
     }
 }

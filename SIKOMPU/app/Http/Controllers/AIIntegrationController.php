@@ -158,38 +158,62 @@ class AIIntegrationController extends Controller
                 // ======================
                 // Mapping hasil AI → format DB
                 // ======================
+                $hasilAI = $hasil['hasil_rekomendasi'] ?? [];
+
+                $grouped = collect($hasilAI)->groupBy('kode_matkul');
+
                 $rekomendasi = [];
-                foreach ($hasil as $kodeMk => $listDosen) {
+
+                foreach ($grouped as $kodeMk => $items) {
+
                     $mk = Matakuliah::where('kode_mk', $kodeMk)->first();
                     if (!$mk) continue;
 
-                    $dosens = [];
-                    foreach ($listDosen as $d) {
-                        $dosens[] = [
-                            'user_id' => $d['dosen_id'],
-                            'skor' => $d['skor']
-                        ];
-                    }
+                // Urutkan dosen berdasarkan skor tertinggi
+                $sorted = collect($items)->sortByDesc('skor_prediksi')->values();
 
-                    if (!empty($dosens)) {
-                        $rekomendasi[] = [
-                            'matakuliah_id' => $mk->id,
-                            'dosens' => $dosens
-                        ];
-                    }
+                $dosens = [];
+
+                foreach ($sorted as $index => $item) {
+
+                    $user = User::where('nama_lengkap', $item['nama'])->first();
+                    if (!$user) continue;
+
+                    $dosens[] = [
+                        'user_id' => $user->id,
+                        'role' => $index === 0 ? 'Koordinator' : 'Pengampu',
+                        'skor' => $item['skor_prediksi'],
+                    ];
                 }
+
+                if (!empty($dosens)) {
+                    $rekomendasi[] = [
+                        'matakuliah_id' => $mk->id,
+                        'dosens' => $dosens,
+                    ];
+                }
+            }
 
                 // ======================
                 // Simpan ke DB melalui controller lain
                 // ======================
                 if (!empty($rekomendasi)) {
-                    $requestDB = new Request([
-                        'semester' => 'Ganjil 2024/2025',
-                        'rekomendasi' => $rekomendasi
+
+                // PAKAI LARAVEL CONTAINER (WAJIB)
+                $hasilController = app(HasilRekomendasiController::class);
+
+                $dbResponse = $hasilController->saveFromAI(
+                    'Ganjil 2024/2025',
+                    $rekomendasi
+                );
+
+               // LOG WAJIB BIAR KELIHATAN MASUK / TIDAK
+                    \Log::info('HASIL_SAVE_FROM_AI', [
+                        'response' => $dbResponse instanceof \Illuminate\Http\JsonResponse
+                            ? $dbResponse->getData(true)
+                            : $dbResponse
                     ]);
 
-                    $hasilController = new HasilRekomendasiController();
-                    $dbResponse = $hasilController->storeAIRecommendation($requestDB);
                 } else {
                     $dbResponse = ['success' => false, 'message' => 'Tidak ada data rekomendasi untuk disimpan'];
                 }

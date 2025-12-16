@@ -35,4 +35,9 @@ class DetailHasilRekomendasi extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getPeranPenugasanLowerAttribute()
+    {
+    return strtolower($this->peran_penugasan);
+    }
 }

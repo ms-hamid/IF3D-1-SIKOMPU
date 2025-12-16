@@ -27,6 +27,7 @@ use App\Http\Controllers\DetailRekomendasiController;
 
 // AI endpoint untuk menyimpan hasil rekomendasi
 Route::post('/ai/hasil-rekomendasi', [AIIntegrationController::class, 'generateRecommendation']);
+// Route::post('/rekomendasi', [HasilRekomendasiController::class, 'generate'])->name('rekomendasi.generate');
 
 // Login (public)
 Route::post('/login', [AuthController::class, 'login']);

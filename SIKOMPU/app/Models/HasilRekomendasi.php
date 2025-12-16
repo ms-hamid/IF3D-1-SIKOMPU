@@ -16,9 +16,11 @@ class HasilRekomendasi extends Model
         'tahun_ajaran',
         'status',
     ];
+    
 
     public function detailHasilRekomendasi()
     {
         return $this->hasMany(DetailHasilRekomendasi::class, 'hasil_id');
     }
 }
+
