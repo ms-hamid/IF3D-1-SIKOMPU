@@ -14,6 +14,8 @@ use App\Http\Controllers\ProfilController;
 use App\Http\Controllers\SelfAssessmentController;
 use App\Http\Controllers\HasilRekomendasiController;
 use App\Http\Controllers\HasilRekomendasiPageController;
+use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\Laporan2Controller;
 
 // Testing AI
 Route::get('/cek-ai', [AIIntegrationController::class, 'checkConnection']);
@@ -81,7 +83,10 @@ Route::middleware('auth')->group(function () {
             return view('pages.laporan');
         })->name('laporan.index');
     });
-
+      // Laporan dosen
+        Route::get('/laporan-struktural', [LaporanController::class, 'index'])->name('laporan.struktural.');
+    });
+    
     // ============================
     // DASHBOARD & FITUR STRUKTURAL
     // ============================
@@ -116,8 +121,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/self-assessment/import', [SelfAssessmentController::class, 'import'])->name('self-assessment.import');
 
         // Laporan Struktural
-        Route::get('/laporan-struktural', function () {
-            return view('pages.laporan-struktural');
-        })->name('laporan.struktural');
+        Route::get('/laporan-struktural', [LaporanController::class, 'index'])->name('laporan.struktural.');
     });
 });
