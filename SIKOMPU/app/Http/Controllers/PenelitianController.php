@@ -12,7 +12,7 @@ class PenelitianController extends Controller
     /**
      * Tampilkan halaman view penelitian
      */
-    public function viewIndex()
+    public function index()
     {
     $penelitians = Auth::user()->penelitians()->get();
     $kategori = Kategori::all(); // <-- ambil semua kategori
