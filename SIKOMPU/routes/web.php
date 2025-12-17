@@ -74,6 +74,9 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:Dosen,Laboran')->group(function () {
         Route::get('/dashboard-dosen', [DashboardDosenController::class, 'index'])->name('dashboard.dosen');
         Route::get('/laporan', [Laporan2Controller::class, 'index'])->name('laporan.dosen');
+        Route::get('/laporan', [LaporanController::class, 'index'])
+            ->name('laporan.index');
+
     });
 
     // ============================
