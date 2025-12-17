@@ -1,14 +1,14 @@
-<!-- resources/views/components/tambah-dosen.blade.php (Style Penelitian) -->
-<div x-show="openModal" 
+<!-- resources/views/components/edit-dosen.blade.php -->
+<div x-show="openEditModal" 
      x-cloak
-     @keydown.escape.window="openModal = false"
+     @keydown.escape.window="openEditModal = false"
      class="fixed inset-0 z-50 overflow-y-auto" 
      aria-labelledby="modal-title" 
      role="dialog" 
      aria-modal="true">
     
     <!-- Backdrop -->
-    <div x-show="openModal"
+    <div x-show="openEditModal"
          x-transition:enter="ease-out duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
@@ -16,12 +16,12 @@
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
          class="fixed inset-0 bg-black/50 transition-opacity"
-         @click="openModal = false">
+         @click="openEditModal = false">
     </div>
 
     <!-- Modal Content -->
     <div class="flex min-h-full items-center justify-center p-4">
-        <div x-show="openModal"
+        <div x-show="openEditModal"
              x-transition:enter="ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
              x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
@@ -29,12 +29,12 @@
              x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
              x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
              class="relative bg-white rounded-lg shadow-xl w-full max-w-lg p-6"
-             @click.away="openModal = false">
+             @click.away="openEditModal = false">
             
             {{-- Header modal dengan ikon tutup --}}
             <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 flex justify-between items-center">
-                Tambah Data Dosen
-                <button type="button" @click="openModal = false"
+                Edit Data Dosen
+                <button type="button" @click="openEditModal = false"
                         class="text-gray-400 hover:text-gray-700 text-lg font-bold ml-2">
                     &times;
                 </button>
@@ -52,102 +52,107 @@
             @endif
 
             <!-- Form -->
-            <form action="{{ route('dosen.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <form :action="editAction" method="POST" class="space-y-4">
                 @csrf
+                @method('PUT')
 
                 <!-- Nama Lengkap -->
                 <div class="flex flex-col">
-                    <label for="nama_lengkap" class="text-sm text-gray-700 font-bold mb-1">
+                    <label for="edit_nama_lengkap" class="text-sm text-gray-700 font-bold mb-1">
                         Nama Lengkap <span class="text-red-500">*</span>
                     </label>
                     <input type="text" 
-                           id="nama_lengkap" 
+                           id="edit_nama_lengkap" 
                            name="nama_lengkap"
-                           value="{{ old('nama_lengkap') }}"
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none @error('nama_lengkap') border-red-500 @enderror"
+                           x-model="editData.nama_lengkap"
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                            placeholder="Masukkan Nama Lengkap" 
                            required>
-                    @error('nama_lengkap')
-                        <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                    @enderror
                 </div>
 
                 <!-- NIDN / NIP -->
                 <div class="flex flex-col">
-                    <label for="nidn" class="text-sm text-gray-700 font-bold mb-1">
+                    <label for="edit_nidn" class="text-sm text-gray-700 font-bold mb-1">
                         NIDN / NIP <span class="text-red-500">*</span>
                     </label>
                     <input type="text" 
-                           id="nidn" 
+                           id="edit_nidn" 
                            name="nidn"
-                           value="{{ old('nidn') }}"
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm @error('nidn') border-red-500 @enderror"
+                           x-model="editData.nidn"
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
                            placeholder="Contoh: 0123456789" 
                            required>
-                    @error('nidn')
-                        <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                    @enderror
                     <p class="text-xs text-gray-500 mt-1">NIDN akan digunakan sebagai username untuk login</p>
                 </div>
 
                 <!-- Program Studi -->
                 <div class="flex flex-col">
-                    <label for="prodi" class="text-sm text-gray-700 font-bold mb-1">
+                    <label for="edit_prodi" class="text-sm text-gray-700 font-bold mb-1">
                         Program Studi <span class="text-red-500">*</span>
                     </label>
-                    <select id="prodi" 
+                    <select id="edit_prodi" 
                             name="prodi"
-                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm @error('prodi') border-red-500 @enderror"
+                            x-model="editData.prodi"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
                             required>
                         <option value="">Pilih Program Studi</option>
-                        <option value="Teknik Informatika" {{ old('prodi') == 'Teknik Informatika' ? 'selected' : '' }}>Teknik Informatika</option>
-                        <option value="Teknik Geomatika" {{ old('prodi') == 'Teknik Geomatika' ? 'selected' : '' }}>Teknik Geomatika</option>
-                        <option value="Teknologi Rekayasa Multimedia" {{ old('prodi') == 'Teknologi Rekayasa Multimedia' ? 'selected' : '' }}>Teknologi Rekayasa Multimedia</option>
-                        <option value="Animasi" {{ old('prodi') == 'Animasi' ? 'selected' : '' }}>Animasi</option>
-                        <option value="Rekayasa Keamanan Siber" {{ old('prodi') == 'Rekayasa Keamanan Siber' ? 'selected' : '' }}>Rekayasa Keamanan Siber</option>
-                        <option value="Teknik Rekayasa Perangkat Lunak" {{ old('prodi') == 'Teknik Rekayasa Perangkat Lunak' ? 'selected' : '' }}>Teknik Rekayasa Perangkat Lunak</option>
-                        <option value="Teknologi Permainan" {{ old('prodi') == 'Teknologi Permainan' ? 'selected' : '' }}>Teknologi Permainan</option>
-                        <option value="S2 Magister Terapan Teknik Komputer" {{ old('prodi') == 'S2 Magister Terapan Teknik Komputer' ? 'selected' : '' }}>S2 Magister Terapan Teknik Komputer</option>
+                        <option value="Teknik Informatika">Teknik Informatika</option>
+                        <option value="Teknik Geomatika">Teknik Geomatika</option>
+                        <option value="Teknologi Rekayasa Multimedia">Teknologi Rekayasa Multimedia</option>
+                        <option value="Animasi">Animasi</option>
+                        <option value="Rekayasa Keamanan Siber">Rekayasa Keamanan Siber</option>
+                        <option value="Teknik Rekayasa Perangkat Lunak">Teknik Rekayasa Perangkat Lunak</option>
+                        <option value="Teknologi Permainan">Teknologi Permainan</option>
+                        <option value="S2 Magister Terapan Teknik Komputer">S2 Magister Terapan Teknik Komputer</option>
                     </select>
-                    @error('prodi')
-                        <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                    @enderror
                 </div>
 
                 <!-- Jabatan -->
                 <div class="flex flex-col">
-                    <label for="jabatan" class="text-sm text-gray-700 font-bold mb-1">
+                    <label for="edit_jabatan" class="text-sm text-gray-700 font-bold mb-1">
                         Jabatan <span class="text-red-500">*</span>
                     </label>
-                    <select id="jabatan" 
+                    <select id="edit_jabatan" 
                             name="jabatan"
-                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm @error('jabatan') border-red-500 @enderror"
+                            x-model="editData.jabatan"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
                             required>
                         <option value="">Pilih Jabatan</option>
-                        <option value="Kepala Jurusan" {{ old('jabatan') == 'Kepala Jurusan' ? 'selected' : '' }}>Kepala Jurusan</option>
-                        <option value="Sekretaris Jurusan" {{ old('jabatan') == 'Sekretaris Jurusan' ? 'selected' : '' }}>Sekretaris Jurusan</option>
-                        <option value="Kepala Program Studi" {{ old('jabatan') == 'Kepala Program Studi' ? 'selected' : '' }}>Kepala Program Studi</option>
-                        <option value="Dosen" {{ old('jabatan') == 'Dosen' ? 'selected' : '' }}>Dosen</option>
-                        <option value="Laboran" {{ old('jabatan') == 'Laboran' ? 'selected' : '' }}>Laboran</option>
+                        <option value="Kepala Jurusan">Kepala Jurusan</option>
+                        <option value="Sekretaris Jurusan">Sekretaris Jurusan</option>
+                        <option value="Kepala Program Studi">Kepala Program Studi</option>
+                        <option value="Dosen">Dosen</option>
+                        <option value="Laboran">Laboran</option>
                     </select>
-                    @error('jabatan')
-                        <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                    @enderror
                     <p class="text-xs text-gray-500 mt-1">Struktural: max 12 SKS | Dosen/Laboran: max 16 SKS</p>
+                </div>
+
+                <!-- Status -->
+                <div class="flex flex-col">
+                    <label for="edit_status" class="text-sm text-gray-700 font-bold mb-1">
+                        Status <span class="text-red-500">*</span>
+                    </label>
+                    <select id="edit_status" 
+                            name="status"
+                            x-model="editData.status"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
+                            required>
+                        <option value="Aktif">Aktif</option>
+                        <option value="Tidak Aktif">Tidak Aktif</option>
+                    </select>
                 </div>
 
                 <!-- Password -->
                 <div class="flex flex-col" x-data="{ showPassword: false }">
-                    <label for="password" class="text-sm text-gray-700 font-bold mb-1">
-                        Password <span class="text-red-500">*</span>
+                    <label for="edit_password" class="text-sm text-gray-700 font-bold mb-1">
+                        Password Baru <span class="text-gray-400 text-xs">(Kosongkan jika tidak diubah)</span>
                     </label>
                     <div class="relative">
                         <input :type="showPassword ? 'text' : 'password'" 
-                               id="password" 
+                               id="edit_password" 
                                name="password"
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm @error('password') border-red-500 @enderror"
-                               placeholder="Masukkan Password" 
-                               required>
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
+                               placeholder="Masukkan Password Baru">
                         <button type="button"
                                 @click="showPassword = !showPassword"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
@@ -160,9 +165,6 @@
                             </svg>
                         </button>
                     </div>
-                    @error('password')
-                        <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                    @enderror
                     <p class="text-xs text-gray-500 mt-1">Minimal 6 karakter</p>
                 </div>
 
@@ -170,9 +172,9 @@
                 <div class="flex flex-col gap-2 mt-4">
                     <button type="submit"
                             class="w-full px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
-                        <i class="fa-solid fa-save mr-2"></i>Simpan Data Dosen
+                        <i class="fa-solid fa-save mr-2"></i>Simpan Perubahan
                     </button>
-                    <button type="button" @click="openModal = false"
+                    <button type="button" @click="openEditModal = false"
                             class="w-full self-center px-3 py-1 border rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 text-sm transition-colors">
                         Batal
                     </button>
@@ -186,3 +188,23 @@
 <style>
     [x-cloak] { display: none !important; }
 </style>
+
+<script>
+// Fungsi untuk membuka modal edit dengan data dosen
+function openEditDosen(dosen) {
+    window.editDosenData = {
+        id: dosen.id,
+        nama_lengkap: dosen.nama_lengkap,
+        nidn: dosen.nidn,
+        prodi: dosen.prodi,
+        jabatan: dosen.jabatan,
+        status: dosen.status
+    };
+    
+    // Set action URL untuk form
+    window.editDosenAction = `/dosen/${dosen.id}`;
+    
+    // Trigger Alpine.js untuk buka modal
+    window.dispatchEvent(new CustomEvent('open-edit-modal'));
+}
+</script>

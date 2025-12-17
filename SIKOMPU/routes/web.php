@@ -88,6 +88,12 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('dosen', DosenController::class);
         Route::post('dosen/{dosen}/reset-password', [DosenController::class, 'resetPassword'])->name('dosen.reset-password');
+        
+        // ROUTE IMPORT & EXPORT DOSEN
+        Route::post('dosen-import', [DosenController::class, 'import'])->name('dosen.import');
+        Route::get('dosen-template', [DosenController::class, 'downloadTemplate'])->name('dosen.template');
+        Route::get('dosen-export-excel', [DosenController::class, 'exportExcel'])->name('dosen.export.excel');
+        Route::get('dosen-export-pdf', [DosenController::class, 'exportPdf'])->name('dosen.export.pdf');
 
         Route::resource('prodi', ProdiController::class);
         Route::resource('matakuliah', MataKuliahController::class);
@@ -97,9 +103,7 @@ Route::middleware('auth')->group(function () {
         // Route::post('/rekomendasi', [HasilRekomendasiController::class, 'generate'])->name('rekomendasi.generate');
         Route::get('/rekomendasi/{id}', [HasilRekomendasiController::class, 'viewDetail'])->name('rekomendasi.detail');
 
-        // ============================
         // PERFORMA & VERIFIKASI AI
-        // ============================
         Route::get('/performa-ai', [AiMetricsController::class, 'index'])->name('ai.performa');
         Route::get('/verifikasi-ai', [AiMetricsController::class, 'verification'])->name('ai.verifikasi');
         Route::post('/verifikasi-ai/{id}', [AiMetricsController::class, 'updateActualStatus'])->name('ai.verify');
