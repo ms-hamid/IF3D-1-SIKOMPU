@@ -3,7 +3,15 @@
 @section('title', 'Manajemen Program Studi')
 
 @section('content')
-<main class="flex-1 p-4 sm:p-6 space-y-6" x-data="{ openModal: false }" @close-modal.window="openModal = false">
+<main class="flex-1 p-4 sm:p-6 space-y-6" x-data="{ 
+    openModal: false,
+    openEditModal: false,
+    openDeleteModal: false,
+    editData: {},
+    editAction: '',
+    deleteData: { id: null, nama: '' }
+    }" 
+    @open-edit-modal.window="openEditModal = true; editData = window.editProdiData; editAction = window.editProdiAction">
 
     {{-- Alert Success --}}
     @if(session('success'))
@@ -80,55 +88,13 @@
                 <h2 class="text-lg font-semibold text-gray-800">Daftar Program Studi</h2>
                 <p class="text-sm text-gray-500">Kelola data program studi dan jenjang</p>
             </div>
-            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                {{-- Tombol Tambah Data Baru --}}
-                <button @click="openModal = true" 
-                        class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition shadow-sm">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>Tambah Data Baru</span>
-                </button>
-                
-                {{-- Tombol Import Data --}}
-                <button onclick="alert('Fitur Import akan segera hadir')"
-                        class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition shadow-sm">
-                    <i class="fa-solid fa-file-import"></i>
-                    <span>Import Data</span>
-                </button>
-                
-                {{-- Dropdown Ekspor Template --}}
-                <div x-data="{ openExport: false }" @click.away="openExport = false" class="relative">
-                    <button @click="openExport = !openExport" 
-                            class="flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition border border-gray-300 shadow-sm">
-                        <span>Ekspor Template</span>
-                        <i class="fa-solid fa-chevron-down text-xs transition-transform" :class="{'rotate-180': openExport}"></i>
-                    </button>
-                    
-                    <div x-show="openExport" 
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute right-0 mt-2 w-48 rounded-lg shadow-xl bg-white ring-1 ring-black ring-opacity-5 z-10"
-                         style="display: none;">
-                        <div class="py-1">
-                            <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                <i class="fa-solid fa-file-excel text-green-600"></i>
-                                <span>Excel (.xlsx)</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                <i class="fa-solid fa-file-csv text-blue-600"></i>
-                                <span>CSV (.csv)</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                <i class="fa-solid fa-file-pdf text-red-600"></i>
-                                <span>PDF (.pdf)</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
+            {{-- Tombol Tambah Data Baru --}}
+            <button @click="openModal = true" 
+                    class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition shadow-sm">
+                <i class="fa-solid fa-plus"></i>
+                <span>Tambah Data Baru</span>
+            </button>
         </div>
 
         {{-- Search & Filter --}}
@@ -186,16 +152,21 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-center gap-2">
-                                    {{-- Edit --}}
-                                    <a href="{{ route('prodi.edit', $prodi->id) }}" 
-                                       class="text-blue-600 hover:text-blue-800 transition"
-                                       title="Edit">
+                                    {{-- ✅ Edit Button - Pakai Alpine.js --}}
+                                    <button @click="openEditProdi({
+                                        id: {{ $prodi->id }},
+                                        kode_prodi: '{{ addslashes($prodi->kode_prodi) }}',
+                                        nama_prodi: '{{ addslashes($prodi->nama_prodi) }}',
+                                        jenjang: '{{ $prodi->jenjang }}'
+                                    })" 
+                                    class="text-blue-600 hover:text-blue-800 transition"
+                                    title="Edit">
                                         <i class="fas fa-pen"></i>
-                                    </a>
+                                    </button>
                                     
-                                    {{-- Delete --}}
+                                    {{-- ✅ Delete Button - Pakai Alpine.js --}}
                                     <button type="button"
-                                            @click="$dispatch('confirm-delete', { id: {{ $prodi->id }}, nama: '{{ $prodi->nama_prodi }}' })"
+                                            @click="$dispatch('confirm-delete', { id: {{ $prodi->id }}, nama: '{{ addslashes($prodi->nama_prodi) }}' })"
                                             class="text-red-500 hover:text-red-700 transition"
                                             title="Hapus">
                                         <i class="fas fa-trash"></i>
@@ -229,9 +200,24 @@
         </div>
     </div>
 
-    {{-- Include Modal --}}
+    {{-- ✅ Include All Modals --}}
     @include('components.tambah-prodi')
+    @include('components.edit-prodi')
     @include('components.delete-prodi')
 
 </main>
+
+{{-- ✅ Script untuk Edit Prodi --}}
+<script>
+function openEditProdi(prodi) {
+    window.editProdiData = prodi;
+    window.editProdiAction = `/prodi/${prodi.id}`;
+    window.dispatchEvent(new CustomEvent('open-edit-modal'));
+}
+</script>
+
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+
 @endsection
