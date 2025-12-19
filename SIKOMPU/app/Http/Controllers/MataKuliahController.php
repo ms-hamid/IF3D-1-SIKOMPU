@@ -7,9 +7,17 @@ use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use App\Services\MataKuliahImportExportService;
 
 class MataKuliahController extends Controller
 {
+    protected $importExportService;
+
+    public function __construct(MataKuliahImportExportService $importExportService)
+    {
+        $this->importExportService = $importExportService;
+    }
+
     /**
      * GET /matakuliah
      * Menampilkan daftar mata kuliah
@@ -31,7 +39,7 @@ class MataKuliahController extends Controller
         // Sorting berdasarkan semester, lalu nama_mk
         $mataKuliah = $query->orderBy('semester', 'asc')
                             ->orderBy('nama_mk', 'asc')
-                            ->paginate(15); // Pagination 15 per halaman
+                            ->paginate(15);
         
         // Group by semester untuk view
         $mataKuliahBySemester = $mataKuliah->groupBy('semester');
@@ -52,7 +60,7 @@ class MataKuliahController extends Controller
 
         return view('pages.manajemen-matkul', compact(
             'mataKuliahBySemester',
-            'mataKuliah', // Untuk pagination links
+            'mataKuliah',
             'totalMataKuliah',
             'totalSKS',
             'totalSemester',
@@ -160,7 +168,6 @@ class MataKuliahController extends Controller
         try {
             $mataKuliah = MataKuliah::findOrFail($id);
         
-            // Cek apakah mata kuliah sedang digunakan
             $jumlahSelfAssessment = $mataKuliah->selfAssessments()->count();
             $jumlahRekomendasi = $mataKuliah->detailHasilRekomendasi()->count();
         
@@ -182,5 +189,78 @@ class MataKuliahController extends Controller
                 ->back()
                 ->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
         }
+    }
+
+    // ============================
+    // IMPORT & EXPORT METHODS
+    // ============================
+
+    /**
+     * Import data mata kuliah dari Excel
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file_import' => 'required|file|mimes:xlsx,xls|max:2048'
+        ], [
+            'file_import.required' => 'File Excel wajib diupload',
+            'file_import.mimes' => 'File harus berformat .xlsx atau .xls',
+            'file_import.max' => 'Ukuran file maksimal 2MB'
+        ]);
+
+        try {
+            $file = $request->file('file_import');
+            
+            $result = $this->importExportService->import($file->getRealPath());
+
+            if ($result['status'] === 'success') {
+                return redirect()->route('matakuliah.index')
+                    ->with('success', $result['message']);
+            }
+
+            if ($result['status'] === 'warning') {
+                return redirect()->route('matakuliah.index')
+                    ->with('warning', $result['message'])
+                    ->with('import_errors', $result['errors']);
+            }
+
+            return redirect()->route('matakuliah.index')
+                ->withErrors(['import' => $result['message']])
+                ->with('import_errors', $result['errors']);
+
+        } catch (\Exception $e) {
+            return redirect()->route('matakuliah.index')
+                ->withErrors(['import' => 'Gagal mengimpor data: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Download template Excel kosong
+     */
+    public function downloadTemplate()
+    {
+        $template = $this->importExportService->generateTemplate();
+        
+        return response()->download($template['path'], $template['filename'])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Export data mata kuliah ke Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $query = MataKuliah::with('prodi');
+
+        if ($request->filled('prodi_id')) {
+            $query->where('prodi_id', $request->prodi_id);
+        }
+
+        $mataKuliahs = $query->orderBy('semester', 'asc')
+                            ->orderBy('nama_mk', 'asc')
+                            ->get();
+
+        $export = $this->importExportService->exportToExcel($mataKuliahs);
+        
+        return response()->download($export['path'], $export['filename'])->deleteFileAfterSend(true);
     }
 }

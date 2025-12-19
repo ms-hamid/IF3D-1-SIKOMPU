@@ -95,9 +95,12 @@ Route::middleware('auth')->group(function () {
         Route::get('dosen-export-pdf', [DosenController::class, 'exportPdf'])->name('dosen.export.pdf');
 
         Route::resource('prodi', ProdiController::class);
-        // Import/Export Prodi
         
+        // Route matakuliah
         Route::resource('matakuliah', MataKuliahController::class);
+        Route::post('matakuliah-import', [MataKuliahController::class, 'import'])->name('matakuliah.import');
+        Route::get('matakuliah-template', [MataKuliahController::class, 'downloadTemplate'])->name('matakuliah.template');
+        Route::get('matakuliah-export-excel', [MataKuliahController::class, 'exportExcel'])->name('matakuliah.export.excel');
 
         // Rekomendasi AI
         Route::get('/hasil-rekomendasi', [HasilRekomendasiPageController::class, 'index'])->name('hasil.rekomendasi');
