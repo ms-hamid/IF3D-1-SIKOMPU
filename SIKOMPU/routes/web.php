@@ -91,8 +91,9 @@ Route::middleware('auth')->group(function () {
 
         // Rekomendasi AI
         Route::get('/hasil-rekomendasi', [HasilRekomendasiPageController::class, 'index'])->name('hasil.rekomendasi');
-        // Route::post('/rekomendasi', [HasilRekomendasiController::class, 'generate'])->name('rekomendasi.generate');
-        Route::get('/rekomendasi/{id}', [HasilRekomendasiController::class, 'viewDetail'])->name('rekomendasi.detail');
+        Route::post('/hasil-rekomendasi/generate', [HasilRekomendasiController::class, 'generate'])->name('hasil-rekomendasi.generate');
+        Route::get('/hasil-rekomendasi/{id}/detail/{kode_mk}', [HasilRekomendasiPageController::class, 'detailMk'])
+        ->name('hasil-rekomendasi.detail');
 
         // ============================
         // PERFORMA & VERIFIKASI AI

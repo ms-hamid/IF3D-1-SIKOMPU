@@ -1,5 +1,5 @@
 <form method="GET" action="{{ route('hasil.rekomendasi') }}"
-      class="bg-white p-6 shadow-lg rounded-xl border border-gray-100 mt-6">
+      class="bg-white p-6  rounded-xl border border-gray-300 mt-6">
 
     <h4 class="text-xl font-bold text-gray-800 mb-4">Filter & Pencarian</h4>
 

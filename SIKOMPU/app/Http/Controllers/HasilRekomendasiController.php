@@ -6,6 +6,8 @@ use App\Models\HasilRekomendasi;
 use App\Models\DetailHasilRekomendasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\AIIntegrationController;
+
 
 class HasilRekomendasiController extends Controller
 {
@@ -161,4 +163,15 @@ class HasilRekomendasiController extends Controller
 
         return $this->storeAIRecommendation($request);
     }
+
+    
+    public function generate()
+    {
+        app(AIIntegrationController::class)->generateRecommendation();
+
+        return redirect()
+            ->route('hasil.rekomendasi')
+            ->with('success', 'Rekomendasi berhasil digenerate');
+    }
+
 }

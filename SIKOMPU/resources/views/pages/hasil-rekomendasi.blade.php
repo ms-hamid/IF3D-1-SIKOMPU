@@ -18,6 +18,14 @@
             </div>
 
             <div class="flex space-x-3 mt-4 sm:mt-0">
+                <form action="{{ route('hasil-rekomendasi.generate') }}" method="POST">
+                    @csrf
+                    <button type="submit"
+                        class="btn btn-primary flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 shadow">
+                        Generate Rekomendasi
+                    </button>
+                </form>
+
                 <button class="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 shadow">
                     Ekspor PDF
                 </button>
@@ -97,7 +105,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         @foreach ($cards as $card)
-        <div class="bg-white p-5 rounded-xl shadow-lg flex items-center justify-between border border-gray-100">
+        <div class="bg-white p-5 rounded-xl flex items-center justify-between shadow border border-gray-200">
             <div>
                 <p class="text-sm font-medium text-gray-500">{{ $card['title'] }}</p>
                 <p class="text-3xl font-bold text-gray-900 mt-1">
@@ -131,10 +139,10 @@
         {{-- ========================================================= --}}
         {{-- 3. FILTER & PENCARIAN --}}
         {{-- ========================================================= --}}
-        <x-filter-rekomendas />
+        <x-filter-rekomendasi />
 
         {{-- TABLE --}}
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto border border-gray-300">
             <table class="min-w-full divide-y divide-gray-200">
 
                 {{-- TABLE HEADER --}}
@@ -209,58 +217,33 @@
 
                             {{-- PENGAMPU --}}
                             <td class="px-6 py-4">
+                                @php
+                                    $pengampuUtama = $pengampu->first();
+                                @endphp
 
-                                {{-- JIKA FILTER → TAMPILKAN SEMUA --}}
-                                @if($isFiltered)
-
-                                    @forelse ($pengampu as $p)
-                                        @if($p->user)
-                                            <div class="flex items-center mb-1 last:mb-0">
-                                                <div class="h-8 w-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold mr-3">
-                                                    {{ strtoupper(substr($p->user->name, 0, 2)) }}
-                                                </div>
-                                                <div>
-                                                    <p class="text-sm font-medium text-gray-900">
-                                                        {{ $p->user->name }}
-                                                    </p>
-                                                    <p class="text-xs text-gray-500">
-                                                        Skor: {{ number_format($p->skor_dosen_di_mk, 3) }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    @empty
-                                        <span class="text-gray-500 text-sm">Belum ada pengampu</span>
-                                    @endforelse
-
-                                {{-- DEFAULT → HANYA 1 --}}
-                                @else
-                                    @php
-                                        $pengampuUtama = $pengampu->first();
-                                    @endphp
-
-                                    @if($pengampuUtama && $pengampuUtama->user)
-                                        <div class="flex items-center">
-                                            <div class="h-8 w-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold mr-3">
-                                                {{ strtoupper(substr($pengampuUtama->user->name, 0, 2)) }}
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900">
-                                                    {{ $pengampuUtama->user->name }}
-                                                </p>
-
-                                                @if($pengampu->count() > 1)
-                                                    <p class="text-xs text-gray-500">
-                                                        +{{ $pengampu->count() - 1 }} pengampu lain
-                                                    </p>
-                                                @endif
-                                            </div>
+                                @if($pengampuUtama && $pengampuUtama->user)
+                                    <div class="flex items-center">
+                                        <div class="h-8 w-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold mr-3">
+                                            {{ strtoupper(substr($pengampuUtama->user->name, 0, 2)) }}
                                         </div>
-                                    @else
-                                        <span class="text-gray-500 text-sm">Belum ada pengampu</span>
-                                    @endif
+
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">
+                                                {{ $pengampuUtama->user->name }}
+                                            </p>
+
+                                            @if($pengampu->count() > 1)
+                                                <p class="text-xs text-gray-500">
+                                                    +{{ $pengampu->count() - 1 }} pengampu lain
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @else
+                                    <span class="text-gray-500 text-sm">Belum ada pengampu</span>
                                 @endif
                             </td>
+
 
                             {{-- SKOR --}}
                             <td class="px-6 py-4">
@@ -270,32 +253,27 @@
                             </td>
 
                             {{-- AKSI --}}
-                            <td class="px-6 py-4 text-sm font-medium">
-                                @if(Route::has('hasil.show'))
-                                    <a href="{{ route('hasil.show', $hasil->id) }}"
-                                       class="text-blue-700 hover:text-blue-900">
-                                        Detail
-                                    </a>
-                                @else
-                                    <span class="text-gray-400">Detail</span>
-                                @endif
+                            <td class="px-6 py-4">
+                                <a href="{{ route('hasil-rekomendasi.detail', [
+                                    'id' => $hasil->id,
+                                    'kode_mk' => $mk->kode_mk
+                                ]) }}"
+                                class="text-blue-600 hover:underline text-sm font-medium">
+                                    Detail
+                                </a>
                             </td>
                         </tr>
-
                     @endforeach
-
-                @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-10 text-center text-gray-500">
-                            Data rekomendasi belum tersedia
-                        </td>
-                    </tr>
-                @endforelse
-
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                                Data rekomendasi belum tersedia
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
-
     </div>
 </div>
 @endsection

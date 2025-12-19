@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Matakuliah;
-use App\Models\AiPrediction; // ← TAMBAHAN BARU
+use App\Models\AiPrediction; 
 use App\Http\Controllers\HasilRekomendasiController;
 
 class AIIntegrationController extends Controller
@@ -42,7 +42,7 @@ class AIIntegrationController extends Controller
         $users = User::with(['selfAssessments', 'penelitians', 'sertifikat', 'pendidikans'])->get();
         $matkuls = Matakuliah::all();
 
-        $mkKategori = DB::table('mk_kategori')->get()->keyBy(function($item) {
+        $mkKategori = DB::table('mk_kategori')->get()->keyBy(function ($item) {
             return $item->mata_kuliah_id . '-' . $item->kategori_id;
         });
 
@@ -50,6 +50,7 @@ class AIIntegrationController extends Controller
 
         foreach ($users as $user) {
             foreach ($matkuls as $mk) {
+
                 $c1_self = optional(
                     $user->selfAssessments()
                         ->where('matakuliah_id', $mk->id)
@@ -94,47 +95,20 @@ class AIIntegrationController extends Controller
             }
         }
 
-        $debug_for_python = [];
-        foreach ($dataDosen as $row) {
-            $debug_for_python[] = [
-                "kode_matkul" => $row["kode_matkul"],
-                "dosen_id" => $row["id"],
-                "features" => [
-                    (int)$row["c1_self_assessment"],
-                    (int)$row["c2_pendidikan"],
-                    (int)$row["c3_sertifikat"],
-                    (int)$row["c4_penelitian"],
-                ]
-            ];
-        }
-
-        file_put_contents(
-            storage_path("logs/debug_features.json"),
-            json_encode($debug_for_python, JSON_PRETTY_PRINT)
-        );
-
-        \Log::info("DATA_YANG_DIKIRIM_KE_AI", [
-            'total' => count($dataDosen),
-            'sample_10' => array_slice($dataDosen, 0, 10),
-        ]);
-
         try {
             $payload = ['dosen' => $dataDosen];
-
-            \Log::info("PAYLOAD_YANG_DIKIRIM_KE_AI", $payload);
 
             $response = Http::asJson()->post($this->flaskUrl . '/api/predict', $payload);
 
             if ($response->successful()) {
                 $hasil = $response->json();
 
-                // ======================
-                // Mapping hasil AI → format DB
-                // ======================
                 $hasilAI = $hasil['hasil_rekomendasi'] ?? [];
 
+                // =====================
+                // GROUP & FORMAT
+                // =====================
                 $grouped = collect($hasilAI)->groupBy('kode_matkul');
-
                 $rekomendasi = [];
 
                 foreach ($grouped as $kodeMk => $items) {
@@ -142,22 +116,41 @@ class AIIntegrationController extends Controller
                     $mk = Matakuliah::where('kode_mk', $kodeMk)->first();
                     if (!$mk) continue;
 
-                // Urutkan dosen berdasarkan skor tertinggi
-                $sorted = collect($items)->sortByDesc('skor_prediksi')->values();
+                    // Urutkan skor tertinggi
+                    $sorted = collect($items)->sortByDesc('skor_prediksi')->values();
+                    $dosens = [];
+                    $usedUserIds = [];
+                    $MAX_PENGAMPU = 10;
 
-                $dosens = [];
+                    foreach ($sorted as $item) {
+                        $user = User::where('nama_lengkap', $item['nama'])->first();
+                        if (!$user || in_array($user->id, $usedUserIds)) continue;
+                        // if (!$user) continue;
 
-                foreach ($sorted as $index => $item) {
+                        // // ❌ Cegah dosen duplikat
+                        // if (in_array($user->id, $usedUserIds)) continue;
 
-                    $user = User::where('nama_lengkap', $item['nama'])->first();
-                    if (!$user) continue;
+                        // ✅ 1 Koordinator saja
+                        if (count($dosens) === 0) {
+                            $role = 'Koordinator';
+                        } else {
+                            $jumlahPengampu = collect($dosens)
+                                ->where('role', 'Pengampu')
+                                ->count();
 
-                    $dosens[] = [
-                        'user_id' => $user->id,
-                        'role' => $index === 0 ? 'Koordinator' : 'Pengampu',
-                        'skor' => $item['skor_prediksi'],
-                    ];
-                }
+                            if ($jumlahPengampu >= $MAX_PENGAMPU) break;
+
+                            $role = 'Pengampu';
+                        }
+
+                        $dosens[] = [
+                            'user_id' => $user->id,
+                            'role' => $role,
+                            'skor' => $item['skor_prediksi'],
+                        ];
+
+                        $usedUserIds[] = $user->id;
+                    }
 
                     if (!empty($dosens)) {
                         $rekomendasi[] = [
@@ -167,11 +160,17 @@ class AIIntegrationController extends Controller
                     }
                 }
 
+                // ===============================
+                // CONSTRAINT: NONAKTIFKAN DATA LAMA
+                // ===============================
+                DB::table('hasil_rekomendasi')
+                    ->where('semester', 'Ganjil 2024/2025')
+                    ->update(['is_active' => false]);
+
                 // ========================================
                 // 🆕 TAMBAHAN BARU: SIMPAN KE AI PREDICTIONS
                 // ========================================
-                $this->saveAIPredictions($hasil, $dataDosen);
-                // ========================================
+                $this->saveAIPredictions($hasil['hasil_rekomendasi']);    
 
                 if (!empty($rekomendasi)) {
 
@@ -190,66 +189,61 @@ class AIIntegrationController extends Controller
                             : $dbResponse
                     ]);
 
+                    } else {
+                        $dbResponse = ['success' => false, 'message' => 'Tidak ada data rekomendasi untuk disimpan'];
+                    }
+
+                    return response()->json([
+                        'status' => 'success',
+                        'hasil_ai' => $hasil,
+                        'debug_sample' => array_slice($dataDosen, 0, 10),
+                        'db_response' => $dbResponse instanceof \Illuminate\Http\JsonResponse
+                        ? $dbResponse->getData(true)
+                        : $dbResponse
+                    ]);
+
                 } else {
-                    $dbResponse = ['success' => false, 'message' => 'Tidak ada data rekomendasi untuk disimpan'];
+                    return response()->json([
+                        'error' => 'Gagal hitung di AI',
+                        'detail' => $response->body()
+                    ], 400);
                 }
 
+            } catch (\Exception $e) {
                 return response()->json([
-                    'status' => 'success',
-                    'hasil_ai' => $hasil,
-                    'debug_sample' => array_slice($dataDosen, 0, 10),
-                    'db_response' => $dbResponse instanceof \Illuminate\Http\JsonResponse
-                    ? $dbResponse->getData(true)
-                    : $dbResponse
-                ]);
-
-            } else {
-                return response()->json([
-                    'error' => 'Gagal hitung di AI',
-                    'detail' => $response->body()
-                ], 400);
+                    'error' => 'Koneksi Error',
+                    'msg' => $e->getMessage()
+                ], 500);
             }
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Koneksi Error',
-                'msg' => $e->getMessage()
-            ], 500);
         }
-    }
 
-    // ========================================
-    // 🆕 METHOD BARU: Simpan AI Predictions
-    // ========================================
-    private function saveAIPredictions($hasilAI, $dataDosen)
-    {
-        try {
-            foreach ($hasilAI as $kodeMk => $listDosen) {
-                // Ambil top 3 rekomendasi (dianggap "diterima" oleh AI)
-                foreach ($listDosen as $index => $dosen) {
-                    // Cek apakah dosen ini masuk top 3
-                    $isPredictedAccepted = $index < 3;
-                    
-                    // Untuk saat ini, kita set actual_status = pending
-                    // Nanti diupdate manual oleh admin setelah seleksi selesai
+        // ========================================
+        // 🆕 METHOD BARU: Simpan AI Predictions
+        // ========================================
+        private function saveAIPredictions(array $hasilAI)
+        {
+            try {
+                foreach ($hasilAI as $item) {
+
+                    $user = User::where('nama_lengkap', $item['nama'])->first();
+                    if (!$user) continue;
+
                     AiPrediction::create([
-                        'dosen_id' => $dosen['dosen_id'],
-                        'predicted_status' => $isPredictedAccepted ? 'diterima' : 'ditolak',
-                        'actual_status' => 'pending', // Default pending
-                        'confidence_score' => $dosen['skor'],
+                        'dosen_id' => $user->id,
+                        'predicted_status' => 'direkomendasikan',
+                        'actual_status' => 'pending',
+                        'confidence_score' => $item['skor_prediksi'],
                         'features_used' => json_encode([
-                            'kode_matkul' => $kodeMk,
-                            'ranking' => $index + 1,
+                            'kode_matkul' => $item['kode_matkul']
                         ]),
                         'predicted_at' => now(),
                     ]);
                 }
+
+                \Log::info("✅ AI Predictions saved");
+            } catch (\Exception $e) {
+                \Log::error("❌ AI Prediction error: " . $e->getMessage());
             }
-            
-            \Log::info("✅ AI Predictions saved successfully for metrics tracking");
-        } catch (\Exception $e) {
-            // Kalau error, tidak masalah, rekomendasi tetap jalan
-            \Log::error("❌ Failed to save AI predictions: " . $e->getMessage());
         }
-    }
+
 }

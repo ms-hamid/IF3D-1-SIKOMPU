@@ -15,6 +15,7 @@ class HasilRekomendasi extends Model
         'semester',
         'tahun_ajaran',
         'status',
+        'is_active',
     ];
     
 

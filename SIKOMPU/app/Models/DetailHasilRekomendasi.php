@@ -40,4 +40,6 @@ class DetailHasilRekomendasi extends Model
     {
     return strtolower($this->peran_penugasan);
     }
+
+    
 }
