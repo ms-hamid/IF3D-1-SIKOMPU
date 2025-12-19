@@ -73,7 +73,9 @@ Route::middleware('auth')->group(function () {
     // ============================
     Route::middleware('role:Dosen,Laboran')->group(function () {
         Route::get('/dashboard-dosen', [DashboardDosenController::class, 'index'])->name('dashboard.dosen');
-        Route::get('/laporan', [Laporan2Controller::class, 'index'])->name('laporan.dosen');
+        Route::get('/laporan-dosen', [Laporan2Controller::class, 'index'])
+            ->name('laporan.dosen');
+
     });
 
     // ============================
@@ -85,9 +87,20 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('dosen', DosenController::class);
         Route::post('dosen/{dosen}/reset-password', [DosenController::class, 'resetPassword'])->name('dosen.reset-password');
+        
+        // ROUTE IMPORT & EXPORT DOSEN
+        Route::post('dosen-import', [DosenController::class, 'import'])->name('dosen.import');
+        Route::get('dosen-template', [DosenController::class, 'downloadTemplate'])->name('dosen.template');
+        Route::get('dosen-export-excel', [DosenController::class, 'exportExcel'])->name('dosen.export.excel');
+        Route::get('dosen-export-pdf', [DosenController::class, 'exportPdf'])->name('dosen.export.pdf');
 
         Route::resource('prodi', ProdiController::class);
+        
+        // Route matakuliah
         Route::resource('matakuliah', MataKuliahController::class);
+        Route::post('matakuliah-import', [MataKuliahController::class, 'import'])->name('matakuliah.import');
+        Route::get('matakuliah-template', [MataKuliahController::class, 'downloadTemplate'])->name('matakuliah.template');
+        Route::get('matakuliah-export-excel', [MataKuliahController::class, 'exportExcel'])->name('matakuliah.export.excel');
 
         // Rekomendasi AI
         Route::get('/hasil-rekomendasi', [HasilRekomendasiPageController::class, 'index'])->name('hasil.rekomendasi');
@@ -95,9 +108,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/hasil-rekomendasi/{id}/detail/{kode_mk}', [HasilRekomendasiPageController::class, 'detailMk'])
         ->name('hasil-rekomendasi.detail');
 
-        // ============================
         // PERFORMA & VERIFIKASI AI
-        // ============================
         Route::get('/performa-ai', [AiMetricsController::class, 'index'])->name('ai.performa');
         Route::get('/verifikasi-ai', [AiMetricsController::class, 'verification'])->name('ai.verifikasi');
         Route::post('/verifikasi-ai/{id}', [AiMetricsController::class, 'updateActualStatus'])->name('ai.verify');

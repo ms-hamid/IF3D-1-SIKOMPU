@@ -39,19 +39,13 @@ class ProdiController extends Controller
         $request->validate([
             'kode_prodi' => 'required|string|max:10|unique:prodi,kode_prodi',
             'nama_prodi' => 'required|string|max:255',
-            'jenjang' => 'required|in:D3,D4,S1,S2', // ✅ Sudah ada S1 dan S2
+            'jenjang' => 'required|in:D3,D4,S1,S2,S2 Terapan',
         ]);
 
         Prodi::create($request->all());
 
         return redirect()->route('prodi.index')
             ->with('success', 'Program Studi berhasil ditambahkan.');
-    }
-
-    public function edit($id)
-    {
-        $prodi = Prodi::findOrFail($id);
-        return view('pages.edit-prodi', compact('prodi'));
     }
 
     public function update(Request $request, $id)
@@ -61,7 +55,7 @@ class ProdiController extends Controller
         $request->validate([
             'kode_prodi' => 'required|string|max:10|unique:prodi,kode_prodi,' . $id,
             'nama_prodi' => 'required|string|max:255',
-            'jenjang' => 'required|in:D3,D4,S1,S2',
+            'jenjang' => 'required|in:D3,D4,S1,S2,S2 Terapan',
         ]);
 
         $prodi->update($request->all());
@@ -77,5 +71,5 @@ class ProdiController extends Controller
 
         return redirect()->route('prodi.index')
             ->with('success', 'Program Studi berhasil dihapus.');
-    }   
+    }
 }

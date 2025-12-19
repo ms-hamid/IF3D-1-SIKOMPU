@@ -4,23 +4,88 @@
 @section('page_title', 'Manajemen Matakuliah')
 
 @section('content')
-<main class="flex-1 p-4 sm:p-6 space-y-6">
+<main class="flex-1 p-4 sm:p-6 space-y-6" x-data="{ openImportModal: false }">
 
-    {{-- Alert Success/Error --}}
+    {{-- Alert Success --}}
     @if(session('success'))
-    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+    <div x-data="{ show: true }" 
+         x-show="show"
+         x-transition
+         class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative flex items-center justify-between" 
+         role="alert">
         <span class="block sm:inline">{{ session('success') }}</span>
+        <button @click="show = false" class="text-green-700 hover:text-green-900">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
     </div>
     @endif
 
+    {{-- Alert Warning (Import dengan error) --}}
+    @if(session('warning'))
+    <div x-data="{ show: true, showDetails: false }" 
+         x-show="show"
+         x-transition
+         class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
+        <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+                <svg class="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{{ session('warning') }}</span>
+            </div>
+            <button @click="show = false" class="text-yellow-600 hover:text-yellow-800">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        @if(session('import_errors'))
+        <button @click="showDetails = !showDetails" class="text-sm text-yellow-700 underline mb-2">
+            <span x-show="!showDetails">Lihat detail error</span>
+            <span x-show="showDetails">Sembunyikan detail</span>
+        </button>
+        <ul x-show="showDetails" class="list-disc list-inside space-y-1 text-sm bg-white p-3 rounded max-h-48 overflow-y-auto">
+            @foreach(session('import_errors') as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        @endif
+    </div>
+    @endif
+
+    {{-- Alert Error --}}
     @if(session('error'))
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+    <div x-data="{ show: true }" 
+         x-show="show"
+         x-transition
+         class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative flex items-center justify-between" 
+         role="alert">
         <span class="block sm:inline">{{ session('error') }}</span>
+        <button @click="show = false" class="text-red-700 hover:text-red-900">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
     </div>
     @endif
 
+    {{-- Validation Errors --}}
     @if($errors->any())
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+    <div x-data="{ show: true }" 
+         x-show="show"
+         x-transition
+         class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" 
+         role="alert">
+        <div class="flex items-center justify-between mb-2">
+            <span class="font-medium">Terjadi kesalahan:</span>
+            <button @click="show = false" class="text-red-700 hover:text-red-900">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
         <ul class="list-disc list-inside">
             @foreach($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -49,17 +114,40 @@
                 @endforeach
             </select>
 
-            {{-- Tombol Import --}}
-            <button 
-                onclick="alert('Fitur import akan segera tersedia')"
-                class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
+            {{-- Tombol Import (HIJAU!) --}}
+            <button @click="openImportModal = true"
+                    class="flex items-center px-3 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 border border-green-600 rounded-lg shadow-sm transition">
                 <i class="fa-solid fa-file-import mr-1"></i> Import
             </button>
 
+            {{-- Dropdown Ekspor --}}
+            <div x-data="{ openExport: false }" @click.away="openExport = false" class="relative">
+                <button @click="openExport = !openExport" 
+                        class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
+                    <span>Ekspor</span>
+                    <i class="fa-solid fa-chevron-down text-xs ml-1 transition-transform" :class="{'rotate-180': openExport}"></i>
+                </button>
+                
+                <div x-show="openExport" 
+                     x-transition
+                     class="absolute right-0 mt-2 w-48 rounded-lg shadow-xl bg-white ring-1 ring-black ring-opacity-5 z-10"
+                     style="display: none;">
+                    <div class="py-1">
+                        <a href="{{ route('matakuliah.template') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fa-solid fa-file-excel text-green-600"></i>
+                            <span>Template Excel Kosong</span>
+                        </a>
+                        <a href="{{ route('matakuliah.export.excel') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fa-solid fa-file-excel text-blue-600"></i>
+                            <span>Ekspor Data Excel</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             {{-- Tombol Refresh --}}
-            <button 
-                onclick="window.location.reload()" 
-                class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
+            <button onclick="window.location.reload()" 
+                    class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
                 <i class="fa-solid fa-rotate-right mr-1"></i> Refresh
             </button>
 
@@ -236,6 +324,12 @@
     @include('components.tambah_matkul')
     @include('components.edit-matkul')
     @include('components.delete-matkul')
+    @include('components.modal-import-matakuliah')
 
 </main>
+
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+
 @endsection

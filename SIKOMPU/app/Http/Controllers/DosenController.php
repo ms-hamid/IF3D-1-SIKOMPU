@@ -6,9 +6,18 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use App\Services\DosenImportExportService;
 
 class DosenController extends Controller
 {
+    // Inject service via constructor (Dependency Injection)
+    protected $importExportService;
+
+    public function __construct(DosenImportExportService $importExportService)
+    {
+        $this->importExportService = $importExportService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -16,7 +25,6 @@ class DosenController extends Controller
     {
         $query = User::query();
 
-        // Filter pencarian nama atau NIDN
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -25,20 +33,15 @@ class DosenController extends Controller
             });
         }
 
-        // Filter prodi
         if ($request->filled('prodi')) {
             $query->where('prodi', $request->prodi);
         }
 
-        // Filter status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Order by nama
         $query->orderBy('nama_lengkap', 'asc');
-
-        // Paginate dengan append parameter
         $dosens = $query->paginate(10)->withQueryString();
 
         return view('pages.manajemen-dosen', compact('dosens'));
@@ -49,7 +52,6 @@ class DosenController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi input
         $validated = $request->validate([
             'nama_lengkap' => 'required|string|max:255',
             'nidn' => [
@@ -76,31 +78,52 @@ class DosenController extends Controller
             'foto.max' => 'Ukuran foto maksimal 2MB'
         ]);
 
+        // ✅ VALIDASI TAMBAHAN: Hanya 1 Kaprodi per prodi
+        if ($validated['jabatan'] === 'Kepala Program Studi') {
+            $existingKaprodi = User::where('prodi', $validated['prodi'])
+                ->where('jabatan', 'Kepala Program Studi')
+                ->exists();
+            
+            if ($existingKaprodi) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['jabatan' => 'Prodi ' . $validated['prodi'] . ' sudah memiliki Kepala Program Studi!']);
+            }
+        }
+
+        // ✅ VALIDASI TAMBAHAN: Hanya 1 Kajur per prodi (opsional, tergantung kebutuhan)
+        if ($validated['jabatan'] === 'Kepala Jurusan') {
+            $existingKajur = User::where('prodi', $validated['prodi'])
+                ->where('jabatan', 'Kepala Jurusan')
+                ->exists();
+            
+            if ($existingKajur) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['jabatan' => 'Prodi ' . $validated['prodi'] . ' sudah memiliki Kepala Jurusan!']);
+            }
+        }
+
         try {
-            // Handle foto upload
             if ($request->hasFile('foto')) {
                 $validated['foto'] = $request->file('foto')->store('dosen-photos', 'public');
             }
 
-            // Set default values
             $validated['status'] = 'Aktif';
             $validated['beban_mengajar'] = 0;
             
-            // Set max_beban berdasarkan jabatan
             if (in_array($validated['jabatan'], ['Kepala Jurusan', 'Sekretaris Jurusan', 'Kepala Program Studi'])) {
                 $validated['max_beban'] = 12;
             } else {
                 $validated['max_beban'] = 16;
             }
 
-            // Password akan otomatis di-hash oleh cast di model
             User::create($validated);
 
             return redirect()->route('dosen.index')
                 ->with('success', 'Data dosen ' . $validated['nama_lengkap'] . ' berhasil ditambahkan!');
 
         } catch (\Exception $e) {
-            // Hapus foto jika ada error
             if (isset($validated['foto'])) {
                 Storage::disk('public')->delete($validated['foto']);
             }
@@ -132,7 +155,6 @@ class DosenController extends Controller
      */
     public function update(Request $request, User $dosen)
     {
-        // Validasi input
         $validated = $request->validate([
             'nama_lengkap' => 'required|string|max:255',
             'nidn' => [
@@ -155,29 +177,52 @@ class DosenController extends Controller
             'foto.max' => 'Ukuran foto maksimal 2MB'
         ]);
 
+        // ✅ VALIDASI TAMBAHAN: Hanya 1 Kaprodi per prodi (kecuali yang sedang diedit)
+        if ($validated['jabatan'] === 'Kepala Program Studi') {
+            $existingKaprodi = User::where('prodi', $validated['prodi'])
+                ->where('jabatan', 'Kepala Program Studi')
+                ->where('id', '!=', $dosen->id)
+                ->exists();
+            
+            if ($existingKaprodi) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['jabatan' => 'Prodi ' . $validated['prodi'] . ' sudah memiliki Kepala Program Studi!']);
+            }
+        }
+
+        // ✅ VALIDASI TAMBAHAN: Hanya 1 Kajur per prodi (kecuali yang sedang diedit)
+        if ($validated['jabatan'] === 'Kepala Jurusan') {
+            $existingKajur = User::where('prodi', $validated['prodi'])
+                ->where('jabatan', 'Kepala Jurusan')
+                ->where('id', '!=', $dosen->id)
+                ->exists();
+            
+            if ($existingKajur) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['jabatan' => 'Prodi ' . $validated['prodi'] . ' sudah memiliki Kepala Jurusan!']);
+            }
+        }
+
         try {
-            // Handle password - hanya update jika diisi
             if (empty($request->password)) {
                 unset($validated['password']);
             }
 
-            // Handle foto upload
             if ($request->hasFile('foto')) {
-                // Hapus foto lama jika ada
                 if ($dosen->foto && Storage::disk('public')->exists($dosen->foto)) {
                     Storage::disk('public')->delete($dosen->foto);
                 }
                 $validated['foto'] = $request->file('foto')->store('dosen-photos', 'public');
             }
 
-            // Set max_beban berdasarkan jabatan
             if (in_array($validated['jabatan'], ['Kepala Jurusan', 'Sekretaris Jurusan', 'Kepala Program Studi'])) {
                 $validated['max_beban'] = 12;
             } else {
                 $validated['max_beban'] = 16;
             }
 
-            // Jika beban mengajar > max_beban baru, sesuaikan
             if ($dosen->beban_mengajar > $validated['max_beban']) {
                 $validated['beban_mengajar'] = $validated['max_beban'];
             }
@@ -188,7 +233,6 @@ class DosenController extends Controller
                 ->with('success', 'Data dosen ' . $validated['nama_lengkap'] . ' berhasil diperbarui!');
 
         } catch (\Exception $e) {
-            // Hapus foto baru jika ada error
             if (isset($validated['foto']) && $validated['foto'] != $dosen->foto) {
                 Storage::disk('public')->delete($validated['foto']);
             }
@@ -207,7 +251,6 @@ class DosenController extends Controller
         try {
             $nama = $dosen->nama_lengkap;
             
-            // Hapus foto jika ada
             if ($dosen->foto && Storage::disk('public')->exists($dosen->foto)) {
                 Storage::disk('public')->delete($dosen->foto);
             }
@@ -266,5 +309,83 @@ class DosenController extends Controller
             return redirect()->back()
                 ->withErrors(['error' => 'Gagal mengubah status: ' . $e->getMessage()]);
         }
+    }
+
+    // ============================
+    // IMPORT & EXPORT METHODS
+    // ============================
+
+    /**
+     * Import data dosen dari Excel
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file_import' => 'required|file|mimes:xlsx,xls|max:2048'
+        ], [
+            'file_import.required' => 'File Excel wajib diupload',
+            'file_import.mimes' => 'File harus berformat .xlsx atau .xls',
+            'file_import.max' => 'Ukuran file maksimal 2MB'
+        ]);
+
+        try {
+            $file = $request->file('file_import');
+            
+            // PANGGIL SERVICE - Logic ada di service!
+            $result = $this->importExportService->import($file->getRealPath());
+
+            // Handle response berdasarkan status
+            if ($result['status'] === 'success') {
+                return redirect()->route('dosen.index')
+                    ->with('success', $result['message']);
+            }
+
+            if ($result['status'] === 'warning') {
+                return redirect()->route('dosen.index')
+                    ->with('warning', $result['message'])
+                    ->with('import_errors', $result['errors']);
+            }
+
+            return redirect()->route('dosen.index')
+                ->withErrors(['import' => $result['message']])
+                ->with('import_errors', $result['errors']);
+
+        } catch (\Exception $e) {
+            return redirect()->route('dosen.index')
+                ->withErrors(['import' => 'Gagal mengimpor data: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Download template Excel kosong
+     */
+    public function downloadTemplate()
+    {
+        // PANGGIL SERVICE - Logic ada di service!
+        $template = $this->importExportService->generateTemplate();
+        
+        return response()->download($template['path'], $template['filename'])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Export data dosen ke Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $query = User::query();
+
+        if ($request->filled('prodi')) {
+            $query->where('prodi', $request->prodi);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $dosens = $query->orderBy('nama_lengkap', 'asc')->get();
+
+        // PANGGIL SERVICE - Logic ada di service!
+        $export = $this->importExportService->exportToExcel($dosens);
+        
+        return response()->download($export['path'], $export['filename'])->deleteFileAfterSend(true);
     }
 }

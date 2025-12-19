@@ -14,9 +14,10 @@ class PenelitianController extends Controller
      */
     public function index()
     {
-    $penelitians = Auth::user()->penelitians()->get();
-    $kategori = Kategori::all(); // <-- ambil semua kategori
-    return view('pages.penelitian', compact('penelitians', 'kategori'));
+        $penelitians = Auth::user()->penelitians()->get();
+        $kategori = Kategori::all(); // <-- ambil semua kategori
+        
+            return view('pages.penelitian', compact('penelitians', 'kategori'));
     }
 
 
