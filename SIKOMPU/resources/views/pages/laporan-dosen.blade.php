@@ -1,99 +1,135 @@
 @extends('layouts.app')
 
-@section('title', 'Hasil Penugasan')
+@section('title', 'Laporan Penugasan')
 @section('page_title', 'Laporan Dosen')
 
 @section('content')
 
-{{-- Inisialisasi Alpine.js untuk mengelola status modal --}}
 <div x-data="{ openDetailModal: false, selectedDosen: null }" class="flex h-screen bg-gray-100">
-
-    {{-- Konten Utama --}}
     <main class="flex-1 overflow-y-auto">
         <div class="p-8">
-            {{-- Hasil Lulus & Penugasan --}}
-            <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
-                <p class="text-xs text-gray-500 mb-4">Kelola data kompetensi dan penilaian Anda</p>
+            
+            @if($pesanKosong)
+                {{-- Tampilkan pesan jika tidak ada data --}}
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg shadow-md">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-lg font-medium text-yellow-800">Informasi</h3>
+                            <p class="mt-2 text-sm text-yellow-700">{{ $pesanKosong }}</p>
+                        </div>
+                    </div>
+                </div>
+            @else
+                {{-- Hasil Lulus & Penugasan --}}
+                <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+                    <p class="text-xs text-gray-500 mb-4">Kelola data kompetensi dan penilaian Anda</p>
 
-                {{-- Status LULUS --}}
-                <div class="flex items-center text-green-600 font-bold mb-6 border-b pb-4 border-gray-200">
-                    <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span class="text-2xl">LULUS</span>
-                    <span class="ml-4 text-sm text-gray-600 font-normal">
-                        Skor Akhir Penilaian: 88/100
-                        <br>
-                        Periode Penilaian: Semester Ganjil 2025/2026
-                    </span>
+                    {{-- Status LULUS/TIDAK LULUS --}}
+                    <div class="flex items-center {{ $statusLulus ? 'text-green-600' : 'text-red-600' }} font-bold mb-6 border-b pb-4 border-gray-200">
+                        @if($statusLulus)
+                            <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-2xl">LULUS</span>
+                        @else
+                            <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span class="text-2xl">TIDAK LULUS</span>
+                        @endif
+                        <span class="ml-4 text-sm text-gray-600 font-normal">
+                            Skor Akhir Penilaian: {{ $skorAkhir }}/100
+                            <br>
+                            Periode Penilaian: {{ $periode }}
+                        </span>
+                    </div>
+
+                    @if($penugasan)
+                        {{-- Detail Penugasan --}}
+                        <h2 class="text-3xl font-bold text-blue-800 mb-4">
+                            Ditunjuk Sebagai <br> 
+                            {{ ucfirst($penugasan->peran_penugasan) }} Mata Kuliah {{ $matakuliah->kode_mk }} - {{ $matakuliah->nama_mk }}
+                        </h2>
+                        <p class="text-sm text-gray-500">
+                            Program Studi: {{ $matakuliah->prodi->nama_prodi ?? 'N/A' }}
+                        </p>
+                    @endif
                 </div>
 
-                {{-- Detail Penugasan --}}
-                <h2 class="text-3xl font-bold text-blue-800 mb-4">
-                    Ditunjuk Sebagai <br> Koordinator Mata Kuliah IF101- Algoritma dan Struktur Data
-                </h2>
-                <p class="text-sm text-gray-500">
-                    Jangka Waktu: 1 September 2025 - 28 Februari 2026
-                </p>
-            </div>
+                {{-- Tabel Hasil Penugasan Dosen di MK yang Sama --}}
+                @if($dosenSeMatakuliah->count() > 0)
+                <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                    <div class="p-6 bg-gray-50 border-b">
+                        <h3 class="text-lg font-semibold text-gray-700">Dosen Lain di Mata Kuliah {{ $matakuliah->kode_mk }}</h3>
+                    </div>
 
-
-            {{-- Tabel Hasil Penugasan Dosen --}}
-            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                <div class="p-6 bg-gray-50 border-b">
-                    <h3 class="text-lg font-semibold text-gray-700">Hasil Penugasan Dosen</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-blue-800 text-white">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nama Dosen</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">NIDN</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Prodi</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Posisi</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Skor</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($dosenSeMatakuliah as $index => $detail)
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $index + 1 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <p class="text-sm font-medium text-gray-900">{{ $detail->user->nama_lengkap }}</p>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $detail->user->nidn }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $detail->user->prodi }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {{ $detail->peran_penugasan == 'Koordinator' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' }}">
+                                            {{ ucfirst($detail->peran_penugasan) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                        {{ round($detail->skor_dosen_di_mk) }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                                        <button 
+                                            @click="openDetailModal = true; 
+                                                    selectedDosen = { 
+                                                        nama: '{{ $detail->user->nama_lengkap }}', 
+                                                        nidn: '{{ $detail->user->nidn }}',
+                                                        posisi: '{{ ucfirst($detail->peran_penugasan) }}', 
+                                                        skor: {{ round($detail->skor_dosen_di_mk) }},
+                                                        matakuliah: '{{ $matakuliah->kode_mk }} - {{ $matakuliah->nama_mk }}',
+                                                        periode: '{{ $periode }}'
+                                                    }" 
+                                            class="flex items-center hover:underline focus:outline-none"
+                                        >
+                                            Lihat detail
+                                            <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-blue-800 text-white">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nama Dosen</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">NIDN/NIP</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Prodi</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Kode MK</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Posisi</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Hasil</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            {{-- Baris Data Dosen (Contoh) --}}
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        {{-- Tambahkan gambar jika ada --}}
-                                        <p class="text-sm font-medium text-gray-900">Sri Fatmawati, M.Kom.</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">0123456789</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Teknik Informatika</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">IF101</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Dosen Laboran</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
-                                    {{-- MODIFIKASI: Menggunakan Alpine.js untuk membuka modal --}}
-                                    <button 
-                                        @click="openDetailModal = true; selectedDosen = { nama: 'Sri Fatmawati, M.Kom.', posisi: 'Dosen Laboran', hasil: 'LULUS (88/100)' }" 
-                                        class="flex items-center hover:underline focus:outline-none"
-                                    >
-                                        Lihat detail
-                                        <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                        </svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                @endif
+            @endif
         </div>
     </main>
 
-  {{-- ***************************************************************** --}}
-    {{-- POP-UP MODAL (POSISI DI TENGAH) --}}
-    {{-- ***************************************************************** --}}
+    {{-- MODAL DETAIL --}}
     <div 
         x-show="openDetailModal" 
         x-cloak 
@@ -101,7 +137,6 @@
         style="display: none;"
     >
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
-        
             <div 
                 x-show="openDetailModal" 
                 x-transition:enter="ease-out duration-300" 
@@ -111,77 +146,55 @@
                 @click="openDetailModal = false"
             ></div>
 
-            {{-- Panel Modal (max-w-xl) --}}
             <div 
                 x-show="openDetailModal" 
                 x-transition:enter="ease-out duration-300" 
                 x-transition:leave="ease-in duration-200" 
                 class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full"
-                role="dialog" aria-modal="true" aria-labelledby="modal-headline"
+                role="dialog" aria-modal="true"
             >
-                
                 <div class="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-6">
-                    <h3 class="text-xl leading-6 font-bold text-blue-800 border-b pb-3 mb-5" id="modal-headline">
-                        Detail Hasil Penugasan Koordinator Mata Kuliah
+                    <h3 class="text-xl leading-6 font-bold text-blue-800 border-b pb-3 mb-5">
+                        Detail Hasil Penugasan
                     </h3>
                     <div class="space-y-4">
                         
-                        {{-- 1. Rangkuman Skor (Tetap 3 Kolom Horizontal) --}}
+                        {{-- Rangkuman Skor --}}
                         <div>
-                            <h4 class="font-bold text-lg mb-3 text-gray-700">Rangkuman Penilaian Total</h4>
-                            
-                            {{-- Kartu Skor --}}
-                            <div class="grid grid-cols-3 gap-3 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                                
-                                {{-- SKOR AKHIR --}}
-                                <div class="text-center p-1 border-r border-blue-200">
-                                <p class="text-3xl font-extrabold text-green-600">88</p> 
-                                <p class="text-xs font-extrabold text-gray-600">SKOR AKHIR</p>
-                                </div>
-                             
-                            <p class="text-xs mt-3 italic text-gray-500 text-center">
-                                Dosen LULUS dan direkomendasikan untuk Koordinator MK.
-                            </p>
+                            <h4 class="font-bold text-lg mb-3 text-gray-700">Skor Penilaian</h4>
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
+                                <p class="text-4xl font-extrabold text-green-600" x-text="selectedDosen?.skor || 0"></p>
+                                <p class="text-xs font-medium text-gray-600 mt-1">SKOR AKHIR</p>
+                            </div>
                         </div>
                         
-                        {{-- 2. Detail Penugasan & Dosen (List Vertikal) --}}
+                        {{-- Info Dosen --}}
                         <div>
-                            <h4 class="font-bold text-lg mb-3 text-gray-700">Informasi Dosen & Penugasan</h4>
+                            <h4 class="font-bold text-lg mb-3 text-gray-700">Informasi Dosen</h4>
                             <dl class="space-y-2 text-sm">
                                 <div class="flex border-b pb-1">
-                                    <dt class="font-medium text-gray-900 w-1/3">Nama Dosen:</dt>
-                                    <dd class="text-gray-700 w-2/3" x-text="selectedDosen ? selectedDosen.nama : '...'"></dd>
+                                    <dt class="font-medium text-gray-900 w-1/3">Nama:</dt>
+                                    <dd class="text-gray-700 w-2/3" x-text="selectedDosen?.nama || '...'"></dd>
                                 </div>
                                 <div class="flex border-b pb-1">
-                                    <dt class="font-medium text-gray-900 w-1/3">Posisi Ditunjuk:</dt>
-                                    <dd class="text-blue-600 font-semibold w-2/3" x-text="selectedDosen ? selectedDosen.posisi : '...'"></dd>
+                                    <dt class="font-medium text-gray-900 w-1/3">NIDN:</dt>
+                                    <dd class="text-gray-700 w-2/3" x-text="selectedDosen?.nidn || '...'"></dd>
+                                </div>
+                                <div class="flex border-b pb-1">
+                                    <dt class="font-medium text-gray-900 w-1/3">Posisi:</dt>
+                                    <dd class="text-blue-600 font-semibold w-2/3" x-text="selectedDosen?.posisi || '...'"></dd>
                                 </div>
                                 <div class="flex border-b pb-1">
                                     <dt class="font-medium text-gray-900 w-1/3">Mata Kuliah:</dt>
-                                    <dd class="text-gray-700 w-2/3">IF101 - Algoritma dan Struktur Data</dd>
+                                    <dd class="text-gray-700 w-2/3" x-text="selectedDosen?.matakuliah || '...'"></dd>
                                 </div>
                                 <div class="flex border-b pb-1">
                                     <dt class="font-medium text-gray-900 w-1/3">Periode:</dt>
-                                    <dd class="text-gray-700 w-2/3">Ganjil 2025/2026</dd>
+                                    <dd class="text-gray-700 w-2/3" x-text="selectedDosen?.periode || '...'"></dd>
                                 </div>
                             </dl>
                         </div>
-
-                        {{-- 3. Rincian Kompetensi --}}
-                        <div>
-                             <h4 class="font-bold text-lg mb-3 text-gray-700">Rincian Kompetensi</h4>
-                            <ul class="space-y-1 text-sm bg-gray-50 p-3 rounded-md">
-                                <li class="flex justify-between"><span>Pendidikan:</span> <span class="font-medium text-green-600">92</span></li>
-                                <li class="flex justify-between"><span>Self Assesment:</span> <span class="font-medium text-green-600">85</span></li>
-                                <li class="flex justify-between"><span>Penelitian:</span> <span class="font-medium text-green-600">90</span></li>
-                                <li class="flex justify-between"><span>Sertifikat:</span> <span class="font-medium text-green-600">88</span></li>
-                            </ul>
-                        </div>
                     </div>
-                </div>
-                
-                <div class="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-6">
-                    {{-- ... (Konten detail skor dan dosen) ... --}}
                 </div>
                 
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
@@ -192,8 +205,6 @@
             </div>
         </div>
     </div>
-    {{-- ***************************************************************** --}}
-    {{-- AKHIR POP-UP MODAL --}}
-    {{-- ***************************************************************** --}}
 </div>
+
 @endsection

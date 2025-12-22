@@ -79,14 +79,6 @@
          : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700' }}">
      <i class="fa-solid fa-flask mr-3"></i> Penelitian
    </a>
-
-   <a href="{{ route('peforma.ai') }}" 
-      class="flex items-center px-4 py-2.5 rounded-md font-medium text-sm transition duration-200
-      {{ request()->routeIs('peforma.ai*') 
-         ? 'bg-blue-800 text-white' 
-         : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700' }}">
-     <i class="fa-solid fa-bolt mr-3"></i> Peforma AI
-   </a>
   
       <a href="{{ route('laporan.struktural') }}" 
          class="flex items-center px-4 py-2.5 rounded-md font-medium text-sm transition duration-200

@@ -108,19 +108,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/hasil-rekomendasi/{id}/detail/{kode_mk}', [HasilRekomendasiPageController::class, 'detailMk'])
         ->name('hasil-rekomendasi.detail');
 
-        // PERFORMA & VERIFIKASI AI
-        Route::get('/performa-ai', [AiMetricsController::class, 'index'])->name('ai.performa');
-        Route::get('/verifikasi-ai', [AiMetricsController::class, 'verification'])->name('ai.verifikasi');
-        Route::post('/verifikasi-ai/{id}', [AiMetricsController::class, 'updateActualStatus'])->name('ai.verify');
-        Route::post('/verifikasi-ai/batch', [AiMetricsController::class, 'batchVerify'])->name('ai.batch-verify');
-        Route::post('/performa-ai/refresh', [AiMetricsController::class, 'refresh'])->name('ai.refresh');
-        Route::get('/performa-ai/export', [AiMetricsController::class, 'exportReport'])->name('ai.export');
-
         // Import Self Assessment
         Route::get('/self-assessment/import', [SelfAssessmentController::class, 'importForm'])->name('self-assessment.import.form');
         Route::post('/self-assessment/import', [SelfAssessmentController::class, 'import'])->name('self-assessment.import');
 
         // Laporan Struktural
         Route::get('/laporan-struktural', [LaporanController::class, 'index'])->name('laporan.struktural');
+
+        // ===== REKAP FINAL PENGAMPU =====
+        Route::get('/laporan/rekap-pengampu/excel', [LaporanController::class, 'exportRekapPengampuExcel'])
+            ->name('laporan.rekap-pengampu.excel');
+        Route::get('/laporan/rekap-pengampu/pdf', [LaporanController::class, 'exportRekapPengampuPdf'])
+            ->name('laporan.rekap-pengampu.pdf');
     });
 });

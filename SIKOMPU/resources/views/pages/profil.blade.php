@@ -22,11 +22,7 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex items-center space-x-4">
             <div class="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-3xl overflow-hidden">
-                @if($user->foto)
-                    <img src="{{ Storage::url($user->foto) }}" alt="Foto Profil" class="w-full h-full object-cover">
-                @else
                     {{ strtoupper(substr($user->nama_lengkap, 0, 1)) }}
-                @endif
             </div>
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">{{ $user->nama_lengkap }}</h2>
@@ -66,7 +62,7 @@
 <div x-show="activeTab === 'profil'" x-transition>
     <h3 class="text-lg font-semibold text-gray-800 mb-4">Informasi Profil</h3>
 
-    <form action="{{ route('profil.update') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('profil.update') }}" method="POST">
         @csrf
         @method('PUT')
 
@@ -124,28 +120,9 @@
                 @enderror
             </div>
 
-            {{-- Foto Profil --}}
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Foto Profil</label>
-                <input 
-                    type="file" 
-                    name="foto" 
-                    accept="image/*"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('foto') border-red-500 @enderror">
-                <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG. Maksimal 2MB.</p>
-                @error('foto')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
             {{-- ------------------------------ --}}
             {{-- FORM INPUT PENDIDIKAN TAMBAHAN --}}
             {{-- ------------------------------ --}}
-
-            @php
-                // Ambil pendidikan terakhir jika ada
-                $pendidikanTerakhir = $pendidikanTerakhir ?? null;
-            @endphp
 
             {{-- Jenjang --}}
             <div>
