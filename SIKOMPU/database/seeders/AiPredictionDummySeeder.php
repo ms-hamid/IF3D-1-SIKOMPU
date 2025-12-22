@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\AiPrediction;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class AiPredictionDummySeeder extends Seeder
 {
@@ -26,18 +27,29 @@ class AiPredictionDummySeeder extends Seeder
 
         $this->command->info("Ditemukan {$dosens->count()} user");
 
+        // ============================
+        // 🔧 PERBAIKAN INTI (WAJIB)
+        // ============================
+        $mataKuliahIds = DB::table('mata_kuliah')->pluck('id')->toArray();
+
+        if (empty($mataKuliahIds)) {
+            $this->command->error('Tabel mata_kuliah kosong! Seeder dibatalkan.');
+            return;
+        }
+        // ============================
+
         // Data dummy untuk confusion matrix yang bagus
         // TP = 45, FN = 5, FP = 3, TN = 47
         
         $predictions = [];
         $dosenArray = $dosens->toArray(); // Convert ke array
         
-        // True Positive: 45 (Prediksi: diterima, Aktual: diterima)
+        // True Positive: 45
         for ($i = 0; $i < 45; $i++) {
-            $dosen = $dosenArray[array_rand($dosenArray)]; // Random dari array
+            $dosen = $dosenArray[array_rand($dosenArray)];
             $predictions[] = [
                 'dosen_id' => $dosen['id'],
-                'mata_kuliah_id' => rand(1, 50),
+                'mata_kuliah_id' => $mataKuliahIds[array_rand($mataKuliahIds)],
                 'predicted_status' => 'diterima',
                 'actual_status' => 'diterima',
                 'confidence_score' => rand(80, 99),
@@ -52,12 +64,12 @@ class AiPredictionDummySeeder extends Seeder
             ];
         }
         
-        // False Negative: 5 (Prediksi: ditolak, Aktual: diterima)
+        // False Negative: 5
         for ($i = 0; $i < 5; $i++) {
             $dosen = $dosenArray[array_rand($dosenArray)];
             $predictions[] = [
                 'dosen_id' => $dosen['id'],
-                'mata_kuliah_id' => rand(1, 50),
+                'mata_kuliah_id' => $mataKuliahIds[array_rand($mataKuliahIds)],
                 'predicted_status' => 'ditolak',
                 'actual_status' => 'diterima',
                 'confidence_score' => rand(60, 75),
@@ -72,12 +84,12 @@ class AiPredictionDummySeeder extends Seeder
             ];
         }
         
-        // False Positive: 3 (Prediksi: diterima, Aktual: ditolak)
+        // False Positive: 3
         for ($i = 0; $i < 3; $i++) {
             $dosen = $dosenArray[array_rand($dosenArray)];
             $predictions[] = [
                 'dosen_id' => $dosen['id'],
-                'mata_kuliah_id' => rand(1, 50),
+                'mata_kuliah_id' => $mataKuliahIds[array_rand($mataKuliahIds)],
                 'predicted_status' => 'diterima',
                 'actual_status' => 'ditolak',
                 'confidence_score' => rand(70, 85),
@@ -92,12 +104,12 @@ class AiPredictionDummySeeder extends Seeder
             ];
         }
         
-        // True Negative: 47 (Prediksi: ditolak, Aktual: ditolak)
+        // True Negative: 47
         for ($i = 0; $i < 47; $i++) {
             $dosen = $dosenArray[array_rand($dosenArray)];
             $predictions[] = [
                 'dosen_id' => $dosen['id'],
-                'mata_kuliah_id' => rand(1, 50),
+                'mata_kuliah_id' => $mataKuliahIds[array_rand($mataKuliahIds)],
                 'predicted_status' => 'ditolak',
                 'actual_status' => 'ditolak',
                 'confidence_score' => rand(75, 95),
