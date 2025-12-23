@@ -18,83 +18,69 @@ class LaporanController extends Controller
 
     public function index()
     {
-        $recentReports = [
-            [
-                'icon_type' => 'pdf',
-                'name' => 'Rekap Final Pengampu',
-                'periode' => 'Ganjil 2024/2025',
-                'dibuat' => '15 Des 2024, 14:30',
-                'status' => 'Selesai'
-            ],
-        ];
+        // Ambil AI aktif
+        $hasilAktif = HasilRekomendasi::active()
+            ->withCount('detailHasilRekomendasi')
+            ->latest()
+            ->first();
 
-        return view('pages.laporan-struktural', ['reports' => $recentReports]);
+        return view('pages.laporan-struktural', [
+            'hasilAktif' => $hasilAktif
+        ]);
     }
 
     public function exportRekapPengampuExcel(Request $request)
     {
-        $semester = $request->input('semester', 'Ganjil 2024/2025');
-        
-        try {
-            $hasil = HasilRekomendasi::with([
+        $hasil = HasilRekomendasi::active()
+            ->with([
                 'detailHasilRekomendasi.mataKuliah.prodi',
                 'detailHasilRekomendasi.user'
             ])
-            ->where('semester', $semester)
+            ->latest()
             ->first();
-            
-            if (!$hasil) {
-                return back()->with('error', 'Belum ada hasil rekomendasi untuk semester ' . $semester . '. Silakan generate rekomendasi terlebih dahulu di menu Hasil Rekomendasi.');
-            }
-            
-            if ($hasil->detailHasilRekomendasi->isEmpty()) {
-                return back()->with('error', 'Data detail pengampu kosong untuk semester ' . $semester . '. Pastikan proses generate rekomendasi sudah selesai.');
-            }
-            
-            $dataPerMK = $hasil->detailHasilRekomendasi->groupBy('matakuliah_id');
-            
-            return $this->excelService->generateRekapPengampu($dataPerMK, $semester);
-            
-        } catch (\Exception $e) {
-            \Log::error('Error Export Excel: ' . $e->getMessage());
-            return back()->with('error', 'Gagal export Excel: ' . $e->getMessage());
+
+        if (!$hasil || $hasil->detailHasilRekomendasi->isEmpty()) {
+            return back()->with(
+                'error',
+                'Belum ada hasil rekomendasi AI aktif yang dapat diekspor.'
+            );
         }
+
+        $dataPerMK = $hasil->detailHasilRekomendasi->groupBy('matakuliah_id');
+
+        return $this->excelService->generateRekapPengampu(
+            $dataPerMK,
+            $hasil->semester . ' ' . $hasil->tahun_ajaran
+        );
     }
 
-    public function exportRekapPengampuPdf(Request $request)
+    public function exportRekapPengampuPdf()
     {
-        $semester = $request->input('semester', 'Ganjil 2024/2025');
-        
-        try {
-            $hasil = HasilRekomendasi::with([
+        $hasil = HasilRekomendasi::active()
+            ->with([
                 'detailHasilRekomendasi.mataKuliah.prodi',
                 'detailHasilRekomendasi.user'
             ])
-            ->where('semester', $semester)
+            ->latest()
             ->first();
-            
-            if (!$hasil) {
-                return back()->with('error', 'Belum ada hasil rekomendasi untuk semester ' . $semester . '. Silakan generate rekomendasi terlebih dahulu di menu Hasil Rekomendasi.');
-            }
-            
-            if ($hasil->detailHasilRekomendasi->isEmpty()) {
-                return back()->with('error', 'Data detail pengampu kosong untuk semester ' . $semester . '. Pastikan proses generate rekomendasi sudah selesai.');
-            }
-            
-            $dataPerMK = $hasil->detailHasilRekomendasi->groupBy('matakuliah_id');
-            
-            $fileName = 'Rekap_Pengampu_' . str_replace([' ', '/'], ['_', '_'], $semester) . '.pdf';
-            
-            $pdf = Pdf::loadView('components.rekap-pengampu-pdf', compact('semester', 'dataPerMK'))
-                ->setPaper('a4', 'landscape')
-                ->setOption('margin-top', 10)
-                ->setOption('margin-bottom', 10);
-                
-            return $pdf->download($fileName);
-            
-        } catch (\Exception $e) {
-            \Log::error('Error Export PDF: ' . $e->getMessage());
-            return back()->with('error', 'Gagal export PDF: ' . $e->getMessage());
+
+        if (!$hasil || $hasil->detailHasilRekomendasi->isEmpty()) {
+            return back()->with(
+                'error',
+                'Belum ada hasil rekomendasi AI aktif yang dapat diekspor.'
+            );
         }
+
+        $dataPerMK = $hasil->detailHasilRekomendasi->groupBy('matakuliah_id');
+
+        $semesterLabel = $hasil->semester . ' ' . $hasil->tahun_ajaran;
+        $fileName = 'Rekap_Pengampu_' . str_replace([' ', '/'], '_', $semesterLabel) . '.pdf';
+
+        $pdf = Pdf::loadView(
+            'components.rekap-pengampu-pdf',
+            compact('semesterLabel', 'dataPerMK')
+        )->setPaper('a4', 'landscape');
+
+        return $pdf->download($fileName);
     }
 }

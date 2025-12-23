@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\AIIntegrationController;
 
-
 class HasilRekomendasiController extends Controller
 {
     /**
@@ -43,43 +42,19 @@ class HasilRekomendasiController extends Controller
     }
 
     /**
-     * PATCH /api/hasil-rekomendasis/{id}/finalize
-     * Penetapan hasil (Finalized / Rejected)
-     */
-    public function finalize(Request $request, HasilRekomendasi $hasilRekomendasi)
-    {
-        $validated = $request->validate([
-            'status' => 'required|in:Finalized,Rejected',
-        ]);
-
-        $hasilRekomendasi->update([
-            'status' => $validated['status'],
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Hasil rekomendasi berhasil ditetapkan.',
-            'data' => $hasilRekomendasi
-        ]);
-    }
-
-    /**
      * POST /api/hasil-rekomendasis
      * Simpan hasil rekomendasi dari AI
      */
     public function storeAIRecommendation(Request $request)
     {
         $data = $request->validate([
-        'semester' => 'required|string',
-        'rekomendasi' => 'required|array|min:1',
-
-        'rekomendasi.*.matakuliah_id' => 'required|exists:mata_kuliah,id',
-        'rekomendasi.*.dosens' => 'required|array|min:1',
-
-        'rekomendasi.*.dosens.*.user_id' => 'required|exists:users,id',
-        'rekomendasi.*.dosens.*.skor' => 'required|numeric',
-    ]);
-
+            'semester' => 'required|string',
+            'rekomendasi' => 'required|array|min:1',
+            'rekomendasi.*.matakuliah_id' => 'required|exists:mata_kuliah,id',
+            'rekomendasi.*.dosens' => 'required|array|min:1',
+            'rekomendasi.*.dosens.*.user_id' => 'required|exists:users,id',
+            'rekomendasi.*.dosens.*.skor' => 'required|numeric',
+        ]);
 
         // Ambil tahun ajaran dari string semester
         $parts = explode(' ', $data['semester']);
@@ -90,12 +65,15 @@ class HasilRekomendasiController extends Controller
         try {
             /**
              * 1. Simpan header hasil rekomendasi
+             * ⚠️ PENTING: TIDAK ADA KOLOM 'status' LAGI!
              */
             $hasil = HasilRekomendasi::create([
                 'semester' => $data['semester'],
                 'tahun_ajaran' => $tahunAjaran,
-                'status' => 'Pending',
+                'is_active' => true, // ← Langsung aktif saat dibuat
             ]);
+
+            \Log::info('✅ Hasil rekomendasi created', ['id' => $hasil->id]);
 
             /**
              * 2. Simpan detail rekomendasi per matakuliah
@@ -126,6 +104,11 @@ class HasilRekomendasiController extends Controller
                         'skor_dosen_di_mk' => $dosen['skor'],
                     ]);
                 }
+
+                \Log::info('✅ Detail rekomendasi saved', [
+                    'matakuliah_id' => $item['matakuliah_id'],
+                    'total_dosen' => count($sortedDosens)
+                ]);
             }
 
             DB::commit();
@@ -142,6 +125,11 @@ class HasilRekomendasiController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
+            \Log::error('❌ Error saving rekomendasi', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan hasil rekomendasi.',
@@ -150,6 +138,9 @@ class HasilRekomendasiController extends Controller
         }
     }
 
+    /**
+     * Helper: Dipanggil dari AIIntegrationController
+     */
     public function saveFromAI(string $semester, array $rekomendasi)
     {
         $request = Request::create(
@@ -164,14 +155,44 @@ class HasilRekomendasiController extends Controller
         return $this->storeAIRecommendation($request);
     }
 
-    
+    /**
+     * Generate rekomendasi (dipanggil dari route)
+     */
     public function generate()
     {
-        app(AIIntegrationController::class)->generateRecommendation();
+        \Log::info('🚀 Generate rekomendasi dimulai');
 
-        return redirect()
-            ->route('hasil.rekomendasi')
-            ->with('success', 'Rekomendasi berhasil digenerate');
+        try {
+            $response = app(AIIntegrationController::class)->generateRecommendation();
+
+            // Cek apakah response adalah JsonResponse
+            if ($response instanceof \Illuminate\Http\JsonResponse) {
+                $data = $response->getData(true);
+
+                if (isset($data['status']) && $data['status'] === 'success') {
+                    return redirect()
+                        ->route('hasil.rekomendasi')
+                        ->with('success', 'Rekomendasi berhasil digenerate! Total: ' . ($data['summary']['total_penugasan'] ?? 0) . ' penugasan');
+                } else {
+                    return redirect()
+                        ->route('hasil.rekomendasi')
+                        ->with('error', $data['error'] ?? 'Gagal generate rekomendasi');
+                }
+            }
+
+            return redirect()
+                ->route('hasil.rekomendasi')
+                ->with('success', 'Rekomendasi berhasil digenerate');
+
+        } catch (\Exception $e) {
+            \Log::error('💥 Generate error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()
+                ->route('hasil.rekomendasi')
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
-
 }

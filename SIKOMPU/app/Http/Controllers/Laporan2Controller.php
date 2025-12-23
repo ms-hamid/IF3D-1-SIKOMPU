@@ -2,28 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Models\HasilRekomendasi;
 use App\Models\DetailHasilRekomendasi;
-use App\Models\User;
-use App\Models\Matakuliah;
 
 class Laporan2Controller extends Controller
 {
     /**
-     * Tampilkan laporan dosen yang sedang login
+     * Halaman laporan dosen (berdasarkan hasil AI aktif)
      */
     public function index()
     {
         $user = Auth::user();
-        
-        // Ambil hasil rekomendasi yang aktif
-        $hasilAktif = HasilRekomendasi::where('is_active', true)
+
+        // 1. Ambil hasil rekomendasi AI yang aktif
+        $hasilAktif = HasilRekomendasi::active()
             ->latest()
             ->first();
 
+        // Jika belum ada AI yang dijalankan
         if (!$hasilAktif) {
             return view('pages.laporan-dosen', [
                 'statusLulus' => false,
@@ -32,19 +29,19 @@ class Laporan2Controller extends Controller
                 'penugasan' => null,
                 'matakuliah' => null,
                 'breakdownSkor' => null,
-                'dosenSeMatakuliah' => [],
-                'pesanKosong' => 'Belum ada hasil rekomendasi yang aktif untuk periode ini.'
+                'dosenSeMatakuliah' => collect(),
+                'pesanKosong' => 'Belum ada hasil rekomendasi AI yang aktif.'
             ]);
         }
 
-        // Ambil penugasan dosen yang login
-        $penugasanDosen = DetailHasilRekomendasi::where('hasil_id', $hasilAktif->id)
+        // 2. Ambil penugasan dosen dari hasil AI
+        $penugasan = DetailHasilRekomendasi::where('hasil_id', $hasilAktif->id)
             ->where('user_id', $user->id)
-            ->with('mataKuliah.prodi')
+            ->with(['mataKuliah.prodi', 'user'])
             ->first();
 
-        // Jika tidak ada penugasan
-        if (!$penugasanDosen) {
+        // 3. Jika dosen tidak mendapat penugasan
+        if (!$penugasan) {
             return view('pages.laporan-dosen', [
                 'statusLulus' => false,
                 'skorAkhir' => 0,
@@ -52,112 +49,42 @@ class Laporan2Controller extends Controller
                 'penugasan' => null,
                 'matakuliah' => null,
                 'breakdownSkor' => null,
-                'dosenSeMatakuliah' => [],
-                'pesanKosong' => 'Anda belum mendapat penugasan pada periode ini.'
+                'dosenSeMatakuliah' => collect(),
+                'pesanKosong' =>
+                    'Anda belum mendapatkan penugasan pada periode ini berdasarkan hasil perhitungan AI.'
             ]);
         }
 
-        // Hitung skor akhir dan status lulus
-        $skorAkhir = round($penugasanDosen->skor_dosen_di_mk);
-        $statusLulus = $skorAkhir >= 70; // Threshold lulus = 70
+        // 4. Skor & status lulus (MURNI dari AI)
+        $skorAkhir = round($penugasan->skor_dosen_di_mk);
+        $statusLulus = $skorAkhir >= 70;
 
-        // Hitung breakdown skor (dari data dosen)
-        $breakdownSkor = $this->hitungBreakdownSkor($user, $penugasanDosen->matakuliah_id);
+        // 5. Breakdown skor (JUGA MURNI dari AI)
+        $breakdownSkor = [
+            'pendidikan'      => $penugasan->skor_pendidikan,
+            'self_assessment' => $penugasan->skor_self_assessment,
+            'penelitian'      => $penugasan->skor_penelitian,
+            'sertifikat'      => $penugasan->skor_sertifikat,
+        ];
 
-        // Ambil semua dosen yang ditugaskan di mata kuliah yang sama
+        // 6. Dosen lain di mata kuliah yang sama
         $dosenSeMatakuliah = DetailHasilRekomendasi::where('hasil_id', $hasilAktif->id)
-            ->where('matakuliah_id', $penugasanDosen->matakuliah_id)
-            ->where('user_id', '!=', $user->id) // Exclude dosen yang login
-            ->with(['user', 'mataKuliah'])
-            ->orderBy('peran_penugasan', 'asc') // Koordinator dulu
-            ->orderByDesc('skor_dosen_di_mk') // Skor tertinggi dulu
+            ->where('matakuliah_id', $penugasan->matakuliah_id)
+            ->where('user_id', '!=', $user->id)
+            ->with(['user'])
+            ->orderByRaw("CASE WHEN peran_penugasan = 'koordinator' THEN 0 ELSE 1 END")
+            ->orderByDesc('skor_dosen_di_mk')
             ->get();
 
         return view('pages.laporan-dosen', [
             'statusLulus' => $statusLulus,
             'skorAkhir' => $skorAkhir,
             'periode' => $hasilAktif->semester . ' ' . $hasilAktif->tahun_ajaran,
-            'penugasan' => $penugasanDosen,
-            'matakuliah' => $penugasanDosen->mataKuliah,
+            'penugasan' => $penugasan,
+            'matakuliah' => $penugasan->mataKuliah,
             'breakdownSkor' => $breakdownSkor,
             'dosenSeMatakuliah' => $dosenSeMatakuliah,
             'pesanKosong' => null
         ]);
-    }
-
-    /**
-     * Hitung breakdown skor dari berbagai kriteria
-     */
-    private function hitungBreakdownSkor($user, $matakuliahId)
-    {
-        // 1. SKOR PENDIDIKAN (skala 0-100)
-        $pendidikanTerakhir = $user->pendidikans()->latest()->first();
-        $skorPendidikan = 0;
-        
-        if ($pendidikanTerakhir) {
-            $skorPendidikan = match($pendidikanTerakhir->jenjang) {
-                'S3' => 100,
-                'S2' => 75,
-                'S1' => 50,
-                default => 0
-            };
-        }
-
-        // 2. SKOR SELF ASSESSMENT (langsung dari nilai)
-        $selfAssessment = $user->selfAssessments()
-            ->where('matakuliah_id', $matakuliahId)
-            ->latest()
-            ->first();
-        
-        $skorSelfAssessment = $selfAssessment ? $selfAssessment->nilai : 0;
-
-        // 3. SKOR PENELITIAN (hitung total bobot dari mk_kategori)
-        $mkKategori = DB::table('mk_kategori')
-            ->where('mata_kuliah_id', $matakuliahId)
-            ->pluck('bobot', 'kategori_id');
-
-        $skorPenelitian = 0;
-        foreach ($user->penelitians as $penelitian) {
-            if (isset($mkKategori[$penelitian->kategori_id])) {
-                $skorPenelitian += $mkKategori[$penelitian->kategori_id];
-            }
-        }
-        // Normalisasi ke skala 0-100 (asumsi max = 50 bobot)
-        $skorPenelitian = min(100, ($skorPenelitian / 50) * 100);
-
-        // 4. SKOR SERTIFIKAT (hitung total bobot dari mk_kategori)
-        $skorSertifikat = 0;
-        foreach ($user->sertifikat as $sertif) {
-            if (isset($mkKategori[$sertif->kategori_id])) {
-                $skorSertifikat += $mkKategori[$sertif->kategori_id];
-            }
-        }
-        // Normalisasi ke skala 0-100 (asumsi max = 50 bobot)
-        $skorSertifikat = min(100, ($skorSertifikat / 50) * 100);
-
-        return [
-            'pendidikan' => round($skorPendidikan),
-            'self_assessment' => round($skorSelfAssessment),
-            'penelitian' => round($skorPenelitian),
-            'sertifikat' => round($skorSertifikat),
-        ];
-    }
-
-    /**
-     * Export laporan dosen ke PDF (opsional)
-     */
-    public function exportPdf()
-    {
-        // TODO: Implementasi export PDF jika diperlukan
-        return response()->json(['message' => 'Fitur export PDF sedang dalam pengembangan']);
-    }
-
-    /**
-     * Export laporan dosen ke Excel (opsional)
-     */
-    public function exportExcel()
-    {
-        // TODO: Implementasi export Excel jika diperlukan
-        return response()->json(['message' => 'Fitur export Excel sedang dalam pengembangan']);
     }
 }

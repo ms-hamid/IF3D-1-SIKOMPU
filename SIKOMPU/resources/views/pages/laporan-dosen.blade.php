@@ -29,25 +29,32 @@
                 <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
                     <p class="text-xs text-gray-500 mb-4">Kelola data kompetensi dan penilaian Anda</p>
 
-                    {{-- Status LULUS/TIDAK LULUS --}}
-                    <div class="flex items-center {{ $statusLulus ? 'text-green-600' : 'text-red-600' }} font-bold mb-6 border-b pb-4 border-gray-200">
-                        @if($statusLulus)
-                            <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span class="text-2xl">LULUS</span>
-                        @else
-                            <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            <span class="text-2xl">TIDAK LULUS</span>
-                        @endif
-                        <span class="ml-4 text-sm text-gray-600 font-normal">
-                            Skor Akhir Penilaian: {{ $skorAkhir }}/100
-                            <br>
-                            Periode Penilaian: {{ $periode }}
-                        </span>
-                    </div>
+                    {{-- Status Evaluasi AI --}}
+                    <div class="flex items-center {{ $skorAkhir >= 70 ? 'text-green-600' : 'text-yellow-600' }} font-bold mb-6 border-b pb-4 border-gray-200">
+                        <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                d="{{ $skorAkhir >= 70 
+                                ? 'M5 13l4 4L19 7' 
+                                : 'M12 8v4m0 4h.01' }}" />
+                        </svg>
+
+                    <span class="text-2xl">
+                        {{ $skorAkhir >= 70 
+                        ? 'Memenuhi Standar Ideal' 
+                        : 'Belum Memenuhi Standar Ideal' }}
+                    </span>
+
+                    <span class="ml-4 text-sm text-gray-600 font-normal">
+                        Skor Akhir Penilaian: {{ $skorAkhir }}/100
+                        <br>
+                        Periode Penilaian: {{ $periode }}
+                    </span>
+                </div>
+
+                    <p class="text-xs text-gray-500 mt-2">
+                        Penilaian ini merupakan hasil evaluasi dan peringkat relatif berbasis sistem AI
+                        terhadap dosen lain pada mata kuliah yang sama.
+                    </p>
 
                     @if($penugasan)
                         {{-- Detail Penugasan --}}
