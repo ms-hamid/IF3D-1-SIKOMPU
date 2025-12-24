@@ -106,7 +106,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/hasil-rekomendasi', [HasilRekomendasiPageController::class, 'index'])->name('hasil.rekomendasi');
         Route::post('/hasil-rekomendasi/generate', [HasilRekomendasiController::class, 'generate'])->name('hasil-rekomendasi.generate');
         Route::get('/hasil-rekomendasi/{id}/detail/{kode_mk}', [HasilRekomendasiPageController::class, 'detailMk'])
-        ->name('hasil-rekomendasi.detail');
+            ->name('hasil-rekomendasi.detail');
+        Route::get('/hasil-rekomendasi/export/excel', [HasilRekomendasiPageController::class, 'exportExcel'])
+            ->name('hasil-rekomendasi.export.excel');
+        Route::get('/hasil-rekomendasi/export/pdf', [HasilRekomendasiPageController::class, 'exportPdf'])
+            ->name('hasil-rekomendasi.export.pdf');
+        Route::get('/hasil-rekomendasi', [HasilRekomendasiController::class, 'indexWeb'])->name('hasil.rekomendasi');
 
         // Import Self Assessment
         Route::get('/self-assessment/import', [SelfAssessmentController::class, 'importForm'])->name('self-assessment.import.form');

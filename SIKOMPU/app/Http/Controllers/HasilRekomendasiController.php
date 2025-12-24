@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Prodi;
 use App\Models\HasilRekomendasi;
 use App\Models\DetailHasilRekomendasi;
 use Illuminate\Http\Request;
@@ -10,6 +11,79 @@ use App\Http\Controllers\AIIntegrationController;
 
 class HasilRekomendasiController extends Controller
 {
+    public function indexWeb(Request $request)
+    {
+        // 1. Ambil semua prodi untuk dropdown filter
+        $listProdi = Prodi::orderBy('nama_prodi', 'asc')->get();
+
+        // 2. Ambil hasil rekomendasi yang sedang aktif
+        $rekomendasiUtama = HasilRekomendasi::with([
+            'detailHasilRekomendasi.mataKuliah.prodi',
+            'detailHasilRekomendasi.user'
+        ])->where('is_active', 1)->first();
+
+        if (!$rekomendasiUtama) {
+            return view('pages.hasil-rekomendasi', [
+                'hasilRekomendasi' => collect([]),
+                'listProdi' => $listProdi,
+                'totalMk' => 0,
+                'totalKoordinator' => 0,
+                'totalPengampu' => 0,
+                'avgSkor' => 0
+            ]);
+        }
+
+        // 3. Filter Detail Rekomendasi berdasarkan input user
+        $details = $rekomendasiUtama->detailHasilRekomendasi;
+
+        // Filter Search (Nama MK atau Nama Dosen)
+        if ($request->filled('q')) {
+            $q = strtolower($request->q);
+            $details = $details->filter(function($item) use ($q) {
+                return str_contains(strtolower($item->mataKuliah->nama_mk ?? ''), $q) ||
+                       str_contains(strtolower($item->user->nama_lengkap ?? ''), $q) ||
+                       str_contains(strtolower($item->mataKuliah->kode_mk ?? ''), $q);
+            });
+        }
+
+        // Filter Prodi (Berdasarkan database)
+        if ($request->filled('prodi')) {
+            $details = $details->filter(function($item) use ($request) {
+                return $item->mataKuliah->prodi_id == $request->prodi;
+            });
+        }
+
+        // Filter Semester
+        if ($request->filled('semester')) {
+            $isGanjil = $request->semester == 'Ganjil';
+            $details = $details->filter(function($item) use ($isGanjil) {
+                // Semester Ganjil adalah 1, 3, 5, 7. Genap adalah 2, 4, 6, 8
+                $semesterNum = (int)$item->mataKuliah->semester;
+                return $isGanjil ? ($semesterNum % 2 !== 0) : ($semesterNum % 2 === 0);
+            });
+        }
+
+        // 4. Hitung Stats untuk Dashboard
+        $totalMk = $details->unique('matakuliah_id')->count();
+        $totalKoordinator = $details->where('peran_penugasan', 'koordinator')->count();
+        $totalPengampu = $details->where('peran_penugasan', 'pengampu')->count();
+        $avgSkor = $details->where('peran_penugasan', 'koordinator')->avg('skor_dosen_di_mk') ?? 0;
+
+        // 5. Wrap dalam collection agar Blade tetap bisa memakai @forelse ($hasilRekomendasi as $hasil)
+        // Kita modifikasi dikit biar groupedMk di blade dapet data yang sudah difilter
+        $rekomendasiUtama->setRelation('detailHasilRekomendasi', $details);
+        $hasilRekomendasi = collect([$rekomendasiUtama]);
+
+        return view('pages.hasil-rekomendasi', compact(
+            'hasilRekomendasi', 
+            'listProdi', 
+            'totalMk', 
+            'totalKoordinator', 
+            'totalPengampu', 
+            'avgSkor'
+        ));
+    }
+
     /**
      * GET /api/hasil-rekomendasis
      * Menampilkan list hasil rekomendasi
