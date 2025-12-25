@@ -14,6 +14,11 @@ class DatabaseSeeder extends Seeder
         // Panggil DosenSeeder untuk populate data users
         $this->call([
             DosenSeeder::class,
+            ProdiSeeder::class,
+            KategoriSeeder::class,
+            MkKategoriSeeder::class,
+            MatkulSeeder::class,
+            AiPredictionDummySeeder::class,
         ]);
 
         // Tambahkan seeder lain di sini jika ada

@@ -12,7 +12,7 @@ class ProdiSeeder extends Seeder
     public function run()
     {
         $prodis = [
-            ['kode_prodi' => 'TI', 'nama_prodi' => 'Teknik Informatika', 'jenjang' => 'D3'],
+            ['kode_prodi' => 'IF', 'nama_prodi' => 'Teknik Informatika', 'jenjang' => 'D3'],
             ['kode_prodi' => 'SI', 'nama_prodi' => 'Sistem Informasi', 'jenjang' => 'D4'],
             ['kode_prodi' => 'RPL', 'nama_prodi' => 'Rekayasa Perangkat Lunak', 'jenjang' => 'D4'],
         ];
