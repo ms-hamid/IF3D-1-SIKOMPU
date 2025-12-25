@@ -77,7 +77,6 @@
                   ['route' => 'self-assessment.index', 'icon' => 'fa-solid fa-clipboard-check', 'label' => 'Self Assessment'],
                   ['route' => 'sertifikasi.index', 'icon' => 'fa-solid fa-medal', 'label' => 'Sertifikat'],
                   ['route' => 'penelitian.index', 'icon' => 'fa-solid fa-flask', 'label' => 'Penelitian'],
-                  ['route' => 'ai.performa', 'icon' => 'fa-solid fa-bolt', 'label' => 'Peforma AI'],
                   ['route' => 'laporan.struktural', 'icon' => 'fa-regular fa-file-lines', 'label' => 'Laporan'],
               ];
           }
@@ -107,19 +106,6 @@
           </a>
       @endforeach
     </nav>
-
-    {{-- ===========================
-         USER INFO (Tanpa Logout)
-    ============================ --}}
-    <div class="border-t border-gray-200 pt-3 mt-3">
-      @if(auth()->check())
-        <div class="px-4 py-2 bg-gray-50 rounded-lg">
-          <p class="text-xs text-gray-500 mb-1">Login sebagai:</p>
-          <p class="text-sm font-semibold text-gray-800 truncate">{{ auth()->user()->nama_lengkap }}</p>
-          <p class="text-xs text-gray-500 mt-0.5">{{ auth()->user()->jabatan }}</p>
-        </div>
-      @endif
-    </div>
 
   </div>
 </aside>

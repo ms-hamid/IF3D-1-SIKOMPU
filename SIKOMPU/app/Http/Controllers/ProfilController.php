@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use App\Models\Pendidikan;
 
@@ -35,19 +34,7 @@ class ProfilController extends Controller
             'nama_lengkap' => 'required|string|max:255',
             'nidn' => 'required|string|unique:users,nidn,' . $user->id,
             'prodi' => 'nullable|string|max:255',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
-
-        // -----------------------------
-        // HANDLE UPLOAD FOTO PROFIL
-        // -----------------------------
-        if ($request->hasFile('foto')) {
-            if ($user->foto && Storage::disk('public')->exists($user->foto)) {
-                Storage::disk('public')->delete($user->foto);
-            }
-            $fotoPath = $request->file('foto')->store('profil', 'public');
-            $validatedUser['foto'] = $fotoPath;
-        }
 
         // Update data user
         $user->update($validatedUser);

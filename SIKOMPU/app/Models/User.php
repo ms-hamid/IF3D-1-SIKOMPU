@@ -17,7 +17,6 @@ class User extends Authenticatable
         'jabatan',
         'prodi',
         'status',
-        'foto',
         'beban_mengajar',
         'max_beban',
     ];
