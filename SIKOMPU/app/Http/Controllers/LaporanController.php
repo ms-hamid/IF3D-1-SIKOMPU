@@ -18,7 +18,6 @@ class LaporanController extends Controller
 
     public function index()
     {
-        // Ambil AI aktif
         $hasilAktif = HasilRekomendasi::active()
             ->withCount('detailHasilRekomendasi')
             ->latest()
@@ -29,8 +28,11 @@ class LaporanController extends Controller
         ]);
     }
 
-    public function exportRekapPengampuExcel(Request $request)
+    public function exportRekapPengampuPdf(Request $request)
     {
+        // Ambil input semester dari dropdown
+        $semesterInput = $request->query('semester');
+
         $hasil = HasilRekomendasi::active()
             ->with([
                 'detailHasilRekomendasi.mataKuliah.prodi',
@@ -40,11 +42,30 @@ class LaporanController extends Controller
             ->first();
 
         if (!$hasil || $hasil->detailHasilRekomendasi->isEmpty()) {
-            return back()->with(
-                'error',
-                'Belum ada hasil rekomendasi AI aktif yang dapat diekspor.'
-            );
+            return back()->with('error', 'Belum ada hasil rekomendasi yang aktif.');
         }
+
+        $dataPerMK = $hasil->detailHasilRekomendasi->groupBy('matakuliah_id');
+
+        // Menentukan label semester untuk judul PDF
+        $semesterLabel = $semesterInput ?: ($hasil->semester . ' ' . $hasil->tahun_ajaran);
+
+        $pdf = Pdf::loadView('components.rekap-pengampu-pdf', [
+            'semester' => $semesterLabel,
+            'dataPerMK' => $dataPerMK
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->stream('Rekap_Final_Pengampu.pdf');
+    }
+
+    public function exportRekapPengampuExcel(Request $request)
+    {
+        $hasil = HasilRekomendasi::active()
+            ->with(['detailHasilRekomendasi.mataKuliah.prodi', 'detailHasilRekomendasi.user'])
+            ->latest()
+            ->first();
+
+        if (!$hasil) return back()->with('error', 'Data tidak ditemukan');
 
         $dataPerMK = $hasil->detailHasilRekomendasi->groupBy('matakuliah_id');
 
@@ -52,35 +73,5 @@ class LaporanController extends Controller
             $dataPerMK,
             $hasil->semester . ' ' . $hasil->tahun_ajaran
         );
-    }
-
-    public function exportRekapPengampuPdf()
-    {
-        $hasil = HasilRekomendasi::active()
-            ->with([
-                'detailHasilRekomendasi.mataKuliah.prodi',
-                'detailHasilRekomendasi.user'
-            ])
-            ->latest()
-            ->first();
-
-        if (!$hasil || $hasil->detailHasilRekomendasi->isEmpty()) {
-            return back()->with(
-                'error',
-                'Belum ada hasil rekomendasi AI aktif yang dapat diekspor.'
-            );
-        }
-
-        $dataPerMK = $hasil->detailHasilRekomendasi->groupBy('matakuliah_id');
-
-        $semesterLabel = $hasil->semester . ' ' . $hasil->tahun_ajaran;
-        $fileName = 'Rekap_Pengampu_' . str_replace([' ', '/'], '_', $semesterLabel) . '.pdf';
-
-        $pdf = Pdf::loadView(
-            'components.rekap-pengampu-pdf',
-            compact('semesterLabel', 'dataPerMK')
-        )->setPaper('a4', 'landscape');
-
-        return $pdf->download($fileName);
     }
 }

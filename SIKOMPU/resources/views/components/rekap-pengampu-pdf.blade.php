@@ -2,100 +2,150 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Rekap Final Pengampu - {{ $semester }}</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        h1 { text-align: center; color: #1f2937; margin-bottom: 10px; }
-        .subtitle { text-align: center; color: #6b7280; margin-bottom: 10px; font-size: 14px; }
-        .info { text-align: center; color: #374151; margin-bottom: 20px; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; font-size: 11px; }
-        th { background-color: #4B5563; color: white; font-weight: bold; }
-        tr:nth-child(even) { background-color: #f9fafb; }
-        .summary { margin-top: 30px; padding: 15px; background: #f3f4f6; border-radius: 8px; }
-        .summary-title { font-weight: bold; margin-bottom: 10px; color: #1f2937; }
-        .summary-item { margin: 5px 0; color: #374151; }
-        .print-btn { 
-            position: fixed; top: 20px; right: 20px; 
-            padding: 10px 20px; background: #3b82f6; color: white; 
-            border: none; border-radius: 5px; cursor: pointer; 
-            font-weight: bold; z-index: 1000;
+        @page { margin: 1cm; }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 9pt;
+            color: #333;
         }
-        .print-btn:hover { background: #2563eb; }
-        @media print { 
-            .print-btn { display: none; }
-            body { padding: 0; }
+
+        /* ================= HEADER ================= */
+        .header-container {
+            border-bottom: 2px solid #444;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            text-align: center;
         }
-        .footer { margin-top: 30px; color: #6b7280; font-size: 10px; text-align: right; }
+
+        h1 {
+            margin: 0;
+            font-size: 18pt;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            margin-top: 4px;
+            font-size: 12pt;
+            color: #555;
+        }
+
+        /* ================= TABLE ================= */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 1px solid #cbd5e0;
+            padding: 5px 4px;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f2f2f2;
+            text-transform: uppercase;
+            font-size: 9pt;
+        }
+
+        /* Kolom sempit */
+        .col-no,
+        .col-kode {
+            text-align: center;
+            font-size: 8pt;
+            padding: 3px 2px;
+            white-space: nowrap;
+        }
+
+        /* Kolom pengampu */
+        .col-dosen-tim {
+            word-wrap: break-word;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 14px;
+        }
+
+        li {
+            margin-bottom: 2px;
+        }
     </style>
 </head>
 <body>
-    <button class="print-btn" onclick="window.print()">🖨️ Print / Save PDF</button>
-    
-    <h1>REKAP FINAL PENGAMPU MATA KULIAH</h1>
-    <p class="subtitle">Semester: {{ $semester }}</p>
-    <p class="info">Tanggal Generate: {{ now()->format('d F Y, H:i') }}</p>
-    
-    @if($dataPerMK->isEmpty())
-        <p style="text-align: center; color: #999;">Tidak ada data pengampu untuk semester ini.</p>
-    @else
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 5%;">No</th>
-                    <th style="width: 10%;">Kode MK</th>
-                    <th style="width: 30%;">Mata Kuliah</th>
-                    <th style="width: 10%;">SKS</th>
-                    <th style="width: 10%;">Sesi</th>
-                    <th style="width: 15%;">Prodi</th>
-                    <th style="width: 10%;">Koordinator</th>
-                    <th style="width: 10%;">Pengampu</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $no = 1; @endphp
-                @foreach($dataPerMK as $matakuliahId => $details)
-                    @php
-                        $mk = $details->first()->mataKuliah;
-                        $koordinator = $details->first(fn($d) => strtolower($d->peran_penugasan) === 'koordinator');
-                        $pengampus = $details->filter(fn($d) => strtolower($d->peran_penugasan) === 'pengampu');
-                    @endphp
-                    <tr>
-                        <td>{{ $no++ }}</td>
-                        <td>{{ $mk->kode_mk ?? '-' }}</td>
-                        <td>{{ $mk->nama_mk ?? '-' }}</td>
-                        <td>{{ $mk->sks ?? '-' }}</td>
-                        <td>{{ $mk->sesi ?? '-' }}</td>
-                        <td>{{ $mk->prodi->nama_prodi ?? '-' }}</td>
-                        <td>{{ $koordinator ? $koordinator->user->nama_lengkap : '-' }}</td>
-                        <td>
-                            @if($pengampus->isNotEmpty())
-                                {{ $pengampus->pluck('user.nama_lengkap')->join(', ') }}
-                            @else
-                                -
-                            @endif
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-        
-        <div class="summary">
-            <div class="summary-title">RINGKASAN</div>
-            @php
-                $totalMK = $dataPerMK->count();
-                $totalKoordinator = $dataPerMK->filter(fn($details) => $details->first(fn($d) => strtolower($d->peran_penugasan) === 'koordinator'))->count();
-                $totalPengampu = $dataPerMK->sum(fn($details) => $details->filter(fn($d) => strtolower($d->peran_penugasan) === 'pengampu')->count());
-            @endphp
-            <div class="summary-item">Total Mata Kuliah: <strong>{{ $totalMK }}</strong></div>
-            <div class="summary-item">Total Koordinator: <strong>{{ $totalKoordinator }}</strong></div>
-            <div class="summary-item">Total Pengampu: <strong>{{ $totalPengampu }}</strong></div>
+
+    <!-- ================= HEADER ================= -->
+    <div class="header-container">
+        <h1>Rekap Final Pengampu Mata Kuliah</h1>
+        <div class="subtitle">Semester: {{ $semester }}</div>
+        <div style="font-size:8pt; margin-top:4px;">
+            Dicetak pada: {{ now()->format('d/m/Y H:i') }}
         </div>
-    @endif
-    
-    <div class="footer">
-        Dicetak pada: {{ now()->format('d F Y, H:i:s') }} WIB
     </div>
+
+    <!-- ================= TABLE ================= -->
+    <table>
+
+        <!-- 🔥 KUNCI UTAMA PDF: COLGROUP -->
+        <colgroup>
+            <col style="width:3%">
+            <col style="width:6%">
+            <col style="width:22%">
+            <col style="width:15%">
+            <col style="width:17%">
+            <col style="width:37%">
+        </colgroup>
+
+        <thead>
+            <tr>
+                <th class="col-no">No</th>
+                <th class="col-kode">Kode</th>
+                <th>Mata Kuliah (SKS)</th>
+                <th>Program Studi</th>
+                <th>Koordinator</th>
+                <th>Tim Pengampu</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @php $no = 1; @endphp
+            @foreach($dataPerMK as $details)
+                @php
+                    $mk = $details->first()->mataKuliah;
+                    $koordinator = $details->first(fn($d) =>
+                        strtolower($d->peran_penugasan) === 'koordinator'
+                    );
+                    $pengampus = $details->filter(fn($d) =>
+                        strtolower($d->peran_penugasan) === 'pengampu'
+                    );
+                @endphp
+
+                <tr>
+                    <td class="col-no">{{ $no++ }}</td>
+                    <td class="col-kode">{{ $mk->kode_mk }}</td>
+                    <td>
+                        <strong>{{ $mk->nama_mk }}</strong><br>
+                        <small>Sesi: {{ $mk->sesi }} | SKS: {{ $mk->sks }}</small>
+                    </td>
+                    <td>{{ $mk->prodi->nama_prodi ?? '-' }}</td>
+                    <td>{{ $koordinator?->user->nama_lengkap ?? '-' }}</td>
+                    <td class="col-dosen-tim">
+                        @if($pengampus->isNotEmpty())
+                            <ul>
+                                @foreach($pengampus as $p)
+                                    <li>{{ $p->user->nama_lengkap }}</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <span style="color:#aaa;">-</span>
+                        @endif
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
 </body>
 </html>
