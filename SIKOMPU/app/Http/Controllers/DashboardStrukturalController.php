@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\MataKuliah;
 use App\Models\SelfAssessment;
+use App\Models\Notification;
 
 class DashboardStrukturalController extends Controller
 {
@@ -63,7 +64,7 @@ class DashboardStrukturalController extends Controller
             ->count();
 
         // ============================================
-        // 5. AKTIVITAS TERBARU
+        // 5. AKTIVITAS TERBARU (DARI NOTIFIKASI)
         // ============================================
         $aktivitasTerbaru = $this->getAktivitasTerbaru();
 
@@ -118,9 +119,56 @@ class DashboardStrukturalController extends Controller
     }
 
     // ======================================================
-    // Aktivitas Terbaru Dashboard
+    // Aktivitas Terbaru Dashboard (UPDATED - Pakai Notifikasi)
     // ======================================================
     private function getAktivitasTerbaru()
+    {
+        // Ambil notifikasi untuk user struktural (max 7 terakhir)
+        $notifications = auth()->user()
+            ->notifications()
+            ->latest()
+            ->limit(7)
+            ->get();
+
+        // Convert notifikasi ke format aktivitas
+        $aktivitas = $notifications->map(function ($notif) {
+            return [
+                'icon' => $notif->icon,
+                'color' => $this->getColorFromType($notif->type),
+                'text' => $notif->message,
+                'time' => $notif->created_at,
+            ];
+        });
+
+        // Jika tidak ada notifikasi, buat aktivitas default
+        if ($aktivitas->isEmpty()) {
+            $aktivitas = $this->getDefaultAktivitas();
+        }
+
+        return $aktivitas->values();
+    }
+
+    // ======================================================
+    // Helper: Get color berdasarkan tipe notifikasi
+    // ======================================================
+    private function getColorFromType($type)
+    {
+        return match($type) {
+            'self_assessment' => 'green',
+            'new_dosen' => 'blue',
+            'new_matakuliah' => 'indigo',
+            'reminder' => 'yellow',
+            'approval' => 'green',
+            'recommendation' => 'purple',
+            'warning' => 'red',
+            default => 'gray',
+        };
+    }
+
+    // ======================================================
+    // Helper: Aktivitas default jika belum ada notifikasi
+    // ======================================================
+    private function getDefaultAktivitas()
     {
         $aktivitas = collect();
 
@@ -174,7 +222,6 @@ class DashboardStrukturalController extends Controller
 
         return $aktivitas
             ->sortByDesc('time')
-            ->take(7)
-            ->values();
+            ->take(7);
     }
 }

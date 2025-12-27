@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Prodi;
 use App\Models\HasilRekomendasi;
 use App\Models\DetailHasilRekomendasi;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\AIIntegrationController;
@@ -149,6 +150,9 @@ class HasilRekomendasiController extends Controller
 
             \Log::info('✅ Hasil rekomendasi created', ['id' => $hasil->id]);
 
+            $totalMataKuliah = 0;
+            $totalPenugasan = 0;
+
             /**
              * 2. Simpan detail rekomendasi per matakuliah
              */
@@ -177,7 +181,11 @@ class HasilRekomendasiController extends Controller
                         'peran_penugasan' => $index === 0 ? 'koordinator' : 'pengampu',
                         'skor_dosen_di_mk' => $dosen['skor'],
                     ]);
+                    
+                    $totalPenugasan++;
                 }
+
+                $totalMataKuliah++;
 
                 \Log::info('✅ Detail rekomendasi saved', [
                     'matakuliah_id' => $item['matakuliah_id'],
@@ -186,6 +194,15 @@ class HasilRekomendasiController extends Controller
             }
 
             DB::commit();
+
+            // ✨ KIRIM NOTIFIKASI KE SEMUA STRUKTURAL ✨
+            NotificationService::sendToStruktural(
+                'recommendation',
+                'Rekomendasi Semester Baru Siap',
+                "Rekomendasi untuk {$totalMataKuliah} mata kuliah dengan {$totalPenugasan} penugasan telah berhasil di-generate",
+                route('hasil.rekomendasi'),
+                'star'
+            );
 
             return response()->json([
                 'success' => true,
@@ -244,6 +261,9 @@ class HasilRekomendasiController extends Controller
                 $data = $response->getData(true);
 
                 if (isset($data['status']) && $data['status'] === 'success') {
+                    // ✨ Notifikasi sudah dikirim di storeAIRecommendation() ✨
+                    // Jadi tidak perlu kirim lagi di sini
+                    
                     return redirect()
                         ->route('hasil.rekomendasi')
                         ->with('success', 'Rekomendasi berhasil digenerate! Total: ' . ($data['summary']['total_penugasan'] ?? 0) . ' penugasan');

@@ -113,13 +113,13 @@
                     </a>
 
                     {{-- Tambah Dosen --}}
-                    <a href="{{ route('dosen.create') }}" class="w-full flex items-center justify-between bg-gray-100 text-gray-800 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition">
+                    <a href="{{ route('dosen.index') }}" class="w-full flex items-center justify-between bg-gray-100 text-gray-800 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition">
                         <span><i class="fa-solid fa-user-plus mr-2"></i> Tambah Dosen</span>
                         <i class="fa-solid fa-arrow-right text-gray-500"></i>
                     </a>
 
                     {{-- Tambah Mata Kuliah --}}
-                    <a href="{{ route('matakuliah.create') }}" class="w-full flex items-center justify-between bg-gray-100 text-gray-800 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition">
+                    <a href="{{ route('matakuliah.index') }}" class="w-full flex items-center justify-between bg-gray-100 text-gray-800 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition">
                         <span><i class="fa-solid fa-book-medical mr-2"></i> Tambah Mata Kuliah</span>
                         <i class="fa-solid fa-arrow-right text-gray-500"></i>
                     </a>

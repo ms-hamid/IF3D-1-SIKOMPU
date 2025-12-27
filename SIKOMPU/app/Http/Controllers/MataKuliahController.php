@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MataKuliah;
 use App\Models\Kategori;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -69,6 +70,11 @@ class MataKuliahController extends Controller
         ));
     }
 
+    /**
+     * ✨ METHOD INI YANG HILANG! ✨
+     * Show the form for creating a new resource.
+     */
+
     public function store(Request $request)
     {
         try {
@@ -97,6 +103,9 @@ class MataKuliahController extends Controller
             ]);
 
             $mk = MataKuliah::create($validated);
+
+            // ✨ FIX TYPO & TAMBAH NOTIFIKASI - Pakai $mk bukan $mataKuliah ✨
+            NotificationService::mataKuliahCreated($mk->nama_mk);
 
             return redirect()
                 ->route('matakuliah.index')
@@ -214,6 +223,15 @@ class MataKuliahController extends Controller
             $result = $this->importExportService->import($file->getRealPath());
 
             if ($result['status'] === 'success') {
+                // ✨ NOTIFIKASI - Import berhasil ✨
+                NotificationService::sendToStruktural(
+                    'import',
+                    'Import Mata Kuliah Berhasil',
+                    $result['message'],
+                    route('matakuliah.index'),
+                    'file-import'
+                );
+
                 return redirect()->route('matakuliah.index')
                     ->with('success', $result['message']);
             }

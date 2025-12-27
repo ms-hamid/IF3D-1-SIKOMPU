@@ -17,6 +17,7 @@ use App\Http\Controllers\HasilRekomendasiPageController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\Laporan2Controller;
 use App\Http\Controllers\AiMetricsController;
+use App\Http\Controllers\NotificationController;
 
 // ============================
 // TESTING AI
@@ -50,6 +51,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/profil', [ProfilController::class, 'index'])->name('profil.index');
     Route::put('/profil/update', [ProfilController::class, 'update'])->name('profil.update');
     Route::post('/profil/ganti-password', [ProfilController::class, 'gantiPassword'])->name('ganti_password.update');
+
+    // ============================
+    // NOTIFIKASI (SEMUA ROLE) 
+    // ============================
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        // Halaman semua notifikasi
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        // AJAX: Get notifications untuk dropdown
+        Route::get('/get', [NotificationController::class, 'getNotifications']);
+        // Mark as read
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead']);
+        // Mark all as read
+        Route::post('/read-all', [NotificationController::class, 'markAllAsRead']);
+        // Delete notification
+        Route::delete('/{id}', [NotificationController::class, 'destroy']);
+        // Delete all read notifications
+        Route::delete('/delete-read', [NotificationController::class, 'deleteRead']);
+    });
 
     // ============================
     // FITUR BERSAMA (DOSEN & STRUKTURAL)

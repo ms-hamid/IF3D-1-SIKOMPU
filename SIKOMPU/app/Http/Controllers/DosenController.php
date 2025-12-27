@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Services\NotificationService;
 use Illuminate\Validation\Rule;
 use App\Services\DosenImportExportService;
 
@@ -118,7 +119,9 @@ class DosenController extends Controller
                 $validated['max_beban'] = 16;
             }
 
-            User::create($validated);
+            $dosen = User::create($validated);
+
+            NotificationService::dosenCreated($dosen->nama_lengkap);
 
             return redirect()->route('dosen.index')
                 ->with('success', 'Data dosen ' . $validated['nama_lengkap'] . ' berhasil ditambahkan!');
@@ -283,6 +286,14 @@ class DosenController extends Controller
             $dosen->update([
                 'password' => $validated['new_password']
             ]);
+            NotificationService::send(
+                $dosen->id,
+                'reset_password',
+                'Password Direset',
+                'Password Anda telah direset. Password baru: ' . $validated['new_password'],
+                route('profil.index'),
+                'key'
+            );
 
             return redirect()->back()
                 ->with('success', 'Password dosen ' . $dosen->nama_lengkap . ' berhasil direset!');
@@ -331,11 +342,18 @@ class DosenController extends Controller
         try {
             $file = $request->file('file_import');
             
-            // PANGGIL SERVICE - Logic ada di service!
             $result = $this->importExportService->import($file->getRealPath());
 
             // Handle response berdasarkan status
             if ($result['status'] === 'success') {
+                NotificationService::sendToStruktural(
+                    'import',
+                    'Import Dosen Berhasil',
+                    $result['message'],
+                    route('dosen.index'),
+                    'file-import'
+                );
+
                 return redirect()->route('dosen.index')
                     ->with('success', $result['message']);
             }
@@ -361,7 +379,6 @@ class DosenController extends Controller
      */
     public function downloadTemplate()
     {
-        // PANGGIL SERVICE - Logic ada di service!
         $template = $this->importExportService->generateTemplate();
         
         return response()->download($template['path'], $template['filename'])->deleteFileAfterSend(true);
@@ -382,8 +399,6 @@ class DosenController extends Controller
         }
 
         $dosens = $query->orderBy('nama_lengkap', 'asc')->get();
-
-        // PANGGIL SERVICE - Logic ada di service!
         $export = $this->importExportService->exportToExcel($dosens);
         
         return response()->download($export['path'], $export['filename'])->deleteFileAfterSend(true);

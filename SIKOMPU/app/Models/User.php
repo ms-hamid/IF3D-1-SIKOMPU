@@ -70,6 +70,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class, 'user_roles');
     }
 
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class)->latest();
+    }
+
     // ============================================
     // ROLE & PERMISSION HELPERS
     // ============================================

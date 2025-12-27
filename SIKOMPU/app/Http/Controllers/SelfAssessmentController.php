@@ -6,6 +6,7 @@ use App\Models\SelfAssessment;
 use App\Models\MataKuliah;
 use App\Models\Prodi;
 use App\Imports\MataKuliahImport;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -79,6 +80,15 @@ class SelfAssessmentController extends Controller
             // Import menggunakan PhpSpreadsheet
             $importer = new MataKuliahImport();
             $importer->import($filePath);
+
+            // ✨ NOTIFIKASI - Import berhasil ✨
+            NotificationService::sendToStruktural(
+                'import',
+                'Import Self-Assessment Berhasil',
+                'Data self-assessment berhasil diimport ke sistem',
+                route('self-assessment.index'),
+                'file-import'
+            );
             
             return redirect()->back()->with('success', 'Data matakuliah berhasil diimport!');
             
@@ -98,6 +108,9 @@ class SelfAssessmentController extends Controller
             'assessments.*.nilai' => 'required|integer|min:0|max:8',
             'assessments.*.catatan' => 'nullable|string|max:1000',
         ]);
+
+        $jumlahDisimpan = 0; // Hitung berapa mata kuliah yang dinilai
+        $mataKuliahList = []; // List mata kuliah yang dinilai
     
         foreach ($request->assessments as $assessment) {
             // Skip jika nilai 0 (belum diisi)
@@ -112,8 +125,33 @@ class SelfAssessmentController extends Controller
                 ],
                 [
                     'nilai' => $assessment['nilai'],
-                    'catatan' => $assessment['catatan'] ?? '', // ✅ Default empty string kalau null
+                    'catatan' => $assessment['catatan'] ?? '',
                 ]
+            );
+
+            // Ambil nama mata kuliah untuk notifikasi
+            $mataKuliah = MataKuliah::find($assessment['matakuliah_id']);
+            if ($mataKuliah) {
+                $mataKuliahList[] = $mataKuliah->nama_mk;
+                $jumlahDisimpan++;
+            }
+        }
+
+        // ✨ KIRIM NOTIFIKASI KE STRUKTURAL ✨
+        if ($jumlahDisimpan > 0) {
+            $user = Auth::user();
+            
+            // Ambil 3 mata kuliah pertama untuk ditampilkan di notifikasi
+            $mataKuliahText = count($mataKuliahList) <= 3 
+                ? implode(', ', $mataKuliahList)
+                : implode(', ', array_slice($mataKuliahList, 0, 3)) . ' dan ' . (count($mataKuliahList) - 3) . ' lainnya';
+            
+            NotificationService::sendToStruktural(
+                'self_assessment',
+                'Self-Assessment Baru',
+                "{$user->nama_lengkap} mengupdate self-assessment untuk {$jumlahDisimpan} mata kuliah: {$mataKuliahText}",
+                route('self-assessment.index'),
+                'clipboard-check'
             );
         }
     
