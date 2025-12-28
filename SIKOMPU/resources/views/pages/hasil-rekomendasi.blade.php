@@ -100,8 +100,13 @@
                             @php
                                 $mk = optional($details->first())->mataKuliah;
                                 // Perbaikan pencarian peran (case-insensitive)
-                                $koor = $details->filter(fn($d) => strtolower($d->peran_penugasan) == 'koordinator')->first();
-                                $pengampu = $details->filter(fn($d) => strtolower($d->peran_penugasan) == 'pengampu');
+                                $koor = $details->filter(function ($d) {
+                                    return strtolower(trim($d->peran_penugasan, "'")) === 'koordinator';
+                                })->first();
+
+                                $pengampu = $details->filter(function ($d) {
+                                    return strtolower(trim($d->peran_penugasan, "'")) === 'pengampu';
+                                });
                                 $skor = $koor?->skor_dosen_di_mk ?? 0;
                             @endphp
                             <tr class="hover:bg-gray-50 transition-colors">
