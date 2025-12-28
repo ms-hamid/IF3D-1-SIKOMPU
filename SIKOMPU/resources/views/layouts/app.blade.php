@@ -94,7 +94,7 @@
     <div class="flex flex-1 flex-col lg:ml-64 relative ">
 
         {{-- ======================== TOPBAR ======================== --}}
-        <div class="sticky top-0  bg-white shadow-sm">
+        <div class="sticky top-0  bg-white shadow-sm z-50">
             @include('components.topbar')
         </div>
 
