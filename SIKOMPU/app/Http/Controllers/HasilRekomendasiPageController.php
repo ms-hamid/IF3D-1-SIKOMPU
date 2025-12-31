@@ -17,71 +17,92 @@ class HasilRekomendasiPageController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil data utama yang aktif
-        $hasilAktif = HasilRekomendasi::with([
-            'detailHasilRekomendasi' => function ($query) use ($request) {
-                // Filter Pencarian (q)
-                if ($request->filled('q')) {
-                    $q = $request->q;
-                    $query->where(function ($sub) use ($q) {
-                        $sub->whereHas('mataKuliah', function ($mk) use ($q) {
-                            $mk->where('nama_mk', 'like', "%{$q}%")
-                               ->orWhere('kode_mk', 'like', "%{$q}%");
-                        })
-                        ->orWhereHas('user', function ($u) use ($q) {
-                            $u->where('nama_lengkap', 'like', "%{$q}%");
-                        });
-                    });
-                }
+        // 1. Ambil semua prodi untuk dropdown filter
+        $listProdi = Prodi::orderBy('nama_prodi', 'asc')->get();
 
-                // Filter Prodi (Gunakan ID)
-                if ($request->filled('prodi')) {
-                    $query->whereHas('mataKuliah', function ($mk) use ($request) {
-                        $mk->where('prodi_id', $request->prodi);
-                    });
-                }
-
-                // Filter Semester
-                if ($request->filled('semester')) {
-                    $query->whereHas('mataKuliah', function ($mk) use ($request) {
-                        $mk->where('semester', $request->semester);
-                    });
-                }
-            },
+        // 2. Ambil hasil rekomendasi yang sedang aktif
+        $rekomendasiUtama = HasilRekomendasi::with([
             'detailHasilRekomendasi.mataKuliah.prodi',
             'detailHasilRekomendasi.user'
-        ])
-        ->where('is_active', 1)
-        ->first();
+        ])->where('is_active', 1)->first();
 
-        // Ambil daftar prodi untuk dikirim ke view (variabel ini penting!)
-        $listProdi = Prodi::orderBy('nama_prodi')->get();
-
-        if (!$hasilAktif) {
+        if (!$rekomendasiUtama) {
             return view('pages.hasil-rekomendasi', [
-                'hasilRekomendasi' => collect(),
-                'totalMk'          => 0,
+                'hasilRekomendasi' => collect([]),
+                'listProdi' => $listProdi,
+                'totalMk' => 0,
                 'totalKoordinator' => 0,
-                'totalPengampu'    => 0,
-                'avgSkor'          => 0,
-                'listProdi'        => $listProdi, // Di Blade kamu pakai $listProdi
+                'totalPengampu' => 0,
+                'avgSkor' => 0
             ]);
         }
 
-        $detail = $hasilAktif->detailHasilRekomendasi;
-        $totalMk = $detail->pluck('matakuliah_id')->unique()->count();
-        $totalKoordinator = $detail->where('peran_penugasan', 'Koordinator')->count();
-        $totalPengampu = $detail->where('peran_penugasan', 'Pengampu')->count();
-        $avgSkor = round($detail->avg('skor_dosen_di_mk'), 2);
+        // 3. Filter Detail Rekomendasi berdasarkan input user
+        $details = $rekomendasiUtama->detailHasilRekomendasi;
 
-        return view('pages.hasil-rekomendasi', [
-            'hasilRekomendasi' => collect([$hasilAktif]),
-            'totalMk'          => $totalMk,
-            'totalKoordinator' => $totalKoordinator,
-            'totalPengampu'    => $totalPengampu,
-            'avgSkor'          => $avgSkor,
-            'listProdi'        => $listProdi, // Samakan namanya dengan di Blade
-        ]);
+        // Filter Search (Nama MK atau Nama Dosen)
+        if ($request->filled('q')) {
+            $q = strtolower($request->q);
+            $details = $details->filter(function($item) use ($q) {
+                return str_contains(strtolower($item->mataKuliah->nama_mk ?? ''), $q) ||
+                       str_contains(strtolower($item->user->nama_lengkap ?? ''), $q) ||
+                       str_contains(strtolower($item->mataKuliah->kode_mk ?? ''), $q);
+            });
+        }
+
+        // Filter Prodi (Berdasarkan database)
+        if ($request->filled('prodi')) {
+            $details = $details->filter(function($item) use ($request) {
+                return $item->mataKuliah->prodi_id == $request->prodi;
+            });
+        }
+
+        // Filter Semester
+        if ($request->filled('semester')) {
+            $isGanjil = $request->semester == 'Ganjil';
+            $details = $details->filter(function($item) use ($isGanjil) {
+                // Semester Ganjil adalah 1, 3, 5, 7. Genap adalah 2, 4, 6, 8
+                $semesterNum = (int)$item->mataKuliah->semester;
+                return $isGanjil ? ($semesterNum % 2 !== 0) : ($semesterNum % 2 === 0);
+            });
+        }
+
+        // 4. Hitung Stats untuk Dashboard
+        $totalMk = $details->pluck('matakuliah_id')->unique()->count();
+        $totalKoordinator = $details->filter(function ($d) {
+            return strtolower(trim($d->peran_penugasan, "'")) === 'koordinator';
+        })->count();
+        $totalPengampu = $details->filter(function ($d) {
+            return strtolower(trim($d->peran_penugasan, "'")) === 'pengampu';
+        })->count();
+        $avgSkor = round($details->avg('skor_dosen_di_mk'), 2);
+
+
+        // 5. Wrap dalam collection agar Blade tetap bisa memakai @forelse ($hasilRekomendasi as $hasil)
+        // Kita modifikasi dikit biar groupedMk di blade dapet data yang sudah difilter
+        $rekomendasiUtama->setRelation('detailHasilRekomendasi', $details);
+        $hasilRekomendasi = collect([$rekomendasiUtama]);
+
+        return view('pages.hasil-rekomendasi', compact(
+            'hasilRekomendasi', 
+            'listProdi', 
+            'totalMk', 
+            'totalKoordinator', 
+            'totalPengampu', 
+            'avgSkor'
+        ));
+    }
+
+     public function detailMk($id, $kode_mk)
+    {
+        $hasil = HasilRekomendasi::with('detailHasilRekomendasi.mataKuliah', 'detailHasilRekomendasi.user')
+                    ->findOrFail($id);
+
+        $detail = $hasil->detailHasilRekomendasi->filter(function($item) use ($kode_mk) {
+            return $item->mataKuliah->kode_mk === $kode_mk;
+        });
+
+        return view('pages.hasil-rekomendasi-detail', compact('hasil', 'detail'));
     }
 
     public function exportExcel(Request $request)
