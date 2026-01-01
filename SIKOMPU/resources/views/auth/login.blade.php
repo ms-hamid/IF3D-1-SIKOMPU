@@ -48,6 +48,7 @@
             label="Password" 
             placeholder="Masukkan password"
         >
+
             <x-slot:icon>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -59,6 +60,18 @@
                 </svg>
             </x-slot:icon>
         </x-input>
+
+        <div class="text-sm text-gray-600 text-center">
+            Mengalami kendala login?  
+            <a 
+                href="https://outlook.office.com/mail/deeplink/compose?to=festy@polibatam.ac.id"
+                target="_blank"
+                class="text-blue-600 hover:underline font-medium"
+            >
+                Hubungi Administrator
+            </a>
+            <span class="text-gray-400">(festy@polibatam.ac.id)</span>
+        </div>
 
         <!-- Tombol -->
         <x-button class="w-full">Masuk Sistem</x-button>

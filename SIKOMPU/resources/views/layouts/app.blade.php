@@ -105,9 +105,31 @@
 
         {{-- ======================== FOOTER ======================== --}}
         <footer class="bg-white border-t border-gray-200 shadow-sm mt-auto">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center text-gray-500 text-xs sm:text-sm">
-                <p class="text-center sm:text-left">&copy; {{ date('Y') }} Politeknik Negeri Batam. All rights reserved.</p>
-                <p class="text-center sm:text-right mt-2 sm:mt-0">Versi 1.0.0</p>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 
+                        flex flex-col sm:flex-row justify-between items-center 
+                        text-gray-500 text-xs sm:text-sm gap-2">
+
+                {{-- Kiri --}}
+                <div class="text-center sm:text-left">
+                    <p>
+                        &copy; {{ date('Y') }} Politeknik Negeri Batam. All rights reserved.
+                    </p>
+                    <p class="mt-1">
+                        Mengalami kendala?
+                        <a
+                            href="https://outlook.office.com/mail/deeplink/compose?to=festy@polibatam.ac.id"
+                            target="_blank"
+                            class="text-blue-600 hover:underline font-medium"
+                        >
+                            Hubungi Administrator
+                        </a>
+                    </p>
+                </div>
+
+                {{-- Kanan --}}
+                <p class="text-center sm:text-right">
+                    Versi 1.0.0
+                </p>
             </div>
         </footer>
     </div>
