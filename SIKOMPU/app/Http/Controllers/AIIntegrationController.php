@@ -36,14 +36,11 @@ class AIIntegrationController extends Controller
 
     public function generateRecommendation()
     {
+       
         \Log::info('🚀 === GENERATE REKOMENDASI DIMULAI ===');
         
-        // AMBIL HANYA DOSEN & LABORAN (pakai kolom jabatan)
-        $users = User::with(['selfAssessments', 'penelitian', 'sertifikat', 'pendidikan'])
-            ->whereIn('jabatan', ['Dosen', 'Laboran'])
-            ->where('status', 'Aktif')
-            ->get();
-        
+        // AMBIL DATA USER
+        $users = User::with(['selfAssessments', 'penelitians', 'sertifikat', 'pendidikans'])->get();
         $matkuls = Matakuliah::all();
 
         \Log::info('📊 Data Summary', [
@@ -78,10 +75,10 @@ class AIIntegrationController extends Controller
                 'id' => $user->id,
                 'nama' => $user->nama_lengkap,
                 'jabatan' => $user->jabatan,
-                'has_pendidikan' => $user->pendidikan->isNotEmpty(),
+                'has_pendidikan' => $user->pendidikans->isNotEmpty(),
                 'has_self_assessment' => $user->selfAssessments->isNotEmpty(),
                 'has_sertifikat' => $user->sertifikat->isNotEmpty(),
-                'has_penelitian' => $user->penelitian->isNotEmpty(),
+                'has_penelitian' => $user->penelitians->isNotEmpty(),
                 'valid_mk_count' => 0
             ];
 
@@ -94,7 +91,7 @@ class AIIntegrationController extends Controller
                         ->first()
                 )->nilai ?? 0;
 
-                $pendidikan = optional($user->pendidikan->last())->jenjang;
+                $pendidikan = optional($user->pendidikans->last())->jenjang;
                 $c2_pendidikan = match ($pendidikan) {
                     'S3' => 5,
                     'S2' => 3,
@@ -189,12 +186,12 @@ class AIIntegrationController extends Controller
                 ], 400);
             }
 
-            // FILTER SKOR >= 70
+            // FILTER SKOR >= 30
             $hasilFiltered = collect($hasilAI)
-                ->filter(fn($item) => $item['skor_prediksi'] >= 70)
-                ->values()
-                ->all();
-
+            ->filter(fn($item) => $item['skor_prediksi'] >= 0.3)
+            ->values()
+            ->all();
+            
             \Log::info('🔍 Filter Skor >= 70', [
                 'before' => count($hasilAI),
                 'after' => count($hasilFiltered),
@@ -218,7 +215,9 @@ class AIIntegrationController extends Controller
             // DISTRIBUSI KE MATA KULIAH
             $grouped = collect($hasilFiltered)->groupBy('kode_matkul');
             $rekomendasi = [];
-            $globalUsedUserIds = [];
+
+            // TRACKING BEBAN SKS DOSEN
+            $bebanDosen = []; // [user_id => total_sks]
 
             \Log::info('📚 Grouped by MK', [
                 'mk_count' => $grouped->count(),
@@ -239,48 +238,51 @@ class AIIntegrationController extends Controller
 
                 foreach ($sorted as $item) {
                     $user = User::where('nama_lengkap', $item['nama'])->first();
-                    
+
                     if (!$user) {
                         \Log::warning('⚠️ User not found', ['nama' => $item['nama']]);
                         continue;
                     }
 
-                    if (in_array($user->id, $globalUsedUserIds)) {
-                        \Log::info('⏩ Skip duplikat', [
+                    // ===== CEK BEBAN SKS =====
+                    $sksMk = $mk->sks;
+                    $maxSks = $user->max_beban; // sesuai model User
+                    $currentSks = $bebanDosen[$user->id] ?? 0;
+
+                    if (($currentSks + $sksMk) > $maxSks) {
+                        \Log::info('⏩ Skip overload SKS', [
                             'user' => $user->nama_lengkap,
-                            'mk' => $kodeMk,
-                            'skor' => $item['skor_prediksi'],
-                            'reason' => 'Sudah ditugaskan di MK lain'
+                            'current_sks' => $currentSks,
+                            'mk_sks' => $sksMk,
+                            'max_sks' => $maxSks
                         ]);
                         continue;
                     }
 
+                    // ===== ROLE =====
                     if (count($dosens) === 0) {
                         $role = 'Koordinator';
                     } else {
-                        $jumlahPengampu = collect($dosens)->where('role', 'Pengampu')->count();
-                        
-                        if ($jumlahPengampu >= $MAX_PENGAMPU) {
-                            \Log::info('⏩ Max pengampu reached', ['mk' => $kodeMk]);
+                        if (collect($dosens)->where('role', 'Pengampu')->count() >= $MAX_PENGAMPU) {
                             break;
                         }
-                        
                         $role = 'Pengampu';
                     }
 
+                    // ===== ASSIGN =====
                     $dosens[] = [
                         'user_id' => $user->id,
                         'role' => $role,
                         'skor' => $item['skor_prediksi'],
                     ];
 
-                    $globalUsedUserIds[] = $user->id;
+                    $bebanDosen[$user->id] = $currentSks + $sksMk;
 
                     \Log::info('✅ Assigned', [
                         'user' => $user->nama_lengkap,
-                        'mk' => $mk->kode_mk . ' - ' . $mk->nama_mk,
+                        'mk' => $mk->kode_mk,
                         'role' => $role,
-                        'skor' => round($item['skor_prediksi'], 2)
+                        'total_sks' => $bebanDosen[$user->id]
                     ]);
                 }
 
@@ -292,52 +294,32 @@ class AIIntegrationController extends Controller
                 }
             }
 
-            \Log::info('📊 Final Rekomendasi', [
-                'total_mk' => count($rekomendasi),
-                'total_penugasan' => collect($rekomendasi)->sum(fn($r) => count($r['dosens'])),
-                'mk_dengan_koordinator' => collect($rekomendasi)
-                    ->filter(fn($r) => collect($r['dosens'])->contains('role', 'Koordinator'))
-                    ->count()
-            ]);
+// ================= SUMMARY FIX =================
+$jumlahDosenDitugaskan = count(array_keys($bebanDosen));
 
-            if (empty($rekomendasi)) {
-                return response()->json([
-                    'error' => 'Tidak ada penugasan yang bisa dibuat'
-                ], 400);
-            }
+// NONAKTIFKAN DATA LAMA
+DB::table('hasil_rekomendasi')
+    ->where('is_active', true)
+    ->update(['is_active' => false]);
 
-            // NONAKTIFKAN DATA LAMA
-            DB::table('hasil_rekomendasi')
-                ->where('is_active', true)
-                ->update(['is_active' => false]);
+// SIMPAN
+$hasilController = app(HasilRekomendasiController::class);
+$hasilController->saveFromAI('Ganjil 2024/2025', $rekomendasi);
 
-            \Log::info('🔄 Old data deactivated');
+return response()->json([
+    'status' => 'success',
+    'message' => '🎉 Rekomendasi berhasil digenerate!',
+    'summary' => [
+        'total_dosen_input' => count($dataDosen),
+        'total_hasil_ai' => count($hasilAI),
+        'total_lulus_threshold' => count($hasilFiltered),
+        'total_mk_ditugaskan' => count($rekomendasi),
+        'total_penugasan' => collect($rekomendasi)->sum(fn($r) => count($r['dosens'])),
+        'dosen_ditugaskan' => $jumlahDosenDitugaskan,
+        'dosen_tidak_ditugaskan' => $users->count() - $jumlahDosenDitugaskan
+    ]
+]);
 
-            // SIMPAN KE DATABASE
-            $hasilController = app(HasilRekomendasiController::class);
-            $dbResponse = $hasilController->saveFromAI('Ganjil 2024/2025', $rekomendasi);
-
-            \Log::info('💾 Saved to DB');
-
-            return response()->json([
-                'status' => 'success',
-                'message' => '🎉 Rekomendasi berhasil digenerate!',
-                'summary' => [
-                    'total_dosen_input' => count($dataDosen),
-                    'total_hasil_ai' => count($hasilAI),
-                    'total_lulus_threshold' => count($hasilFiltered),
-                    'total_mk_ditugaskan' => count($rekomendasi),
-                    'total_penugasan' => collect($rekomendasi)->sum(fn($r) => count($r['dosens'])),
-                    'dosen_ditugaskan' => count($globalUsedUserIds),
-                    'dosen_tidak_ditugaskan' => $users->count() - count($globalUsedUserIds)
-                ],
-                'details' => [
-                    'mk_list' => collect($rekomendasi)->map(fn($r) => [
-                        'mk_id' => $r['matakuliah_id'],
-                        'jumlah_dosen' => count($r['dosens'])
-                    ])
-                ]
-            ]);
 
         } catch (\Exception $e) {
             \Log::error('💥 EXCEPTION', [

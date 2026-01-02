@@ -178,42 +178,11 @@ class HasilRekomendasiController extends Controller
      */
     public function generate()
     {
-        \Log::info('🚀 Generate rekomendasi dimulai');
+        app(AIIntegrationController::class)->generateRecommendation();
 
-        try {
-            $response = app(AIIntegrationController::class)->generateRecommendation();
-
-            // Cek apakah response adalah JsonResponse
-            if ($response instanceof \Illuminate\Http\JsonResponse) {
-                $data = $response->getData(true);
-
-                if (isset($data['status']) && $data['status'] === 'success') {
-                    // ✨ Notifikasi sudah dikirim di storeAIRecommendation() ✨
-                    // Jadi tidak perlu kirim lagi di sini
-                    
-                    return redirect()
-                        ->route('hasil.rekomendasi')
-                        ->with('success', 'Rekomendasi berhasil digenerate! Total: ' . ($data['summary']['total_penugasan'] ?? 0) . ' penugasan');
-                } else {
-                    return redirect()
-                        ->route('hasil.rekomendasi')
-                        ->with('error', $data['error'] ?? 'Gagal generate rekomendasi');
-                }
-            }
-
-            return redirect()
-                ->route('hasil.rekomendasi')
-                ->with('success', 'Rekomendasi berhasil digenerate');
-
-        } catch (\Exception $e) {
-            \Log::error('💥 Generate error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return redirect()
-                ->route('hasil.rekomendasi')
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
+        return redirect()
+            ->route('hasil.rekomendasi')
+            ->with('success', 'Rekomendasi berhasil digenerate');
     }
+
 }
