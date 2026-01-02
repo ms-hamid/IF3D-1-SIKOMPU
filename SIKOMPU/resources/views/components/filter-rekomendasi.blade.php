@@ -1,5 +1,6 @@
-<form method="GET" action="{{ route('hasil.rekomendasi') }}"
-      class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-6 space-y-4">
+<form method="GET" 
+        action="{{ route('hasil.rekomendasi') }}"
+      class="no-loading bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-6 space-y-4">
 
     <div class="flex items-center justify-between">
         <h4 class="text-lg font-extrabold text-gray-800 flex items-center">

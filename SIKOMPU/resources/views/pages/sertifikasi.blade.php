@@ -134,44 +134,51 @@
 
 
     {{-- Modal Edit Sertifikat --}}
-    <div
-        x-cloak
-        x-show="openEditModal"
-        class="fixed inset-0 z-50 flex items-center justify-center"
-        style="display: none;"
-    >
+    <div x-show="openEditModal" 
+     x-cloak
+     @keydown.escape.window="openEditModal = false"
+     class="fixed inset-0 z-50 overflow-y-auto" 
+     aria-labelledby="modal-title" 
+     role="dialog" 
+     aria-modal="true">
+    
+    <!-- Backdrop -->
+    <div x-show="openEditModal"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-black/50 transition-opacity"
+         @click="openEditModal = false">
+    </div>
 
-        <!-- Overlay -->
-        <div 
-            class="fixed inset-0 bg-black/70"
-            @click="openEditModal = false"
-        ></div>
+    <!-- Modal Content -->
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div x-show="openEditModal"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="relative bg-white rounded-lg shadow-xl w-full max-w-lg p-6"
+             @click.away="openEditModal = false">
+            
+            <template x-if="editId">
+                <div>
+                    @foreach($sertifikats as $sertifikat)
+                        <div x-show="editId == {{ $sertifikat->id }}">
+                            @include('components.edit-sertifikat', ['sertifikat' => $sertifikat])
+                        </div>
+                    @endforeach
+                </div>
+            </template>
 
-        <!-- Model -->
-        <div 
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 -translate-y-6"
-                x-transition:enter-end="opacity-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100 translate-y-0"
-                x-transition:leave-end="opacity-0 -translate-y-6"
-                @click.away="openEditModal = false" 
-                class="relative bg-white shadow-lg p-5 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
-            >
-
-        <template x-if="editId">
-            <div>
-                @foreach($sertifikats as $sertifikat)
-                    <div x-show="editId == {{ $sertifikat->id }}">
-                        @include('components.edit-sertifikat', ['sertifikat' => $sertifikat])
-                    </div>
-                @endforeach
-            </div>
-        </template>
-
+        </div>
     </div>
 </div>
-
 
     {{-- Modal Konfirmasi Hapus --}}
     @include('components.hapus-sertifikat')
