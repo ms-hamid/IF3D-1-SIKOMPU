@@ -25,7 +25,7 @@ The system serves two primary user roles: **Admin (Department Structure)** and *
 
 * **🤖 AI-Driven Recommendation Engine:** Utilizes the **XGBoost** algorithm to predict lecturer-course suitability with a tested accuracy of **98.92%** 1.
 * **📊 Interactive Dashboard:** Real-time visualization of lecturer statistics, course distribution, and assignment status.
-* **📝 Self-Assessment Module:** An intuitive interface allowing lecturers to rate their own teaching confidence (scale 1-10) for specific courses.
+* **📝 Self-Assessment Module:** An intuitive interface allowing lecturers to rate their own teaching confidence (scale 1-8) for specific courses.
 * **📂 Competency Management:** Digital management of lecturer credentials, including certificate validation and research history .
 * **⚖️ Business Constraint Logic:** Automated application of academic rules (e.g., Minimum S2 degree for theoretical courses, certificate validity period).
 * **📑 Comprehensive Reporting:** Exportable assignment results and reports in PDF and Excel formats for audit purposes.
@@ -49,13 +49,6 @@ The system utilizes a RESTful API communication flow between the Laravel fronten
 2.  **Processing:** Flask handles data preprocessing (encoding & scaling) and feeds it into the trained `model.pkl`.
 3.  **Prediction:** The XGBoost model calculates suitability probability scores.
 4.  **Constraint Application:** Laravel receives the scores and applies hard academic constraints (filtering) before presenting the final recommendation to the user.
-
-## 👥 The Team (IF 3D-1)
-
-* **Muhammad Syarif Hamid** - *Team Leader / System Analyst*.
-* **Rafa Adestia Atin** - *Frontend Developer / UI/UX Designer*.
-* **Elisabeth Margaretta Tampubolon** - *AI/ML Engineer*.
-* **Christine Thalia Elisabet Sitanggang** - *Backend Developer / Database Administrator*.
 
 ## 📄 License
 

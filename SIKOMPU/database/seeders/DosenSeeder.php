@@ -22,7 +22,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Kepala Jurusan',
                 'prodi' => 'Teknik Informatika',
                 'status' => 'Aktif',
-                'beban_mengajar' => 8,
+                'beban_mengajar' => 0,
                 'max_beban' => 12,
             ],
             [
@@ -32,7 +32,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Sekretaris Jurusan',
                 'prodi' => 'Teknik Informatika',
                 'status' => 'Aktif',
-                'beban_mengajar' => 10,
+                'beban_mengajar' => 0,
                 'max_beban' => 12,
             ],
             [
@@ -42,7 +42,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Kepala Program Studi',
                 'prodi' => 'Teknik Informatika',
                 'status' => 'Aktif',
-                'beban_mengajar' => 9,
+                'beban_mengajar' => 0,
                 'max_beban' => 12,
             ],
             [
@@ -52,7 +52,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Kepala Program Studi',
                 'prodi' => 'Teknik Geomatika',
                 'status' => 'Aktif',
-                'beban_mengajar' => 11,
+                'beban_mengajar' => 0,
                 'max_beban' => 12,
             ],
             [
@@ -62,7 +62,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Kepala Program Studi',
                 'prodi' => 'Rekayasa Keamanan Siber',
                 'status' => 'Aktif',
-                'beban_mengajar' => 10,
+                'beban_mengajar' => 0,
                 'max_beban' => 12,
             ],
             [
@@ -72,7 +72,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Kepala Program Studi',
                 'prodi' => 'Animasi',
                 'status' => 'Aktif',
-                'beban_mengajar' => 8,
+                'beban_mengajar' => 0,
                 'max_beban' => 12,
             ],
 
@@ -84,7 +84,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Dosen',
                 'prodi' => 'Teknik Informatika',
                 'status' => 'Aktif',
-                'beban_mengajar' => 14,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
             [
@@ -94,7 +94,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Dosen',
                 'prodi' => 'Teknik Informatika',
                 'status' => 'Aktif',
-                'beban_mengajar' => 16,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
             [
@@ -104,7 +104,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Dosen',
                 'prodi' => 'Teknik Informatika',
                 'status' => 'Aktif',
-                'beban_mengajar' => 16,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
             [
@@ -114,7 +114,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Dosen',
                 'prodi' => 'Teknik Geomatika',
                 'status' => 'Aktif',
-                'beban_mengajar' => 12,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
             [
@@ -124,7 +124,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Dosen',
                 'prodi' => 'Animasi',
                 'status' => 'Aktif',
-                'beban_mengajar' => 14,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
             [
@@ -134,7 +134,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Dosen',
                 'prodi' => 'Teknologi Permainan',
                 'status' => 'Aktif',
-                'beban_mengajar' => 15,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
             [
@@ -144,7 +144,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Dosen',
                 'prodi' => 'Teknik Rekayasa Perangkat Lunak',
                 'status' => 'Aktif',
-                'beban_mengajar' => 13,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
             [
@@ -154,7 +154,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Dosen',
                 'prodi' => 'Rekayasa Keamanan Siber',
                 'status' => 'Aktif',
-                'beban_mengajar' => 14,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
             [
@@ -164,7 +164,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Dosen',
                 'prodi' => 'Teknologi Rekayasa Multimedia',
                 'status' => 'Aktif',
-                'beban_mengajar' => 16,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
 
@@ -176,7 +176,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Laboran',
                 'prodi' => 'Teknik Informatika',
                 'status' => 'Aktif',
-                'beban_mengajar' => 12,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
             [
@@ -186,7 +186,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Laboran',
                 'prodi' => 'Teknologi Rekayasa Multimedia',
                 'status' => 'Aktif',
-                'beban_mengajar' => 10,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
             [
@@ -196,7 +196,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Laboran',
                 'prodi' => 'Teknik Rekayasa Perangkat Lunak',
                 'status' => 'Aktif',
-                'beban_mengajar' => 8,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
             [
@@ -206,7 +206,7 @@ class DosenSeeder extends Seeder
                 'jabatan' => 'Laboran',
                 'prodi' => 'Animasi',
                 'status' => 'Aktif',
-                'beban_mengajar' => 11,
+                'beban_mengajar' => 0,
                 'max_beban' => 16,
             ],
         ];
