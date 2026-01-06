@@ -65,14 +65,11 @@ class HasilRekomendasiController extends Controller
         DB::beginTransaction();
 
         try {
-            /**
-             * 1. Simpan header hasil rekomendasi
-             * ⚠️ PENTING: TIDAK ADA KOLOM 'status' LAGI!
-             */
+            // Simpan header hasil rekomendasi
             $hasil = HasilRekomendasi::create([
                 'semester' => $data['semester'],
                 'tahun_ajaran' => $tahunAjaran,
-                'is_active' => true, // ← Langsung aktif saat dibuat
+                'is_active' => true,
             ]);
 
             \Log::info('✅ Hasil rekomendasi created', ['id' => $hasil->id]);
@@ -80,9 +77,9 @@ class HasilRekomendasiController extends Controller
             $totalMataKuliah = 0;
             $totalPenugasan = 0;
 
-            /**
-             * 2. Simpan detail rekomendasi per matakuliah
-             */
+            // Track jumlah koordinator per user
+            $koordinatorCount = []; // [user_id => jumlah koordinator]
+
             foreach ($data['rekomendasi'] as $item) {
 
                 if (empty($item['dosens'])) {
@@ -92,7 +89,6 @@ class HasilRekomendasiController extends Controller
                 }
 
                 // Urutkan dosen berdasarkan skor tertinggi
-                // Jika skor sama → user_id terkecil jadi koordinator (deterministik)
                 $sortedDosens = collect($item['dosens'])
                     ->sortByDesc(fn ($d) => [
                         $d['skor'],
@@ -100,15 +96,33 @@ class HasilRekomendasiController extends Controller
                     ])
                     ->values();
 
+                $koordinatorDitugaskan = false;
+
                 foreach ($sortedDosens as $index => $dosen) {
+                    $userId = $dosen['user_id'];
+
+                    if (!isset($koordinatorCount[$userId])) {
+                        $koordinatorCount[$userId] = 0;
+                    }
+
+                    $role = 'pengampu';
+
+                    // Tentukan koordinator jika belum ada koordinator untuk MK ini
+                    // dan user belum mencapai batas 3x koordinator
+                    if (!$koordinatorDitugaskan && $koordinatorCount[$userId] < 3) {
+                        $role = 'koordinator';
+                        $koordinatorCount[$userId]++;
+                        $koordinatorDitugaskan = true;
+                    }
+
                     DetailHasilRekomendasi::create([
                         'hasil_id' => $hasil->id,
                         'matakuliah_id' => $item['matakuliah_id'],
-                        'user_id' => $dosen['user_id'],
-                        'peran_penugasan' => $index === 0 ? 'koordinator' : 'pengampu',
+                        'user_id' => $userId,
+                        'peran_penugasan' => $role,
                         'skor_dosen_di_mk' => $dosen['skor'],
                     ]);
-                    
+
                     $totalPenugasan++;
                 }
 

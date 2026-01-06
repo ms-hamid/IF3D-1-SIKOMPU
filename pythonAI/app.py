@@ -141,17 +141,41 @@ def predict():
             return jsonify({"status": "error", "message": "Tidak ada data untuk diranking"}), 400
 
         # gabungkan lagi
+                # gabungkan lagi
         df_final = pd.concat(hasil_per_matkul, ignore_index=True)
 
-        # pilih kolom yang aman
+        # ======================================================
+        # KIRIM USER_ID DOSEN KE LARAVEL (BUKAN ID DATAFRAME)
+        # ======================================================
+
+        # pastikan kolom 'id' dari Laravel masih ada di dataframe
+        if 'id' not in df_final.columns:
+            return jsonify({
+                "status": "error",
+                "message": "Kolom 'id' (user_id dosen dari Laravel) tidak ditemukan di hasil AI"
+            }), 500
+
+        # kolom yang akan dikirim ke Laravel
         required_cols = ['id', 'nama_asli', 'kode_matkul', 'skor_prediksi', 'rank']
 
         missing = [c for c in required_cols if c not in df_final.columns]
         if missing:
-            return jsonify({"status": "error", "message": f"Kolom hilang: {missing}"}), 500     
+            return jsonify({
+                "status": "error",
+                "message": f"Kolom hilang: {missing}"
+            }), 500     
 
-        # Pilih kolom yang ingin dikembalikan (pakai nama asli)
-        hasil = df_final[required_cols].rename(columns={'nama_asli': 'nama'}).to_dict(orient='records')
+        # rename:
+        # id -> user_id  (supaya jelas di Laravel)
+        # nama_asli -> nama
+        hasil = (
+            df_final[required_cols]
+            .rename(columns={
+                'id': 'user_id',
+                'nama_asli': 'nama'
+            })
+            .to_dict(orient='records')
+        )
 
         return jsonify({
             "status": "success",
@@ -159,9 +183,9 @@ def predict():
             "hasil_rekomendasi": hasil
         }), 200
 
-
     except Exception as e:
         return jsonify({"status": "error", "message": f"Internal Error: {str(e)}"}), 500
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

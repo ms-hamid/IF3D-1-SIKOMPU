@@ -14,17 +14,20 @@ class KategoriObserver
         $service = new RelevansiService();
 
         foreach (MataKuliah::all() as $mk) {
-            $bobot = $service->hitung($mk->nama_mk, $kategori->nama);
+            $bobot = $service->hitung(
+                $mk->nama_mk,
+                $kategori->nama
+            );
 
             DB::table('mk_kategori')->updateOrInsert(
                 [
                     'mata_kuliah_id' => $mk->id,
-                    'kategori_id' => $kategori->id,
+                    'kategori_id'    => $kategori->id,
                 ],
                 [
-                    'bobot' => $bobot,
+                    'bobot'      => $bobot,
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]
             );
         }
