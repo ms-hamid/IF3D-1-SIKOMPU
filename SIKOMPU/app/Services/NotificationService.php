@@ -66,6 +66,7 @@ class NotificationService
 
     /**
      * Notifikasi untuk Self-Assessment Baru
+     * Link = NULL karena struktural tidak perlu redirect ke mana-mana
      */
     public static function selfAssessmentCreated($dosenName, $mataKuliah)
     {
@@ -73,7 +74,7 @@ class NotificationService
             'self_assessment',
             'Self-Assessment Baru',
             "{$dosenName} telah mengupdate self-assessment untuk {$mataKuliah}",
-            route('struktural.self-assessment.index'),
+            null, // ← NULL = cukup baca notifikasi, tidak redirect
             'clipboard-check'
         );
     }

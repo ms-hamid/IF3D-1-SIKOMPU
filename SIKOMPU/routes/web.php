@@ -66,8 +66,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/read-all', [NotificationController::class, 'markAllAsRead']);
         // Delete notification
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
-        // Delete all read notifications
-        Route::delete('/delete-read', [NotificationController::class, 'deleteRead']);
     });
 
     // ============================

@@ -4,21 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
-    // Ambil semua notifikasi user yang login
-    public function index()
-    {
-        $notifications = auth()->user()
-            ->notifications()
-            ->latest()
-            ->paginate(20);
-
-        return view('pages.notifications', compact('notifications'));
-    }
-
-    // Get notifications untuk dropdown (AJAX)
+    /**
+     * Get notifications untuk dropdown (AJAX)
+     * MASIH DIPAKE - Jangan dihapus!
+     */
     public function getNotifications()
     {
         $notifications = auth()->user()
@@ -29,7 +22,7 @@ class NotificationController extends Controller
 
         $unreadCount = auth()->user()
             ->notifications()
-            ->unread()
+            ->where('is_read', false)
             ->count();
 
         return response()->json([
@@ -38,61 +31,57 @@ class NotificationController extends Controller
         ]);
     }
 
-    // Tandai sebagai sudah dibaca
-    public function markAsRead($id)
-    {
-        $notification = auth()->user()
-            ->notifications()
-            ->findOrFail($id);
-
-        $notification->markAsRead();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Notifikasi ditandai sebagai sudah dibaca'
-        ]);
-    }
-
-    // Tandai semua sebagai sudah dibaca
+    /**
+     * Tandai semua sebagai sudah dibaca
+     * MASIH DIPAKE - Jangan dihapus!
+     */
     public function markAllAsRead()
     {
-        auth()->user()
-            ->notifications()
-            ->unread()
-            ->update(['is_read' => true]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Semua notifikasi ditandai sebagai sudah dibaca'
-        ]);
+        try {
+            $updated = auth()->user()->notifications()
+                ->where('is_read', false)
+                ->update(['is_read' => true]);
+            
+            Log::info('Mark all as read:', ['updated' => $updated]);
+            
+            return response()->json([
+                'success' => true,
+                'updated' => $updated
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Mark all as read failed:', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false], 500);
+        }
     }
 
-    // Hapus notifikasi
+    /**
+     * Hapus notifikasi
+     * MASIH DIPAKE - Jangan dihapus!
+     */
     public function destroy($id)
     {
-        $notification = auth()->user()
-            ->notifications()
-            ->findOrFail($id);
-
-        $notification->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Notifikasi berhasil dihapus'
-        ]);
-    }
-
-    // Hapus semua notifikasi yang sudah dibaca
-    public function deleteRead()
-    {
-        auth()->user()
-            ->notifications()
-            ->read()
-            ->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Semua notifikasi yang sudah dibaca berhasil dihapus'
-        ]);
+        try {
+            $notification = auth()->user()
+                ->notifications()
+                ->findOrFail($id);
+            
+            $notification->delete();
+            
+            Log::info('Notification deleted:', ['id' => $id]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Notifikasi berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Delete notification failed:', [
+                'id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus notifikasi'
+            ], 500);
+        }
     }
 }

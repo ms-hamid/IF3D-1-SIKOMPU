@@ -1,11 +1,4 @@
 <header class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between" x-data="notificationDropdown()">
-    
-    {{-- Hamburger Menu (Mobile) --}}
-    <button 
-        @click="sidebarOpen = !sidebarOpen"
-        class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
-        <i class="fa-solid fa-bars text-xl"></i>
-    </button>
 
     {{-- Title (Desktop Only) --}}
     <h1 class="hidden lg:block text-xl font-bold text-gray-800">
@@ -64,7 +57,7 @@
                         <div 
                             @click="handleNotificationClick(notif)"
                             :class="notif.is_read ? 'bg-white' : 'bg-blue-50'"
-                            class="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
+                            class="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors relative">
                             
                             <div class="flex gap-3">
                                 {{-- Icon --}}
@@ -87,7 +80,8 @@
                                 <div class="flex-shrink-0">
                                     <button 
                                         @click.stop="deleteNotification(notif.id)"
-                                        class="text-gray-400 hover:text-red-500 transition-colors">
+                                        class="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                        title="Hapus notifikasi">
                                         <i class="fa-solid fa-times text-sm"></i>
                                     </button>
                                 </div>
@@ -97,11 +91,8 @@
                 </div>
 
                 {{-- Footer --}}
-                <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
-                    <a href="{{ route('notifications.index') }}" 
-                       class="text-sm text-blue-600 hover:text-blue-800 font-medium block text-center">
-                        Lihat Semua Notifikasi
-                    </a>
+                <div class="px-4 py-3 border-t border-gray-200 bg-gray-50 text-center text-xs text-gray-500">
+                    <span x-text="notifications.length"></span> notifikasi
                 </div>
             </div>
         </div>
@@ -171,97 +162,170 @@ function notificationDropdown() {
         isOpen: false,
         notifications: [],
         unreadCount: 0,
+        isProcessing: false,
 
         init() {
+            console.log('🔔 Notification dropdown initialized');
             this.loadNotifications();
-            // Auto refresh setiap 30 detik
-            setInterval(() => this.loadNotifications(), 30000);
+            
+            setInterval(() => {
+                if (!this.isOpen && !this.isProcessing) {
+                    this.loadNotifications();
+                }
+            }, 30000);
         },
 
         toggleDropdown() {
             this.isOpen = !this.isOpen;
+            console.log('🔔 Dropdown toggled:', this.isOpen);
             if (this.isOpen) {
                 this.loadNotifications();
             }
         },
 
         async loadNotifications() {
+            console.log('📥 Loading notifications...');
             try {
-                const response = await fetch('/notifications/get', {
-                    headers: {
+                const response = await fetch(`/notifications/get?t=${Date.now()}`, {
+                    headers: { 
                         'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json'
                     }
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
                 const data = await response.json();
                 this.notifications = data.notifications;
                 this.unreadCount = data.unread_count;
-            } catch (error) {
-                console.error('Error loading notifications:', error);
-            }
-        },
-
-        async handleNotificationClick(notif) {
-            // Mark as read jika belum dibaca
-            if (!notif.is_read) {
-                await this.markAsRead(notif.id);
-            }
-            
-            // Redirect jika ada link
-            if (notif.link) {
-                window.location.href = notif.link;
-            }
-            
-            this.isOpen = false;
-        },
-
-        async markAsRead(id) {
-            try {
-                await fetch(`/notifications/${id}/read`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
+                console.log('✅ Notifications loaded:', {
+                    total: this.notifications.length,
+                    unread: this.unreadCount
                 });
-                await this.loadNotifications();
             } catch (error) {
-                console.error('Error marking notification as read:', error);
-            }
-        },
-
-        async markAllAsRead() {
-            try {
-                await fetch('/notifications/read-all', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                });
-                await this.loadNotifications();
-            } catch (error) {
-                console.error('Error marking all as read:', error);
+                console.error('❌ Load notifications failed:', error);
             }
         },
 
         async deleteNotification(id) {
-            if (!confirm('Hapus notifikasi ini?')) return;
+            console.log('🗑️ Delete notification:', id);
             
+            if (this.isProcessing) {
+                console.log('⚠️ Already processing, skipping...');
+                return;
+            }
+            
+            this.isProcessing = true;
+            
+            // Backup untuk rollback
+            const originalNotifications = [...this.notifications];
+            const originalUnreadCount = this.unreadCount;
+            
+            // Update UI instantly
+            const targetIndex = this.notifications.findIndex(n => n.id === id);
+            if (targetIndex !== -1) {
+                const wasUnread = !this.notifications[targetIndex].is_read;
+                console.log('📍 Found at index:', targetIndex, '| Was unread:', wasUnread);
+                
+                this.notifications.splice(targetIndex, 1);
+                if (wasUnread) {
+                    this.unreadCount = Math.max(0, this.unreadCount - 1);
+                }
+                console.log('✨ UI updated | Remaining:', this.notifications.length);
+            }
+
             try {
-                await fetch(`/notifications/${id}`, {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                console.log('🔑 CSRF Token:', csrfToken ? 'Found' : 'NOT FOUND!');
+                
+                const response = await fetch(`/notifications/${id}`, {
                     method: 'DELETE',
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'Content-Type': 'application/json'
                     }
                 });
-                await this.loadNotifications();
+
+                console.log('📡 Server response:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('❌ Delete failed:', errorData);
+                    
+                    // Rollback
+                    this.notifications = originalNotifications;
+                    this.unreadCount = originalUnreadCount;
+                    console.log('↩️ Rolled back to original state');
+                    
+                    alert('Gagal menghapus notifikasi. Cek console untuk detail.');
+                } else {
+                    const result = await response.json();
+                    console.log('✅ Delete success:', result);
+                }
             } catch (error) {
-                console.error('Error deleting notification:', error);
+                console.error('❌ Delete error:', error);
+                
+                // Rollback
+                this.notifications = originalNotifications;
+                this.unreadCount = originalUnreadCount;
+                console.log('↩️ Rolled back due to error');
+                
+                alert('Error: ' + error.message);
+            } finally {
+                this.isProcessing = false;
+                console.log('🏁 Delete process finished');
+            }
+        },
+
+        async markAllAsRead() {
+            console.log('✔️ Mark all as read');
+            
+            if (this.isProcessing || this.unreadCount === 0) {
+                console.log('⚠️ Skipped (processing or no unread)');
+                return;
+            }
+            
+            this.isProcessing = true;
+            const originalNotifications = JSON.parse(JSON.stringify(this.notifications));
+            
+            this.notifications.forEach(n => n.is_read = true);
+            this.unreadCount = 0;
+            console.log('✨ UI updated: all marked as read');
+
+            try {
+                const response = await fetch('/notifications/read-all', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    console.error('❌ Mark all as read failed');
+                    this.notifications = originalNotifications;
+                    this.unreadCount = originalNotifications.filter(n => !n.is_read).length;
+                } else {
+                    console.log('✅ Mark all as read success');
+                }
+            } catch (error) {
+                console.error('❌ Mark all as read error:', error);
+                this.notifications = originalNotifications;
+                this.unreadCount = originalNotifications.filter(n => !n.is_read).length;
+            } finally {
+                this.isProcessing = false;
+            }
+        },
+
+        handleNotificationClick(notif) {
+            console.log('🖱️ Notification clicked:', notif.title);
+            if (notif.url) {
+                window.location.href = notif.url;
             }
         }
     }
