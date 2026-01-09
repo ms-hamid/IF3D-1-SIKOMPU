@@ -109,8 +109,8 @@ class SelfAssessmentController extends Controller
             'assessments.*.catatan' => 'nullable|string|max:1000',
         ]);
 
-        $jumlahDisimpan = 0; // Hitung berapa mata kuliah yang dinilai
-        $mataKuliahList = []; // List mata kuliah yang dinilai
+        $jumlahDisimpan = 0;
+        $mataKuliahList = [];
     
         foreach ($request->assessments as $assessment) {
             // Skip jika nilai 0 (belum diisi)
@@ -129,7 +129,6 @@ class SelfAssessmentController extends Controller
                 ]
             );
 
-            // Ambil nama mata kuliah untuk notifikasi
             $mataKuliah = MataKuliah::find($assessment['matakuliah_id']);
             if ($mataKuliah) {
                 $mataKuliahList[] = $mataKuliah->nama_mk;
@@ -141,7 +140,6 @@ class SelfAssessmentController extends Controller
         if ($jumlahDisimpan > 0) {
             $user = Auth::user();
             
-            // Ambil 3 mata kuliah pertama untuk ditampilkan di notifikasi
             $mataKuliahText = count($mataKuliahList) <= 3 
                 ? implode(', ', $mataKuliahList)
                 : implode(', ', array_slice($mataKuliahList, 0, 3)) . ' dan ' . (count($mataKuliahList) - 3) . ' lainnya';
@@ -155,6 +153,6 @@ class SelfAssessmentController extends Controller
             );
         }
     
-        return redirect()->back()->with('success', 'Penilaian berhasil disimpan!');
+        return redirect()->route('self-assessment.index')->with('success', 'Penilaian berhasil disimpan!');
     }
 }
