@@ -34,37 +34,66 @@
                placeholder="Masukkan judul penelitian" required>
     </div>
 
-    {{-- Tahun Publikasi --}}
+    {{-- Kategori --}}
     <div class="flex flex-col">
-        <label for="edit_tahun" class="text-sm font-medium text-gray-700 mb-1">
-            Tahun Publikasi <span class="text-red-500">*</span>
+        <label for="edit_kategori_id" class="text-sm font-medium text-gray-700 mb-1">
+            Kategori <span class="text-red-500">*</span>
         </label>
-        <select name="tahun" id="edit_tahun" x-model="editData.tahun_publikasi"
+        <select name="kategori_id" id="edit_kategori_id" x-model="editData.kategori_id"
                 class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
                 required>
-            <option value="">Pilih Tahun</option>
-            @php
-                $currentYear = date('Y');
-                $startYear = 2000;
-            @endphp
-            @for ($year = $currentYear; $year >= $startYear; $year--)
-                <option value="{{ $year }}">{{ $year }}</option>
-            @endfor
+            <option value="">Pilih Kategori</option>
+            @foreach ($kategori as $k)
+                <option value="{{ $k->id }}">{{ $k->nama }}</option>
+            @endforeach
+            <option value="other">-- Lainnya (Tambah Baru) --</option>
         </select>
     </div>
 
-    {{-- Peran --}}
-    <div class="flex flex-col">
-        <label for="edit_peran" class="text-sm font-medium text-gray-700 mb-1">
-            Peran <span class="text-red-500">*</span>
+    {{-- Input Kategori Baru (Muncul jika pilih 'other') --}}
+    <div class="flex flex-col" x-show="editData.kategori_id === 'other'" x-transition>
+        <label for="edit_kategori_baru" class="text-sm font-medium text-gray-700 mb-1">
+            Nama Kategori Baru <span class="text-red-500">*</span>
         </label>
-        <select name="peran" id="edit_peran" x-model="editData.peran"
-                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
-                required>
-            <option value="">Pilih Peran</option>
-            <option value="Ketua">Ketua</option>
-            <option value="Anggota">Anggota</option>
-        </select>
+        <input type="text" name="kategori_baru" id="edit_kategori_baru"
+               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
+               placeholder="Masukkan kategori baru">
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {{-- Tahun Publikasi --}}
+        <div class="flex flex-col">
+            <label for="edit_tahun" class="text-sm font-medium text-gray-700 mb-1">
+                Tahun Publikasi <span class="text-red-500">*</span>
+            </label>
+            <select name="tahun" id="edit_tahun" x-model="editData.tahun_publikasi"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
+                    required>
+                <option value="">Pilih Tahun</option>
+                @php
+                    $currentYear = date('Y');
+                    $startYear = 2000;
+                @endphp
+                @for ($year = $currentYear; $year >= $startYear; $year--)
+                    <option value="{{ $year }}">{{ $year }}</option>
+                @endfor
+            </select>
+        </div>
+
+        {{-- Peran --}}
+        <div class="flex flex-col">
+            <label for="edit_peran" class="text-sm font-medium text-gray-700 mb-1">
+                Peran <span class="text-red-500">*</span>
+            </label>
+            <select name="peran" id="edit_peran" x-model="editData.peran"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
+                    required>
+                <option value="">Pilih Peran</option>
+                <option value="Ketua">Ketua</option>
+                <option value="Anggota">Anggota</option>
+                <option value="Kontributor">Kontributor</option>
+            </select>
+        </div>
     </div>
 
     {{-- Link Publikasi --}}

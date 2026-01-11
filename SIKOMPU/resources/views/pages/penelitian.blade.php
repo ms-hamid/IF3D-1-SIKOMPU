@@ -89,25 +89,16 @@
         class="fixed inset-0 z-50 flex items-center justify-center"
         style="display: none;"
     >
+        <div class="fixed inset-0 bg-black/70" @click="openEditModal = false"></div>
 
-        <!-- Overlay -->
-        <div 
-            class="fixed inset-0 bg-black/70"
-            @click="openEditModal = false"
-        ></div>
-
-        <!-- Modal -->
         <div 
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 -translate-y-6"
             x-transition:enter-end="opacity-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100 translate-y-0"
-            x-transition:leave-end="opacity-0 -translate-y-6"
-            @click.away="openEditModal = false" 
             class="relative bg-white rounded-lg shadow-lg p-5 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
         >
-            <x-edit-penelitian />
+            {{-- Tambahkan :kategori agar tidak Undefined Variable --}}
+            <x-edit-penelitian :kategori="$kategori" />
         </div>
     </div>
 
@@ -210,7 +201,8 @@
                         judul_penelitian: '{{ addslashes($p->judul_penelitian) }}',
                         tahun_publikasi: {{ $p->tahun_publikasi }},
                         peran: '{{ $p->peran }}',
-                        link_publikasi: '{{ $p->link_publikasi ?? '' }}'
+                        link_publikasi: '{{ $p->link_publikasi ?? '' }}',
+                        kategori_id: '{{ $p->kategori_id }}'
                     }; openEditModal = true"
                     class="px-3 py-1 text-xs sm:text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-md transition-colors"
                 >
