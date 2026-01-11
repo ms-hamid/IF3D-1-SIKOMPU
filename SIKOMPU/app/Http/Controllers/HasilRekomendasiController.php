@@ -136,7 +136,7 @@ class HasilRekomendasiController extends Controller
 
             DB::commit();
 
-            // ✨ KIRIM NOTIFIKASI KE SEMUA STRUKTURAL ✨
+            // KIRIM NOTIFIKASI KE SEMUA STRUKTURAL 
             NotificationService::sendToStruktural(
                 'recommendation',
                 'Rekomendasi Semester Baru Siap',
