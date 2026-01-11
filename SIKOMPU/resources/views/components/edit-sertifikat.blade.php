@@ -121,48 +121,47 @@
         </select>
     </div>
 
-    {{-- Klasifikasi --}}
+    {{-- Kategori --}}
     <div class="flex flex-col" x-data="{ 
-        isCustom: {{ in_array(old('klasifikasi', $sertifikat->klasifikasi ?? ''), ['Teknologi Informasi', 'Rekayasa Perangkat Lunak', 'Jaringan Komputer', 'Data Science', 'Keamanan Siber', 'Cloud Computing', 'Pengembangan Web', 'Manajemen Proyek', 'Desain UI/UX']) ? 'false' : 'true' }}, 
-        value: '{{ old('klasifikasi', $sertifikat->klasifikasi ?? '') }}' 
+        showCustomInput: {{ old('kategori_id') === 'custom' || (!old('kategori_id') && !in_array($sertifikat->kategori_id ?? 0, $kategori->pluck('id')->toArray())) ? 'true' : 'false' }}
     }">
-        <label for="klasifikasi_edit" class="text-sm font-medium text-gray-700 mb-1">
-            Klasifikasi Bidang Kompetensi <span class="text-red-500">*</span>
+        <label for="kategori_id_edit" class="text-sm font-medium text-gray-700 mb-1">
+            Kategori Sertifikat <span class="text-red-500">*</span>
         </label>
 
-        <template x-if="!isCustom">
-            <select name="klasifikasi" id="klasifikasi_edit"
+        {{-- Dropdown Kategori --}}
+        <div x-show="!showCustomInput">
+            <select name="kategori_id" id="kategori_id_edit"
                 class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-gray-800 text-sm"
-                @change="if($event.target.value === 'Lainnya') { isCustom = true; $nextTick(() => $refs.customInput.focus()) }"
-                required>
-                <option value="">Pilih Klasifikasi</option>
-                <option value="Teknologi Informasi" {{ old('klasifikasi', $sertifikat->klasifikasi ?? '') == 'Teknologi Informasi' ? 'selected' : '' }}>Teknologi Informasi</option>
-                <option value="Rekayasa Perangkat Lunak" {{ old('klasifikasi', $sertifikat->klasifikasi ?? '') == 'Rekayasa Perangkat Lunak' ? 'selected' : '' }}>Rekayasa Perangkat Lunak</option>
-                <option value="Jaringan Komputer" {{ old('klasifikasi', $sertifikat->klasifikasi ?? '') == 'Jaringan Komputer' ? 'selected' : '' }}>Jaringan Komputer</option>
-                <option value="Data Science" {{ old('klasifikasi', $sertifikat->klasifikasi ?? '') == 'Data Science' ? 'selected' : '' }}>Data Science</option>
-                <option value="Keamanan Siber" {{ old('klasifikasi', $sertifikat->klasifikasi ?? '') == 'Keamanan Siber' ? 'selected' : '' }}>Keamanan Siber</option>
-                <option value="Cloud Computing" {{ old('klasifikasi', $sertifikat->klasifikasi ?? '') == 'Cloud Computing' ? 'selected' : '' }}>Cloud Computing</option>
-                <option value="Pengembangan Web" {{ old('klasifikasi', $sertifikat->klasifikasi ?? '') == 'Pengembangan Web' ? 'selected' : '' }}>Pengembangan Web</option>
-                <option value="Manajemen Proyek" {{ old('klasifikasi', $sertifikat->klasifikasi ?? '') == 'Manajemen Proyek' ? 'selected' : '' }}>Manajemen Proyek</option>
-                <option value="Desain UI/UX" {{ old('klasifikasi', $sertifikat->klasifikasi ?? '') == 'Desain UI/UX' ? 'selected' : '' }}>Desain UI/UX</option>
-                <option value="Lainnya">Lainnya (Ketik Manual)</option>
+                @change="if($event.target.value === 'custom') { showCustomInput = true; $nextTick(() => $refs.customInput.focus()) }">
+                <option value="">Pilih Kategori</option>
+                @foreach($kategori as $kat)
+                    <option value="{{ $kat->id }}" {{ old('kategori_id', $sertifikat->kategori_id) == $kat->id ? 'selected' : '' }}>
+                        {{ $kat->nama }}
+                    </option>
+                @endforeach
+                <option value="custom">+ Tambah Kategori Baru</option>
             </select>
-        </template>
+        </div>
 
-        <template x-if="isCustom">
-            <div>
-                <input type="text" name="klasifikasi" x-ref="customInput"
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
-                    placeholder="Masukkan jenis kompetensi"
-                    x-model="value"
-                    required>
-                <button type="button" 
-                    @click="isCustom = false; value = ''"
-                    class="mt-2 text-xs text-blue-600 hover:text-blue-800">
-                    ← Kembali ke pilihan
-                </button>
-            </div>
-        </template>
+        {{-- Input Manual Kategori Baru --}}
+        <div x-show="showCustomInput" style="display: none;">
+            <input type="text" 
+                name="kategori_baru" 
+                id="kategori_baru_edit"
+                x-ref="customInput"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
+                placeholder="Masukkan nama kategori baru"
+                value="{{ old('kategori_baru', !in_array($sertifikat->kategori_id ?? 0, $kategori->pluck('id')->toArray()) ? ($sertifikat->kategori->nama ?? '') : '') }}">
+            
+            <button type="button" 
+                @click="showCustomInput = false; document.getElementById('kategori_baru_edit').value = '';"
+                class="mt-2 text-xs text-blue-600 hover:text-blue-800">
+                ← Kembali ke pilihan kategori
+            </button>
+        </div>
+
+        <p class="mt-1 text-xs text-gray-500">Pilih kategori dari daftar atau tambahkan kategori baru</p>
     </div>
 
     {{-- Tombol Aksi --}}

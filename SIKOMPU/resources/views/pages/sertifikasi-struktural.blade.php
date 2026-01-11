@@ -73,7 +73,7 @@
         // Perhitungan bonus (sesuaikan dengan logika Anda)
         $totalBonus = $totalSertifikat * 3.5; 
         // Hitung jumlah bidang/klasifikasi unik
-        $bidangAktif = $sertifikats->pluck('klasifikasi')->unique()->count();
+        $bidangAktif = $sertifikats->pluck('kategori_id')->unique()->filter()->count();
     @endphp
     
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
@@ -205,11 +205,11 @@
                             'Manajemen Proyek' => 'bg-yellow-100 text-yellow-700',
                             'Desain UI/UX' => 'bg-pink-100 text-pink-700',
                         ];
-                        $badgeClass = $badgeColors[$sertifikat->klasifikasi] ?? 'bg-gray-100 text-gray-700';
+                        $badgeClass = $badgeColors[$sertifikat->kategori->nama ?? ''] ?? 'bg-gray-100 text-gray-700';
                     @endphp
                     
                     <span class="inline-block {{ $badgeClass }} text-xs font-medium px-2.5 py-0.5 rounded-full">
-                        {{ $sertifikat->klasifikasi }}
+                        {{ $sertifikat->kategori->nama ?? 'Tidak ada kategori' }}
                     </span>
                     
                     <div class="text-sm text-gray-600 space-y-1">

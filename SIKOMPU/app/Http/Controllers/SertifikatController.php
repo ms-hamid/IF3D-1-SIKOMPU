@@ -42,7 +42,7 @@ class SertifikatController extends Controller
             'nama' => 'required|string|max:255',
             'institusi' => 'required|string|max:255',
             'tahun' => 'required|integer|min:2000|max:' . date('Y'),
-            'kategori_id' => 'nullable', // dicek manual di bawah (boleh 'custom' string)
+            'kategori_id' => 'nullable',
             'kategori_baru' => 'nullable|string|max:100',
         ], [
             'file.required' => 'File sertifikat harus diunggah',
@@ -58,30 +58,31 @@ class SertifikatController extends Controller
 
         // Tentukan kategori_id final
         $kategori_id = null;
-
-        // Prioritas: jika user mengisi kategori_baru, pakai itu (buat atau pakai existing)
         $kategoriBaru = trim($request->input('kategori_baru', ''));
         $kategoriIdInput = $request->input('kategori_id', null);
 
         DB::beginTransaction();
         try {
             if ($kategoriBaru !== '') {
-                // Hindari duplikat: firstOrCreate berdasarkan nama (case-sensitive default).
-                // Jika ingin case-insensitive, ubah query.
+                // User mengisi kategori baru
                 $kategoriModel = Kategori::firstOrCreate([
                     'nama' => $kategoriBaru
                 ]);
                 $kategori_id = $kategoriModel->id;
             } elseif ($kategoriIdInput && $kategoriIdInput !== 'custom' && $kategoriIdInput !== 'other') {
-                // Jika user memilih kategori dari dropdown, pastikan ada di DB
+                // User memilih kategori dari dropdown
                 $kategoriModel = Kategori::find($kategoriIdInput);
                 if (!$kategoriModel) {
-                    throw ValidationException::withMessages(['kategori_id' => 'The selected kategori id is invalid.']);
+                    throw ValidationException::withMessages([
+                        'kategori_id' => 'Kategori yang dipilih tidak valid.'
+                    ]);
                 }
                 $kategori_id = $kategoriModel->id;
             } else {
-                // Tidak ada kategori valid => beri pesan validasi
-                throw ValidationException::withMessages(['kategori_id' => 'Kategori wajib dipilih atau isi kategori baru.']);
+                // Tidak ada kategori valid
+                throw ValidationException::withMessages([
+                    'kategori_id' => 'Kategori wajib dipilih atau isi kategori baru.'
+                ]);
             }
 
             // Upload file
@@ -103,9 +104,10 @@ class SertifikatController extends Controller
 
             return redirect()->route('sertifikasi.index')
                 ->with('success', 'Sertifikat berhasil ditambahkan!');
+                
         } catch (ValidationException $ve) {
             DB::rollBack();
-            throw $ve; // biarkan Laravel menangani redirect withErrors
+            throw $ve;
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
@@ -155,30 +157,40 @@ class SertifikatController extends Controller
             'kategori_baru' => 'nullable|string|max:100',
         ]);
 
-        $kategori_id = null;
-        $kategoriBaru = trim($request->input('kategori_baru', ''));
-        $kategoriIdInput = $request->input('kategori_id', null);
-
         DB::beginTransaction();
         try {
+            // Tentukan kategori_id
+            $kategoriBaru = trim($request->input('kategori_baru', ''));
+            $kategoriIdInput = $request->input('kategori_id', null);
+
             if ($kategoriBaru !== '') {
-                $kategoriModel = Kategori::firstOrCreate([
-                    'nama' => $kategoriBaru
-                ]);
+                // User mengisi kategori baru
+                $kategoriModel = Kategori::firstOrCreate(['nama' => $kategoriBaru]);
                 $kategori_id = $kategoriModel->id;
             } elseif ($kategoriIdInput && $kategoriIdInput !== 'custom' && $kategoriIdInput !== 'other') {
+                // User memilih kategori dari dropdown
                 $kategoriModel = Kategori::find($kategoriIdInput);
                 if (!$kategoriModel) {
-                    throw ValidationException::withMessages(['kategori_id' => 'The selected kategori id is invalid.']);
+                    throw ValidationException::withMessages([
+                        'kategori_id' => 'Kategori yang dipilih tidak valid.'
+                    ]);
                 }
                 $kategori_id = $kategoriModel->id;
             } else {
-                throw ValidationException::withMessages(['kategori_id' => 'Kategori wajib dipilih atau isi kategori baru.']);
+                // FALLBACK: Gunakan kategori yang sudah ada (tidak ada perubahan)
+                $kategori_id = $sertifikat->kategori_id;
+                
+                // Jika kategori lama juga null, baru throw error
+                if (!$kategori_id) {
+                    throw ValidationException::withMessages([
+                        'kategori_id' => 'Kategori wajib dipilih atau isi kategori baru.'
+                    ]);
+                }
             }
 
             // Handle file upload (jika ada)
             if ($request->hasFile('file')) {
-                // hapus file lama jika ada
+                // Hapus file lama jika ada
                 if ($sertifikat->file_path && Storage::disk('public')->exists($sertifikat->file_path)) {
                     Storage::disk('public')->delete($sertifikat->file_path);
                 }
@@ -199,6 +211,7 @@ class SertifikatController extends Controller
 
             return redirect()->route('sertifikasi.index')
                 ->with('success', 'Sertifikat berhasil diperbarui!');
+                
         } catch (ValidationException $ve) {
             DB::rollBack();
             throw $ve;
