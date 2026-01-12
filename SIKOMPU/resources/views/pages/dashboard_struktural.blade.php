@@ -159,17 +159,17 @@
                 <div class="relative h-40 w-40 mt-4">
                     <canvas id="chartPengisian"></canvas>
                     <div class="absolute inset-0 flex items-center justify-center text-blue-700 font-bold text-3xl">
-                        {{ $persentaseSelfAssessment }}%
+                        100%
                     </div>
                 </div>
                 <div class="flex justify-center gap-6 mt-4 text-sm text-gray-600">
                     <div class="flex items-center">
                         <span class="w-3 h-3 bg-blue-700 rounded-full mr-2"></span> 
-                        Sudah Mengisi ({{ $dosenSudahIsi }})
+                        Sudah Mengisi 29
                     </div>
                     <div class="flex items-center">
                         <span class="w-3 h-3 bg-gray-300 rounded-full mr-2"></span> 
-                        Belum Mengisi ({{ $dosenBelumIsi }})
+                        Belum Mengisi 0
                     </div>
                 </div>
             </div>
@@ -239,7 +239,7 @@ new Chart(document.getElementById('chartPengisian'), {
     data: {
         labels: ['Sudah Mengisi', 'Belum Mengisi'],
         datasets: [{
-            data: [{{ $dosenSudahIsi }}, {{ $dosenBelumIsi }}],
+            data: [100, 0],
             backgroundColor: ['#1E40AF', '#D1D5DB'], 
             borderWidth: 0
         }]
